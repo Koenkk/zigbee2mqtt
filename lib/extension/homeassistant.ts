@@ -2,7 +2,7 @@ import assert from "node:assert";
 import bind from "bind-decorator";
 import stringify from "json-stable-stringify-without-jsonify";
 import type * as zhc from "zigbee-herdsman-converters";
-
+import type {Zh} from "zigbee-herdsman-converters/lib/types";
 import logger from "../util/logger";
 import * as settings from "../util/settings";
 import utils, {assertBinaryExpose, assertEnumExpose, assertNumericExpose, isBinaryExpose, isEnumExpose, isNumericExpose} from "../util/utils";
@@ -18,6 +18,7 @@ interface DiscoveryEntry {
     type: string;
     object_id: string;
     discovery_payload: KeyValue;
+    endpoint?: Zh.Endpoint;
 }
 
 interface Discovered {
@@ -384,6 +385,7 @@ export class HomeAssistant extends Extension {
     private discoveryTopic: string;
     private discoveryRegex: RegExp;
     private discoveryRegexWoTopic = /(.*)\/(.*)\/(.*)\/config/;
+    private groupMemberLookup = new Map<string, string>();
     private statusTopic: string;
     private legacyActionSensor: boolean;
     private experimentalEventEntities: boolean;
@@ -459,10 +461,15 @@ export class HomeAssistant extends Extension {
         const discoverWait = 5;
         // Discover with `published = false`, this will populate `this.discovered` without publishing the discoveries.
         // This is needed for clearing outdated entries in `this.onMQTTMessage()`
+        // Discover devices before groups to populate `this.groupMemberLookup` for group discovery.
         await this.discover(this.bridge, false);
 
-        for (const e of this.zigbee.devicesAndGroupsIterator(utils.deviceNotCoordinator)) {
-            await this.discover(e, false);
+        for (const device of this.zigbee.devicesIterator(utils.deviceNotCoordinator)) {
+            await this.discover(device, false);
+        }
+
+        for (const group of this.zigbee.groupsIterator()) {
+            await this.discover(group, false);
         }
 
         logger.debug(`Discovering entities to Home Assistant in ${discoverWait}s`);
@@ -487,21 +494,16 @@ export class HomeAssistant extends Extension {
         return this.discovered[ID];
     }
 
-    private exposeToConfig(
-        exposes: zhc.Expose[],
-        entityType: "device" | "group",
-        allExposes: zhc.Expose[],
-        definition?: zhc.Definition,
-    ): DiscoveryEntry[] {
+    private exposeToConfig(exposes: zhc.Expose[], entity: Device | Group, allExposes: zhc.Expose[]): DiscoveryEntry[] {
         // For groups an array of exposes (of the same type) is passed, this is to determine e.g. what features
         // to use for a bulb (e.g. color_xy/color_temp)
-        assert(entityType === "group" || exposes.length === 1, "Multiple exposes for device not allowed");
+        assert(entity.isGroup() || exposes.length === 1, "Multiple exposes for device not allowed");
         const firstExpose = exposes[0];
-        assert(entityType === "device" || GROUP_SUPPORTED_TYPES.includes(firstExpose.type), `Unsupported expose type ${firstExpose.type} for group`);
+        assert(entity.isDevice() || GROUP_SUPPORTED_TYPES.includes(firstExpose.type), `Unsupported expose type ${firstExpose.type} for group`);
 
         const discoveryEntries: DiscoveryEntry[] = [];
-        const endpoint = entityType === "device" ? exposes[0].endpoint : undefined;
-        const getProperty = (feature: zhc.Feature): string => (entityType === "group" ? featurePropertyWithoutEndpoint(feature) : feature.property);
+        const endpointName = entity.isDevice() ? exposes[0].endpoint : undefined;
+        const getProperty = (feature: zhc.Feature): string => (entity.isGroup() ? featurePropertyWithoutEndpoint(feature) : feature.property);
 
         switch (firstExpose.type) {
             case "light": {
@@ -520,16 +522,16 @@ export class HomeAssistant extends Extension {
 
                 const discoveryEntry: DiscoveryEntry = {
                     type: "light",
-                    object_id: endpoint ? `light_${endpoint}` : "light",
+                    object_id: endpointName ? `light_${endpointName}` : "light",
                     mockProperties: [{property: state.property, value: null}],
                     discovery_payload: {
-                        name: endpoint ? utils.capitalize(endpoint) : null,
+                        name: endpointName ? utils.capitalize(endpointName) : null,
                         brightness: !!hasBrightness,
                         schema: "json",
                         command_topic: true,
                         brightness_scale: 254,
-                        command_topic_prefix: endpoint,
-                        state_topic_postfix: endpoint,
+                        command_topic_prefix: endpointName,
+                        state_topic_postfix: endpointName,
                     },
                 };
 
@@ -582,15 +584,15 @@ export class HomeAssistant extends Extension {
                 const property = getProperty(state);
                 const discoveryEntry: DiscoveryEntry = {
                     type: "switch",
-                    object_id: endpoint ? `switch_${endpoint}` : "switch",
+                    object_id: endpointName ? `switch_${endpointName}` : "switch",
                     mockProperties: [{property: property, value: null}],
                     discovery_payload: {
-                        name: endpoint ? utils.capitalize(endpoint) : null,
+                        name: endpointName ? utils.capitalize(endpointName) : null,
                         payload_off: state.value_off,
                         payload_on: state.value_on,
                         value_template: `{{ value_json.${property} }}`,
                         command_topic: true,
-                        command_topic_prefix: endpoint,
+                        command_topic_prefix: endpointName,
                     },
                 };
 
@@ -621,10 +623,10 @@ export class HomeAssistant extends Extension {
 
                 const discoveryEntry: DiscoveryEntry = {
                     type: "climate",
-                    object_id: endpoint ? `climate_${endpoint}` : "climate",
+                    object_id: endpointName ? `climate_${endpointName}` : "climate",
                     mockProperties: [],
                     discovery_payload: {
-                        name: endpoint ? utils.capitalize(endpoint) : null,
+                        name: endpointName ? utils.capitalize(endpointName) : null,
                         // Static
                         state_topic: false,
                         temperature_unit: "C",
@@ -635,7 +637,7 @@ export class HomeAssistant extends Extension {
                         // Temperature
                         current_temperature_topic: true,
                         current_temperature_template: `{{ value_json.${temperature.property} }}`,
-                        command_topic_prefix: endpoint,
+                        command_topic_prefix: endpointName,
                     },
                 };
 
@@ -704,13 +706,13 @@ export class HomeAssistant extends Extension {
                 if (tempCalibration) {
                     const discoveryEntry: DiscoveryEntry = {
                         type: "number",
-                        object_id: endpoint ? `${tempCalibration.name}_${endpoint}` : `${tempCalibration.name}`,
+                        object_id: endpointName ? `${tempCalibration.name}_${endpointName}` : `${tempCalibration.name}`,
                         mockProperties: [{property: tempCalibration.property, value: null}],
                         discovery_payload: {
-                            name: endpoint ? `${tempCalibration.label} ${endpoint}` : tempCalibration.label,
+                            name: endpointName ? `${tempCalibration.label} ${endpointName}` : tempCalibration.label,
                             value_template: `{{ value_json.${tempCalibration.property} }}`,
                             command_topic: true,
-                            command_topic_prefix: endpoint,
+                            command_topic_prefix: endpointName,
                             command_topic_postfix: tempCalibration.property,
                             device_class: "temperature_delta",
                             entity_category: "config",
@@ -729,10 +731,10 @@ export class HomeAssistant extends Extension {
                 const piHeatingDemand = (firstExpose as zhc.Climate).features.filter(isNumericExpose).find((f) => f.name === "pi_heating_demand");
                 if (piHeatingDemand) {
                     const discoveryEntry: Partial<DiscoveryEntry> = {
-                        object_id: endpoint ? `${piHeatingDemand.name}_${endpoint}` : `${piHeatingDemand.name}`,
+                        object_id: endpointName ? `${piHeatingDemand.name}_${endpointName}` : `${piHeatingDemand.name}`,
                         mockProperties: [{property: piHeatingDemand.property, value: null}],
                         discovery_payload: {
-                            name: endpoint ? `${piHeatingDemand.label} ${endpoint}` : piHeatingDemand.label,
+                            name: endpointName ? `${piHeatingDemand.label} ${endpointName}` : piHeatingDemand.label,
                             value_template: `{{ value_json.${piHeatingDemand.property} }}`,
                             ...(piHeatingDemand.unit && {unit_of_measurement: piHeatingDemand.unit}),
                             icon: "mdi:radiator",
@@ -744,7 +746,7 @@ export class HomeAssistant extends Extension {
                     if (piHeatingDemand.access & ACCESS_SET) {
                         discoveryEntry.type = "number";
                         discoveryEntry.discovery_payload.command_topic = true;
-                        discoveryEntry.discovery_payload.command_topic_prefix = endpoint;
+                        discoveryEntry.discovery_payload.command_topic_prefix = endpointName;
                         discoveryEntry.discovery_payload.command_topic_postfix = piHeatingDemand.property;
                         discoveryEntry.discovery_payload.min = piHeatingDemand.value_min;
                         discoveryEntry.discovery_payload.max = piHeatingDemand.value_max;
@@ -760,10 +762,10 @@ export class HomeAssistant extends Extension {
                 if (piCoolingDemand) {
                     const discoveryEntry: DiscoveryEntry = {
                         type: "sensor",
-                        object_id: endpoint ? /* v8 ignore next */ `${piCoolingDemand.name}_${endpoint}` : `${piCoolingDemand.name}`,
+                        object_id: endpointName ? /* v8 ignore next */ `${piCoolingDemand.name}_${endpointName}` : `${piCoolingDemand.name}`,
                         mockProperties: [{property: piCoolingDemand.property, value: null}],
                         discovery_payload: {
-                            name: endpoint ? /* v8 ignore next */ `${piCoolingDemand.label} ${endpoint}` : piCoolingDemand.label,
+                            name: endpointName ? /* v8 ignore next */ `${piCoolingDemand.label} ${endpointName}` : piCoolingDemand.label,
                             value_template: `{{ value_json.${piCoolingDemand.property} }}`,
                             ...(piCoolingDemand.unit && {unit_of_measurement: piCoolingDemand.unit}),
                             entity_category: "diagnostic",
@@ -782,10 +784,10 @@ export class HomeAssistant extends Extension {
                 if (localTemperature && !temperatureSensor && !localTemperatureSensor) {
                     const discoveryEntry: DiscoveryEntry = {
                         type: "sensor",
-                        object_id: endpoint ? `${localTemperature.name}_${endpoint}` : `${localTemperature.name}`,
+                        object_id: endpointName ? `${localTemperature.name}_${endpointName}` : `${localTemperature.name}`,
                         mockProperties: [{property: localTemperature.property, value: null}],
                         discovery_payload: {
-                            name: endpoint ? `${localTemperature.label} ${endpoint}` : localTemperature.label,
+                            name: endpointName ? `${localTemperature.label} ${endpointName}` : localTemperature.label,
                             value_template: `{{ value_json.${localTemperature.property} }}`,
                             ...(localTemperature.unit && {unit_of_measurement: localTemperature.unit}),
                             device_class: "temperature",
@@ -811,18 +813,18 @@ export class HomeAssistant extends Extension {
                 const discoveryEntry: DiscoveryEntry = {
                     type: "lock",
                     /* v8 ignore next */
-                    object_id: endpoint ? `lock_${endpoint}` : "lock",
+                    object_id: endpointName ? `lock_${endpointName}` : "lock",
                     mockProperties: [{property: state.property, value: null}],
                     discovery_payload: {
                         /* v8 ignore next */
-                        name: endpoint ? utils.capitalize(endpoint) : null,
-                        command_topic_prefix: endpoint,
+                        name: endpointName ? utils.capitalize(endpointName) : null,
+                        command_topic_prefix: endpointName,
                         command_topic: true,
                         value_template: `{{ value_json.${state.property} }}`,
                         state_locked: state.value_on,
                         state_unlocked: state.value_off,
                         /* v8 ignore next */
-                        command_topic_postfix: endpoint ? state.property : null,
+                        command_topic_postfix: endpointName ? state.property : null,
                     },
                 };
                 discoveryEntries.push(discoveryEntry);
@@ -847,13 +849,13 @@ export class HomeAssistant extends Extension {
                 const discoveryEntry: DiscoveryEntry = {
                     type: "cover",
                     mockProperties: [{property: state.property, value: null}],
-                    object_id: endpoint ? `cover_${endpoint}` : "cover",
+                    object_id: endpointName ? `cover_${endpointName}` : "cover",
                     discovery_payload: {
-                        name: endpoint ? utils.capitalize(endpoint) : null,
-                        command_topic_prefix: endpoint,
+                        name: endpointName ? utils.capitalize(endpointName) : null,
+                        command_topic_prefix: endpointName,
                         command_topic: true,
                         state_topic: true,
-                        state_topic_postfix: endpoint,
+                        state_topic_postfix: endpointName,
                     },
                 };
 
@@ -916,7 +918,7 @@ export class HomeAssistant extends Extension {
                 break;
             }
             case "fan": {
-                assert(!endpoint, "Endpoint not supported for fan type");
+                assert(!endpointName, "Endpoint not supported for fan type");
                 const discoveryEntry: DiscoveryEntry = {
                     type: "fan",
                     object_id: "fan",
@@ -952,7 +954,7 @@ export class HomeAssistant extends Extension {
                     );
                     let presets = ["on", "auto", "smart"].filter((s) => modeEmulatedSpeed.values.includes(s));
 
-                    if (definition?.model === "99432") {
+                    if (entity.isDevice() && entity.definition?.model === "99432") {
                         // The Hampton Bay 99432 fan implements 4 speeds using the ZCL
                         // hvacFanCtrl values `low`, `medium`, `high`, and `on`, and
                         // 1 preset called "Comfort Breeze" using the ZCL value `smart`.
@@ -1014,9 +1016,9 @@ export class HomeAssistant extends Extension {
                     const discoveryEntry: DiscoveryEntry = {
                         type: "switch",
                         mockProperties: [{property: firstExpose.property, value: null}],
-                        object_id: endpoint ? `switch_${firstExpose.name}_${endpoint}` : `switch_${firstExpose.name}`,
+                        object_id: endpointName ? `switch_${firstExpose.name}_${endpointName}` : `switch_${firstExpose.name}`,
                         discovery_payload: {
-                            name: endpoint ? /* v8 ignore next */ `${firstExpose.label} ${endpoint}` : firstExpose.label,
+                            name: endpointName ? /* v8 ignore next */ `${firstExpose.label} ${endpointName}` : firstExpose.label,
                             value_template:
                                 typeof firstExpose.value_on === "boolean"
                                     ? `{% if value_json.${firstExpose.property} %}true{% else %}false{% endif %}`
@@ -1024,7 +1026,7 @@ export class HomeAssistant extends Extension {
                             payload_on: firstExpose.value_on.toString(),
                             payload_off: firstExpose.value_off.toString(),
                             command_topic: true,
-                            command_topic_prefix: endpoint,
+                            command_topic_prefix: endpointName,
                             command_topic_postfix: firstExpose.property,
                             ...(BINARY_DISCOVERY_LOOKUP[firstExpose.name] || {}),
                         },
@@ -1034,10 +1036,10 @@ export class HomeAssistant extends Extension {
                 } else {
                     const discoveryEntry: DiscoveryEntry = {
                         type: "binary_sensor",
-                        object_id: endpoint ? `${firstExpose.name}_${endpoint}` : `${firstExpose.name}`,
+                        object_id: endpointName ? `${firstExpose.name}_${endpointName}` : `${firstExpose.name}`,
                         mockProperties: [{property: firstExpose.property, value: null}],
                         discovery_payload: {
-                            name: endpoint ? /* v8 ignore next */ `${firstExpose.label} ${endpoint}` : firstExpose.label,
+                            name: endpointName ? /* v8 ignore next */ `${firstExpose.label} ${endpointName}` : firstExpose.label,
                             value_template: `{{ value_json.${firstExpose.property} }}`,
                             payload_on: firstExpose.value_on,
                             payload_off: firstExpose.value_off,
@@ -1059,13 +1061,13 @@ export class HomeAssistant extends Extension {
                 if (allowsSet) {
                     const discoveryEntry: DiscoveryEntry = {
                         type: "number",
-                        object_id: endpoint ? `${firstExpose.name}_${endpoint}` : `${firstExpose.name}`,
+                        object_id: endpointName ? `${firstExpose.name}_${endpointName}` : `${firstExpose.name}`,
                         mockProperties: [{property: firstExpose.property, value: null}],
                         discovery_payload: {
-                            name: endpoint ? `${firstExpose.label} ${endpoint}` : firstExpose.label,
+                            name: endpointName ? `${firstExpose.label} ${endpointName}` : firstExpose.label,
                             value_template: `{{ value_json.${firstExpose.property} }}`,
                             command_topic: true,
-                            command_topic_prefix: endpoint,
+                            command_topic_prefix: endpointName,
                             command_topic_postfix: firstExpose.property,
                             ...(firstExpose.unit && {unit_of_measurement: firstExpose.unit}),
                             ...(firstExpose.value_step && {step: firstExpose.value_step}),
@@ -1110,10 +1112,10 @@ export class HomeAssistant extends Extension {
 
                 const discoveryEntry: DiscoveryEntry = {
                     type: "sensor",
-                    object_id: endpoint ? `${firstExpose.name}_${endpoint}` : `${firstExpose.name}`,
+                    object_id: endpointName ? `${firstExpose.name}_${endpointName}` : `${firstExpose.name}`,
                     mockProperties: [{property: firstExpose.property, value: null}],
                     discovery_payload: {
-                        name: endpoint ? `${firstExpose.label} ${endpoint}` : firstExpose.label,
+                        name: endpointName ? `${firstExpose.label} ${endpointName}` : firstExpose.label,
                         value_template: `{{ value_json.${firstExpose.property} }}`,
                         enabled_by_default: !allowsSet,
                         ...(firstExpose.unit && {unit_of_measurement: firstExpose.unit}),
@@ -1155,7 +1157,7 @@ export class HomeAssistant extends Extension {
                             object_id: firstExpose.property,
                             mockProperties: [],
                             discovery_payload: {
-                                name: endpoint ? /* v8 ignore next */ `${firstExpose.label} ${endpoint}` : firstExpose.label,
+                                name: endpointName ? /* v8 ignore next */ `${firstExpose.label} ${endpointName}` : firstExpose.label,
                                 state_topic: true,
                                 event_types: this.prepareActionEventTypes(firstExpose.values),
                                 value_template: this.actionValueTemplate,
@@ -1179,9 +1181,9 @@ export class HomeAssistant extends Extension {
                         object_id: firstExpose.property,
                         mockProperties: [{property: firstExpose.property, value: null}],
                         discovery_payload: {
-                            name: endpoint ? /* v8 ignore next */ `${firstExpose.label} ${endpoint}` : firstExpose.label,
+                            name: endpointName ? /* v8 ignore next */ `${firstExpose.label} ${endpointName}` : firstExpose.label,
                             state_topic: false,
-                            command_topic_prefix: endpoint,
+                            command_topic_prefix: endpointName,
                             command_topic: true,
                             command_topic_postfix: firstExpose.property,
                             payload_press: firstExpose.values[0].toString(),
@@ -1200,10 +1202,10 @@ export class HomeAssistant extends Extension {
                         object_id: firstExpose.property,
                         mockProperties: [{property: firstExpose.property, value: null}],
                         discovery_payload: {
-                            name: endpoint ? `${firstExpose.label} ${endpoint}` : firstExpose.label,
+                            name: endpointName ? `${firstExpose.label} ${endpointName}` : firstExpose.label,
                             value_template: valueTemplate,
                             state_topic: !!(firstExpose.access & ACCESS_STATE),
-                            command_topic_prefix: endpoint,
+                            command_topic_prefix: endpointName,
                             command_topic: true,
                             command_topic_postfix: firstExpose.property,
                             options: firstExpose.values.map((v) => v.toString()),
@@ -1222,7 +1224,7 @@ export class HomeAssistant extends Extension {
                         object_id: firstExpose.property,
                         mockProperties: [{property: firstExpose.property, value: null}],
                         discovery_payload: {
-                            name: endpoint ? `${firstExpose.label} ${endpoint}` : firstExpose.label,
+                            name: endpointName ? `${firstExpose.label} ${endpointName}` : firstExpose.label,
                             value_template: valueTemplate,
                             ...ENUM_DISCOVERY_LOOKUP[firstExpose.name],
                         },
@@ -1244,12 +1246,12 @@ export class HomeAssistant extends Extension {
 
                     const discoveryEntry: DiscoveryEntry = {
                         type: "siren",
-                        object_id: endpoint ? /* v8 ignore next */ `siren_${endpoint}` : "siren",
+                        object_id: endpointName ? /* v8 ignore next */ `siren_${endpointName}` : "siren",
                         mockProperties: [{property: warningExpose.property, value: null}],
                         discovery_payload: {
-                            name: endpoint ? /* v8 ignore next */ utils.capitalize(endpoint) : null,
+                            name: endpointName ? /* v8 ignore next */ utils.capitalize(endpointName) : null,
                             command_topic: true,
-                            command_topic_prefix: endpoint,
+                            command_topic_prefix: endpointName,
                             state_topic: false,
                             optimistic: true,
                         },
@@ -1295,10 +1297,10 @@ export class HomeAssistant extends Extension {
                         object_id: firstExposeTyped.property,
                         mockProperties: [{property: firstExposeTyped.property, value: null}],
                         discovery_payload: {
-                            name: endpoint ? `${firstExposeTyped.label} ${endpoint}` : firstExposeTyped.label,
+                            name: endpointName ? `${firstExposeTyped.label} ${endpointName}` : firstExposeTyped.label,
                             state_topic: firstExposeTyped.access & ACCESS_STATE,
                             value_template: `{{ value_json.${firstExposeTyped.property} }}`,
-                            command_topic_prefix: endpoint,
+                            command_topic_prefix: endpointName,
                             command_topic: true,
                             command_topic_postfix: firstExposeTyped.property,
                             ...LIST_DISCOVERY_LOOKUP[firstExposeTyped.name],
@@ -1312,7 +1314,7 @@ export class HomeAssistant extends Extension {
                         object_id: firstExposeTyped.property,
                         mockProperties: [{property: firstExposeTyped.property, value: null}],
                         discovery_payload: {
-                            name: endpoint ? `${firstExposeTyped.label} ${endpoint}` : firstExposeTyped.label,
+                            name: endpointName ? `${firstExposeTyped.label} ${endpointName}` : firstExposeTyped.label,
                             // Truncate text if it's too long
                             // https://github.com/Koenkk/zigbee2mqtt/issues/23199
                             value_template: `{{ value_json.${firstExposeTyped.property} | default('',True) | string | truncate(254, True, '', 0) }}`,
@@ -1349,6 +1351,8 @@ export class HomeAssistant extends Extension {
             if (entry.discovery_payload.device_class) {
                 delete entry.discovery_payload.name;
             }
+
+            entry.endpoint = entity.isDevice() ? entity.endpoint(endpointName) : undefined;
         }
 
         return discoveryEntries;
@@ -1474,7 +1478,7 @@ export class HomeAssistant extends Extension {
         if (isDevice) {
             const exposes = entity.exposes(); // avoid calling it hundred of times/s
             for (const expose of exposes) {
-                configs.push(...this.exposeToConfig([expose], "device", exposes, entity.definition));
+                configs.push(...this.exposeToConfig([expose], entity, exposes));
             }
         } else if (isGroup) {
             // group
@@ -1503,7 +1507,7 @@ export class HomeAssistant extends Extension {
             }
 
             configs = ([] as DiscoveryEntry[]).concat(
-                ...Object.values(exposesByType).map((exposes) => this.exposeToConfig(exposes, "group", allExposes)),
+                ...Object.values(exposesByType).map((exposes) => this.exposeToConfig(exposes, entity, allExposes)),
             );
         } else {
             // Discover bridge config.
@@ -1656,7 +1660,33 @@ export class HomeAssistant extends Extension {
             payload.default_entity_id = `${config.type}.${payload.object_id}`;
 
             // Set unique_id
-            payload.unique_id = `${entity.options.ID}_${config.object_id}_${settings.get().mqtt.base_topic}`;
+            const uniqueId = `${entity.options.ID}_${config.object_id}_${settings.get().mqtt.base_topic}`;
+            payload.unique_id = uniqueId;
+
+            if (config.endpoint) {
+                assert(entity.isDevice());
+                const memberKey = `${config.endpoint.deviceIeeeAddress}_${config.endpoint.ID}_${config.type}`;
+                this.groupMemberLookup.set(memberKey, uniqueId);
+            }
+
+            // Add group member unique_ids for Home Assistant entity grouping
+            // This assumes that `discover()` already has been called for all devices, since it depends on the
+            // `groupMemberLookup` being populated.
+            // https://www.home-assistant.io/integrations/mqtt#grouping-entities
+            if (isGroup) {
+                const memberIds: string[] = [];
+                for (const endpoint of entity.zh.members) {
+                    const memberKey = `${endpoint.deviceIeeeAddress}_${endpoint.ID}_${config.type}`;
+                    const memberUniqueId = this.groupMemberLookup.get(memberKey);
+                    if (memberUniqueId) {
+                        memberIds.push(memberUniqueId);
+                    }
+                }
+
+                if (memberIds.length > 0) {
+                    payload.group = memberIds;
+                }
+            }
 
             // Attributes for device registry and origin
             payload.device = devicePayload;
