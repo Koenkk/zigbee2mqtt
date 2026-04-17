@@ -1,3 +1,4 @@
+import type { Zh } from "zigbee-herdsman-converters/lib/types";
 import Extension from "./extension";
 interface MockProperty {
     property: string;
@@ -8,6 +9,7 @@ interface DiscoveryEntry {
     type: string;
     object_id: string;
     discovery_payload: KeyValue;
+    endpoint?: Zh.Endpoint;
 }
 interface ActionData {
     action: string;
@@ -44,6 +46,7 @@ export declare class HomeAssistant extends Extension {
     private discoveryTopic;
     private discoveryRegex;
     private discoveryRegexWoTopic;
+    private groupMemberLookup;
     private statusTopic;
     private legacyActionSensor;
     private experimentalEventEntities;
