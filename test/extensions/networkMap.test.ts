@@ -286,7 +286,7 @@ describe("Extension: NetworkMap", () => {
                                 description: "Hue Go",
                                 model: "7146060PH",
                                 supports:
-                                    "light (state, brightness, color_temp, color_temp_startup, color_xy, color_hs), power_on_behavior, effect, linkquality",
+                                    "light (state, brightness, color_temp, color_temp_startup, color_xy, color_hs), power_on_behavior, effect, effect_speed, effect_color, linkquality",
                                 vendor: "Philips",
                             },
                             failed: [],
@@ -616,7 +616,7 @@ describe("Extension: NetworkMap", () => {
                                 description: "Hue Go",
                                 model: "7146060PH",
                                 supports:
-                                    "light (state, brightness, color_temp, color_temp_startup, color_xy, color_hs), power_on_behavior, effect, linkquality",
+                                    "light (state, brightness, color_temp, color_temp_startup, color_xy, color_hs), power_on_behavior, effect, effect_speed, effect_color, linkquality",
                                 vendor: "Philips",
                             },
                             failed: [],
@@ -785,7 +785,7 @@ describe("Extension: NetworkMap", () => {
                                 description: "Hue Go",
                                 model: "7146060PH",
                                 supports:
-                                    "light (state, brightness, color_temp, color_temp_startup, color_xy, color_hs), power_on_behavior, effect, linkquality",
+                                    "light (state, brightness, color_temp, color_temp_startup, color_xy, color_hs), power_on_behavior, effect, effect_speed, effect_color, linkquality",
                                 vendor: "Philips",
                             },
                             failed: [],
