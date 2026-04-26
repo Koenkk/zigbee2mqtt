@@ -1,7 +1,6 @@
 import type {IncomingMessage, Server, ServerResponse} from "node:http";
 import {createServer} from "node:http";
 import * as client from "prom-client";
-import type {Metrics} from "zigbee-herdsman";
 import {noopMetrics, setMetrics} from "zigbee-herdsman";
 import type Device from "../model/device";
 import logger from "../util/logger";
