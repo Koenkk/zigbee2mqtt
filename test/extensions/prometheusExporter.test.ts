@@ -4,6 +4,7 @@ import * as data from "../mocks/data";
 import {mockLogger} from "../mocks/logger";
 import {flushPromises} from "../mocks/utils";
 import {devices, events as mockZHEvents, returnDevices} from "../mocks/zigbeeHerdsman";
+import * as zhMetrics from "zigbee-herdsman/dist/utils/metrics";
 
 import type {EventHandler} from "../mocks/utils";
 import {Controller} from "../../lib/controller";
@@ -238,5 +239,54 @@ describe("Extension: PrometheusExporter", () => {
 
         const metrics = await getMetrics();
         expect(metrics).toBeDefined();
+    });
+
+    it("observes adapter send zcl unicast duration via adapter metrics callback", async () => {
+        zhMetrics.metrics.adapterSendZclUnicast(devices.bulb_color.ieeeAddr, "success", 0.1);
+
+        const metrics = await getMetrics();
+        expect(metrics).toMatch(/zigbee2mqtt_adapter_send_duration_seconds_bucket\{[^}]*type="zcl_unicast"[^}]*\}/);
+    });
+
+    it("observes adapter send zdo duration via adapter metrics callback", async () => {
+        zhMetrics.metrics.adapterSendZdo(devices.bulb_color.ieeeAddr, 0x0013, "success", 0.05);
+
+        const metrics = await getMetrics();
+        expect(metrics).toMatch(/zigbee2mqtt_adapter_send_duration_seconds_bucket\{[^}]*type="zdo"[^}]*\}/);
+    });
+
+    it("observes adapter send zcl group duration via adapter metrics callback", async () => {
+        zhMetrics.metrics.adapterSendZclGroup(1, "failure", 0.2);
+
+        const metrics = await getMetrics();
+        expect(metrics).toMatch(/zigbee2mqtt_adapter_send_duration_seconds_bucket\{[^}]*type="zcl_group"[^}]*\}/);
+    });
+
+    it("sets request queue length gauge via adapter metrics callback", async () => {
+        zhMetrics.metrics.requestQueueLength(devices.bulb_color.ieeeAddr, 1, 7);
+
+        const metrics = await getMetrics();
+        expect(metrics).toMatch(/zigbee2mqtt_request_queue_length\{[^}]*ieee_address="[^"]*"[^}]*\} 7/);
+    });
+
+    it("observes request queue duration via adapter metrics callback", async () => {
+        zhMetrics.metrics.requestQueueDuration(devices.bulb_color.ieeeAddr, 1, "sent", 0.5);
+
+        const metrics = await getMetrics();
+        expect(metrics).toMatch(/zigbee2mqtt_request_queue_duration_seconds_bucket/);
+    });
+
+    it("observes adapter send zcl broadcast duration via adapter metrics callback", async () => {
+        zhMetrics.metrics.adapterSendZclBroadcast("success", 0.1);
+
+        const metrics = await getMetrics();
+        expect(metrics).toMatch(/zigbee2mqtt_adapter_send_duration_seconds_bucket\{[^}]*type="zcl_broadcast"[^}]*\}/);
+    });
+
+    it("increments adapter retries counter via adapter metrics callback", async () => {
+        zhMetrics.metrics.adapterRetry("ember", undefined, "timeout");
+
+        const metrics = await getMetrics();
+        expect(metrics).toMatch(/zigbee2mqtt_adapter_retries_total\{[^}]*adapter_type="ember"[^}]*reason="timeout"[^}]*\} 1/);
     });
 });

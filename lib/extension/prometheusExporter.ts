@@ -231,7 +231,7 @@ export class PrometheusExporter extends Extension {
             requestQueueDuration: (_ieeeAddr, _endpointId, outcome, durationSeconds) => {
                 this.#requestQueueDuration.observe({outcome}, durationSeconds);
             },
-        } satisfies Metrics);
+        });
 
         // Start HTTP server
         const {port, host} = settings.get().prometheus_exporter;
