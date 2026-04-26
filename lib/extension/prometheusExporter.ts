@@ -1,6 +1,8 @@
 import type {IncomingMessage, Server, ServerResponse} from "node:http";
 import {createServer} from "node:http";
 import * as client from "prom-client";
+import type {Metrics} from "zigbee-herdsman";
+import {noopMetrics, setMetrics} from "zigbee-herdsman";
 import type Device from "../model/device";
 import logger from "../util/logger";
 import * as settings from "../util/settings";
@@ -25,6 +27,12 @@ export class PrometheusExporter extends Extension {
     #buildInfo!: client.Gauge;
     #deviceLinkQuality!: client.Gauge;
     #deviceInfo!: client.Gauge;
+
+    // Adapter metrics
+    #adapterSendDuration!: client.Histogram;
+    #adapterRetries!: client.Counter;
+    #requestQueueLength!: client.Gauge;
+    #requestQueueDuration!: client.Histogram;
 
     override async start(): Promise<void> {
         await super.start();
@@ -110,6 +118,36 @@ export class PrometheusExporter extends Extension {
             registers: [this.#registry],
         });
 
+        this.#adapterSendDuration = new client.Histogram({
+            name: "zigbee2mqtt_adapter_send_duration_seconds",
+            help: "Duration of adapter send operations in seconds, by type and status",
+            labelNames: ["type", "status"],
+            buckets: [0.001, 0.005, 0.01, 0.05, 0.1, 0.5, 1, 2, 5],
+            registers: [this.#registry],
+        });
+
+        this.#adapterRetries = new client.Counter({
+            name: "zigbee2mqtt_adapter_retries_total",
+            help: "Total number of adapter send retries",
+            labelNames: ["adapter_type", "reason"],
+            registers: [this.#registry],
+        });
+
+        this.#requestQueueLength = new client.Gauge({
+            name: "zigbee2mqtt_request_queue_length",
+            help: "Current length of the per-device request queue",
+            labelNames: ["ieee_address", "endpoint_id"],
+            registers: [this.#registry],
+        });
+
+        this.#requestQueueDuration = new client.Histogram({
+            name: "zigbee2mqtt_request_queue_duration_seconds",
+            help: "Time requests spend in the queue before being sent or expiring",
+            labelNames: ["outcome"],
+            buckets: [0.01, 0.05, 0.1, 0.5, 1, 2, 5, 10, 30],
+            registers: [this.#registry],
+        });
+
         // Pre-populate device_info for all known devices
         for (const device of this.zigbee.devicesIterator()) {
             this.#setDeviceInfo(device.ieeeAddr, device.name, device.zh.modelID, device.definition?.vendor, device.zh.type, device.zh.powerSource);
@@ -171,6 +209,30 @@ export class PrometheusExporter extends Extension {
             this.#removeDeviceMetrics(data.entity.ieeeAddr, data.name, data.entity);
         });
 
+        setMetrics({
+            adapterSendZclUnicast: (_ieeeAddr, status, durationSeconds) => {
+                this.#adapterSendDuration.observe({type: "zcl_unicast", status}, durationSeconds);
+            },
+            adapterSendZdo: (_ieeeAddr, _clusterId, status, durationSeconds) => {
+                this.#adapterSendDuration.observe({type: "zdo", status}, durationSeconds);
+            },
+            adapterSendZclGroup: (_groupId, status, durationSeconds) => {
+                this.#adapterSendDuration.observe({type: "zcl_group", status}, durationSeconds);
+            },
+            adapterSendZclBroadcast: (status, durationSeconds) => {
+                this.#adapterSendDuration.observe({type: "zcl_broadcast", status}, durationSeconds);
+            },
+            adapterRetry: (adapterType, _ieeeAddr, reason) => {
+                this.#adapterRetries.inc({adapter_type: adapterType, reason});
+            },
+            requestQueueLength: (ieeeAddr, endpointId, length) => {
+                this.#requestQueueLength.set({ieee_address: ieeeAddr, endpoint_id: String(endpointId)}, length);
+            },
+            requestQueueDuration: (_ieeeAddr, _endpointId, outcome, durationSeconds) => {
+                this.#requestQueueDuration.observe({outcome}, durationSeconds);
+            },
+        } satisfies Metrics);
+
         // Start HTTP server
         const {port, host} = settings.get().prometheus_exporter;
         this.#server = createServer(this.#onRequest.bind(this));
@@ -185,6 +247,7 @@ export class PrometheusExporter extends Extension {
     }
 
     override async stop(): Promise<void> {
+        setMetrics(noopMetrics);
         await new Promise((resolve) => (this.#server ? this.#server?.close(resolve) : resolve(undefined)));
         await super.stop();
     }
