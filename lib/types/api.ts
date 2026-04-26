@@ -221,6 +221,11 @@ export interface Zigbee2MQTTSettings {
         interval: number;
         reset_on_check: boolean;
     };
+    prometheus_exporter: {
+        enabled: boolean;
+        port: number;
+        host?: string;
+    };
 }
 
 export interface Zigbee2MQTTScene {

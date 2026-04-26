@@ -233,6 +233,10 @@ jobs:
               # --ignore-scripts prevents build on Windows (only for unix-dgram, so doesn't matter, others have pre-builds)
               run: pnpm i --frozen-lockfile ${{ matrix.os == 'windows-latest' && '--ignore-scripts' || '' }}
 
+            - name: Build zigbee-herdsman (Windows only)
+              if: matrix.os == 'windows-latest'
+              run: pnpm --filter zigbee-herdsman run build
+
             - name: Build
               run: pnpm run build
 

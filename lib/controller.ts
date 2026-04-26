@@ -96,6 +96,12 @@ export class Controller {
             this.extensions.add(new HomeAssistant(...this.extensionArgs));
         }
 
+        if (settings.get().prometheus_exporter.enabled) {
+            const {PrometheusExporter} = await import("./extension/prometheusExporter.js");
+
+            this.extensions.add(new PrometheusExporter(...this.extensionArgs));
+        }
+
         this.state.start();
 
         if (abortSignal.aborted) {

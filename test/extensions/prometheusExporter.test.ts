@@ -1,0 +1,292 @@
+// biome-ignore assist/source/organizeImports: import mocks first
+import {afterAll, beforeAll, beforeEach, describe, expect, it, vi} from "vitest";
+import * as data from "../mocks/data";
+import {mockLogger} from "../mocks/logger";
+import {flushPromises} from "../mocks/utils";
+import {devices, events as mockZHEvents, returnDevices} from "../mocks/zigbeeHerdsman";
+import * as zhMetrics from "zigbee-herdsman/dist/utils/metrics";
+
+import type {EventHandler} from "../mocks/utils";
+import {Controller} from "../../lib/controller";
+import {PrometheusExporter} from "../../lib/extension/prometheusExporter";
+import type Device from "../../lib/model/device";
+import * as settings from "../../lib/util/settings";
+
+const TEST_PORT = 9143;
+
+type MockRes = {setHeader: ReturnType<typeof vi.fn>; writeHead: ReturnType<typeof vi.fn>; end: ReturnType<typeof vi.fn>};
+
+let mockOnRequest: EventHandler;
+const mockHTTP = {
+    listen: vi.fn(),
+    close: vi.fn<(cb: (err?: Error) => void) => void>((cb) => cb()),
+};
+
+vi.mock("node:http", () => ({
+    createServer: vi.fn().mockImplementation((onRequest: EventHandler) => {
+        mockOnRequest = onRequest;
+        return mockHTTP;
+    }),
+}));
+
+returnDevices.push(devices.bulb_color.ieeeAddr, devices.coordinator.ieeeAddr);
+
+describe("Extension: PrometheusExporter", () => {
+    let controller: Controller;
+
+    const getExtension = (): PrometheusExporter => controller.getExtension("PrometheusExporter") as PrometheusExporter;
+
+    const resetExtension = async (): Promise<void> => {
+        await controller.removeExtension(getExtension());
+        await controller.addExtension(new PrometheusExporter(...controller.extensionArgs));
+    };
+
+    const makeRes = (): MockRes => ({
+        setHeader: vi.fn(),
+        writeHead: vi.fn(),
+        end: vi.fn(),
+    });
+
+    const getMetrics = async (): Promise<string> => {
+        const res = makeRes();
+        await mockOnRequest({url: "/metrics"}, res);
+        return res.end.mock.calls[0][0] as string;
+    };
+
+    beforeAll(async () => {
+        vi.useFakeTimers();
+        data.writeDefaultConfiguration();
+        settings.reRead();
+        settings.set(["prometheus_exporter"], {enabled: true, port: TEST_PORT});
+
+        controller = new Controller(vi.fn(), vi.fn());
+        await controller.start();
+        await flushPromises();
+    });
+
+    beforeEach(async () => {
+        mockLogger.info.mockClear();
+        mockHTTP.listen.mockClear();
+        await resetExtension();
+        await flushPromises();
+    });
+
+    afterAll(async () => {
+        await controller?.stop();
+        await flushPromises();
+        vi.useRealTimers();
+    });
+
+    it("starts and listens on configured port", () => {
+        expect(mockHTTP.listen).toHaveBeenCalledWith(TEST_PORT);
+        expect(mockLogger.info).toHaveBeenCalledWith(`Prometheus exporter listening on port ${TEST_PORT}`);
+    });
+
+    it("responds to /metrics with Prometheus content type", async () => {
+        const res = makeRes();
+        await mockOnRequest({url: "/metrics"}, res);
+
+        expect(res.setHeader).toHaveBeenCalledWith("Content-Type", expect.stringContaining("text/plain"));
+        expect(res.end).toHaveBeenCalledTimes(1);
+    });
+
+    it("responds to other paths with welcome text", async () => {
+        const res = makeRes();
+        await mockOnRequest({url: "/"}, res);
+
+        expect(res.writeHead).toHaveBeenCalledWith(200);
+        expect(res.end).toHaveBeenCalledWith("zigbee2mqtt prometheus exporter");
+    });
+
+    it("pre-populates device_info gauge for known devices", async () => {
+        const metrics = await getMetrics();
+
+        expect(metrics).toMatch(new RegExp(`zigbee2mqtt_device_info\\{[^}]*ieee_address="${devices.bulb_color.ieeeAddr}"[^}]*\\} 1`));
+    });
+
+    it("increments device message counter on Zigbee message", async () => {
+        await mockZHEvents.message({
+            device: devices.bulb_color,
+            endpoint: devices.bulb_color.getEndpoint(1),
+            type: "attributeReport",
+            linkquality: 100,
+            cluster: "genOnOff",
+            data: {onOff: 1},
+        });
+        await flushPromises();
+
+        const metrics = await getMetrics();
+        expect(metrics).toMatch(
+            new RegExp(`zigbee2mqtt_device_messages_received_total\\{[^}]*ieee_address="${devices.bulb_color.ieeeAddr}"[^}]*\\} 1`),
+        );
+    });
+
+    it("sets link quality gauge on Zigbee message", async () => {
+        await mockZHEvents.message({
+            device: devices.bulb_color,
+            endpoint: devices.bulb_color.getEndpoint(1),
+            type: "attributeReport",
+            linkquality: 200,
+            cluster: "genOnOff",
+            data: {onOff: 1},
+        });
+        await flushPromises();
+
+        const metrics = await getMetrics();
+        expect(metrics).toMatch(new RegExp(`zigbee2mqtt_device_link_quality\\{[^}]*ieee_address="${devices.bulb_color.ieeeAddr}"[^}]*\\} 200`));
+    });
+
+    it("increments join counter on device joined", async () => {
+        await mockZHEvents.deviceJoined({device: devices.bulb_color});
+        await flushPromises();
+
+        const metrics = await getMetrics();
+        expect(metrics).toMatch(new RegExp(`zigbee2mqtt_device_joins_total\\{[^}]*ieee_address="${devices.bulb_color.ieeeAddr}"[^}]*\\} 1`));
+    });
+
+    it("increments leave counter on device leave", async () => {
+        await mockZHEvents.deviceLeave({ieeeAddr: devices.bulb_color.ieeeAddr});
+        await flushPromises();
+
+        const metrics = await getMetrics();
+        expect(metrics).toMatch(/zigbee2mqtt_device_leaves_total\{[^}]*\} 1/);
+    });
+
+    it("increments announce counter on device announce", async () => {
+        await mockZHEvents.deviceAnnounce({device: devices.bulb_color});
+        await flushPromises();
+
+        const metrics = await getMetrics();
+        expect(metrics).toMatch(new RegExp(`zigbee2mqtt_device_announces_total\\{[^}]*ieee_address="${devices.bulb_color.ieeeAddr}"[^}]*\\} 1`));
+    });
+
+    it("increments failed message counter with no_converter reason", async () => {
+        const device = controller.zigbee.resolveEntity(devices.bulb_color.ieeeAddr) as Device;
+        controller.eventBus.emitDeviceMessageFailed({device, reason: "no_converter"});
+        await flushPromises();
+
+        const metrics = await getMetrics();
+        expect(metrics).toMatch(
+            new RegExp(
+                `zigbee2mqtt_device_messages_failed_total\\{[^}]*ieee_address="${devices.bulb_color.ieeeAddr}"[^}]*reason="no_converter"[^}]*\\} 1`,
+            ),
+        );
+    });
+
+    it("increments failed message counter with converter_error reason", async () => {
+        const device = controller.zigbee.resolveEntity(devices.bulb_color.ieeeAddr) as Device;
+        controller.eventBus.emitDeviceMessageFailed({device, reason: "converter_error"});
+        await flushPromises();
+
+        const metrics = await getMetrics();
+        expect(metrics).toMatch(
+            new RegExp(
+                `zigbee2mqtt_device_messages_failed_total\\{[^}]*ieee_address="${devices.bulb_color.ieeeAddr}"[^}]*reason="converter_error"[^}]*\\} 1`,
+            ),
+        );
+    });
+
+    it("increments network address change counter on device network address changed", async () => {
+        const device = controller.zigbee.resolveEntity(devices.bulb_color.ieeeAddr) as Device;
+        controller.eventBus.emitDeviceNetworkAddressChanged({device});
+        await flushPromises();
+
+        const metrics = await getMetrics();
+        expect(metrics).toMatch(
+            new RegExp(`zigbee2mqtt_device_network_address_changes_total\\{[^}]*ieee_address="${devices.bulb_color.ieeeAddr}"[^}]*\\} 1`),
+        );
+    });
+
+    it("removes device metrics on entity removed", async () => {
+        const device = controller.zigbee.resolveEntity(devices.bulb_color.ieeeAddr) as Device;
+        controller.eventBus.emitEntityRemoved({entity: device, name: device.name});
+        await flushPromises();
+
+        const metrics = await getMetrics();
+        expect(metrics).not.toMatch(new RegExp(`ieee_address="${devices.bulb_color.ieeeAddr}"`));
+    });
+
+    it("starts and listens on configured host and port when host is set", async () => {
+        settings.set(["prometheus_exporter"], {enabled: true, port: TEST_PORT, host: "127.0.0.1"});
+        await resetExtension();
+
+        expect(mockHTTP.listen).toHaveBeenCalledWith(TEST_PORT, "127.0.0.1");
+        expect(mockLogger.info).toHaveBeenCalledWith(`Prometheus exporter listening on 127.0.0.1:${TEST_PORT}`);
+
+        settings.set(["prometheus_exporter"], {enabled: true, port: TEST_PORT});
+    });
+
+    it("increments mqtt published counter on MQTT message published", async () => {
+        controller.eventBus.emitMQTTMessagePublished({topic: "test", payload: "test", options: {qos: 0, retain: false}});
+        await flushPromises();
+
+        const metrics = await getMetrics();
+        expect(metrics).toMatch(/zigbee2mqtt_mqtt_messages_published_total \d+/);
+    });
+
+    it("increments mqtt received counter on MQTT message received", async () => {
+        controller.eventBus.emitMQTTMessage({topic: "test", message: "test"});
+        await flushPromises();
+
+        const metrics = await getMetrics();
+        expect(metrics).toMatch(/zigbee2mqtt_mqtt_messages_received_total \d+/);
+    });
+
+    it("ignores entity removed event for non-device entities", async () => {
+        const group = controller.zigbee.resolveEntity("group_1")!;
+        controller.eventBus.emitEntityRemoved({entity: group, name: "group_1"});
+        await flushPromises();
+
+        const metrics = await getMetrics();
+        expect(metrics).toBeDefined();
+    });
+
+    it("observes adapter send zcl unicast duration via adapter metrics callback", async () => {
+        zhMetrics.metrics.adapterSendZclUnicast(devices.bulb_color.ieeeAddr, "success", 0.1);
+
+        const metrics = await getMetrics();
+        expect(metrics).toMatch(/zigbee2mqtt_adapter_send_duration_seconds_bucket\{[^}]*type="zcl_unicast"[^}]*\}/);
+    });
+
+    it("observes adapter send zdo duration via adapter metrics callback", async () => {
+        zhMetrics.metrics.adapterSendZdo(devices.bulb_color.ieeeAddr, 0x0013, "success", 0.05);
+
+        const metrics = await getMetrics();
+        expect(metrics).toMatch(/zigbee2mqtt_adapter_send_duration_seconds_bucket\{[^}]*type="zdo"[^}]*\}/);
+    });
+
+    it("observes adapter send zcl group duration via adapter metrics callback", async () => {
+        zhMetrics.metrics.adapterSendZclGroup(1, "failure", 0.2);
+
+        const metrics = await getMetrics();
+        expect(metrics).toMatch(/zigbee2mqtt_adapter_send_duration_seconds_bucket\{[^}]*type="zcl_group"[^}]*\}/);
+    });
+
+    it("sets request queue length gauge via adapter metrics callback", async () => {
+        zhMetrics.metrics.requestQueueLength(devices.bulb_color.ieeeAddr, 1, 7);
+
+        const metrics = await getMetrics();
+        expect(metrics).toMatch(/zigbee2mqtt_request_queue_length\{[^}]*ieee_address="[^"]*"[^}]*\} 7/);
+    });
+
+    it("observes request queue duration via adapter metrics callback", async () => {
+        zhMetrics.metrics.requestQueueDuration(devices.bulb_color.ieeeAddr, 1, "sent", 0.5);
+
+        const metrics = await getMetrics();
+        expect(metrics).toMatch(/zigbee2mqtt_request_queue_duration_seconds_bucket/);
+    });
+
+    it("observes adapter send zcl broadcast duration via adapter metrics callback", async () => {
+        zhMetrics.metrics.adapterSendZclBroadcast("success", 0.1);
+
+        const metrics = await getMetrics();
+        expect(metrics).toMatch(/zigbee2mqtt_adapter_send_duration_seconds_bucket\{[^}]*type="zcl_broadcast"[^}]*\}/);
+    });
+
+    it("increments adapter retries counter via adapter metrics callback", async () => {
+        zhMetrics.metrics.adapterRetry("ember", undefined, "timeout");
+
+        const metrics = await getMetrics();
+        expect(metrics).toMatch(/zigbee2mqtt_adapter_retries_total\{[^}]*adapter_type="ember"[^}]*reason="timeout"[^}]*\} 1/);
+    });
+});
