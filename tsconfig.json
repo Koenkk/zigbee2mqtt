@@ -16,7 +16,8 @@
         "inlineSourceMap": true,
         "resolveJsonModule": true,
         "experimentalDecorators": true,
-        "composite": true
+        "composite": true,
+        "forceConsistentCasingInFileNames": true
     },
     "include": ["./lib/**/*", "./lib/util/settings.schema.json"]
 }
