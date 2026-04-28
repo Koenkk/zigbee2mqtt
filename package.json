@@ -42,7 +42,7 @@
     },
     "homepage": "https://koenkk.github.io/zigbee2mqtt",
     "dependencies": {
-        "ajv": "^8.18.0",
+        "ajv": "^8.20.0",
         "bind-decorator": "^1.0.11",
         "debounce": "^3.0.0",
         "express-static-gzip": "^3.0.0",
@@ -65,10 +65,10 @@
         "zigbee-herdsman": "10.0.7",
         "zigbee-herdsman-converters": "26.40.0",
         "zigbee2mqtt-frontend": "0.9.21",
-        "zigbee2mqtt-windfront": "2.11.1"
+        "zigbee2mqtt-windfront": "2.11.2"
     },
     "devDependencies": {
-        "@biomejs/biome": "^2.4.12",
+        "@biomejs/biome": "^2.4.13",
         "@types/finalhandler": "^1.2.3",
         "@types/humanize-duration": "^3.27.4",
         "@types/js-yaml": "^4.0.9",
