@@ -224,22 +224,28 @@ async function startFailureServer(errors: string[]): Promise<void> {
             const pathname = new URL(req.url /* v8 ignore next */ ?? "/", serverUrl).pathname;
 
             if (req.method === "GET" && pathname === "/data") {
+                // Also serve error code when underlying data fetched shows an error.
                 const payload: OnboardFailureData = {page: "failure", errors};
 
                 res.setHeader("Content-Type", "application/json");
-                res.writeHead(200);
+                res.writeHead(500);
                 res.end(stringify(payload));
 
                 return;
             }
 
             if (req.method === "POST" && pathname === "/submit") {
-                res.writeHead(200);
+                res.writeHead(500);
                 res.end(() => {
                     resolve();
                 });
 
                 return;
+            }
+
+            if (req.method === "GET" && (pathname === "/" || pathname === "/index.html")) {
+                // Also serve error code when underlying data fetched shows an error.
+                res.statusCode = 500;
             }
 
             const next = finalhandler(req, res);
