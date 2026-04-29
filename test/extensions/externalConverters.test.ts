@@ -608,5 +608,28 @@ describe("Extension: ExternalConverters", () => {
                 {},
             );
         });
+
+        it.each([
+            ["../escape.js", 10],
+            ["foo/bar.js", 11],
+            ["foo.txt", 12],
+            ["..", 13],
+            ["/etc/passwd", 14],
+        ])("rejects save with traversal or non-JS name '%s'", async (badName, transaction) => {
+            await resetExtension();
+            for (const mock of mocksClear) mock.mockClear();
+
+            await (controller.getExtension("ExternalConverters")! as ExternalConverters).onMQTTMessage({
+                topic: "zigbee2mqtt/bridge/request/converter/save",
+                message: {name: badName, code: "module.exports = {};", transaction},
+            });
+
+            expect(mockMQTTPublishAsync).toHaveBeenCalledWith(
+                "zigbee2mqtt/bridge/response/converter/save",
+                expect.stringContaining(`Invalid file name '${badName}'`),
+                {},
+            );
+            expect(writeFileSyncSpy).not.toHaveBeenCalledWith(expect.stringContaining(badName), expect.anything(), expect.anything());
+        });
     });
 });

@@ -398,6 +398,20 @@ function matchBase64File(value: string | undefined): {extension: string; data: s
     return {extension, data: match.groups.data};
 }
 
+// Resolve `name` against `base` and assert the result is a direct child of `base`.
+// Throws otherwise. Relies on Node's path normalization to handle traversal,
+// absolute paths, null bytes, unicode, and OS-specific quirks uniformly.
+function resolveSafeChildPath(base: string, name: string): string {
+    const baseAbs = path.resolve(base);
+    const target = path.resolve(baseAbs, name);
+
+    if (path.dirname(target) !== baseAbs) {
+        throw new Error(`Invalid file name '${name}'`);
+    }
+
+    return target;
+}
+
 function saveBase64DeviceIcon(base64Match: {extension: string; data: string}): string {
     const md5Hash = crypto.createHash("md5").update(base64Match.data).digest("hex");
     const fileSettings = `device_icons/${md5Hash}.${base64Match.extension}`;
@@ -413,6 +427,7 @@ const noop = (): void => {};
 export default {
     matchBase64File,
     saveBase64DeviceIcon,
+    resolveSafeChildPath,
     capitalize,
     getZigbee2MQTTVersion,
     getDependencyVersion,
