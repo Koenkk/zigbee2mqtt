@@ -55,6 +55,31 @@ export default class OTAUpdate extends Extension {
     );
     #inProgress = new Set<string>();
     #lastChecked = new Map<string, number>();
+    /**
+     * Cache of recent queryNextImageRequest payloads for imageTypes with available updates.
+     * Key: composite `${ieeeAddr}_${imageType}`. Used in the manual update flow to retry
+     * with a different imageType when the first imageNotify response has no available update
+     * (e.g. multi-MCU devices where a faster MCU responds first but is already up-to-date).
+     */
+    #pendingAvailableRequests = new Map<
+        string,
+        {
+            payload: Zcl.ClustersTypes.TClusterCommandPayload<"genOta", "queryNextImageRequest">;
+            endpoint: zh.Endpoint;
+            ts: number;
+        }
+    >();
+
+    /**
+     * Returns true if any OTA operation (auto or manual) is in progress for the given device.
+     *
+     * Auto-update keys are composite `${ieeeAddr}_${imageType}` (inserted in onZigbeeEvent).
+     * Manual-update keys are bare `ieeeAddr` (inserted in onMQTTMessage).
+     * Both coexist in the same Set -- this method is the single authority for "is anything running?"
+     */
+    #hasInProgress(ieeeAddr: string): boolean {
+        return this.#inProgress.has(ieeeAddr) || [...this.#inProgress].some((k) => k.startsWith(`${ieeeAddr}_`));
+    }
 
     // biome-ignore lint/suspicious/useAwait: API
     override async start(): Promise<void> {
@@ -78,6 +103,7 @@ export default class OTAUpdate extends Extension {
     clearState(): void {
         this.#inProgress.clear();
         this.#lastChecked.clear();
+        this.#pendingAvailableRequests.clear();
     }
 
     #removeProgressAndRemainingFromState(device: Device): void {
@@ -90,7 +116,16 @@ export default class OTAUpdate extends Extension {
     }
 
     @bind private async onZigbeeEvent(data: eventdata.DeviceMessage): Promise<void> {
-        if (data.type !== "commandQueryNextImageRequest" || !data.device.definition || this.#inProgress.has(data.device.ieeeAddr)) {
+        if (data.type !== "commandQueryNextImageRequest" || !data.device.definition) {
+            return;
+        }
+
+        const requestData = data.data as Zcl.ClustersTypes.TClusterCommandPayload<"genOta", "queryNextImageRequest">;
+        const imageType = requestData.imageType;
+        const inProgressKey = `${data.device.ieeeAddr}_${imageType}`;
+
+        // Block if this exact imageType is already running, OR if a manual MQTT update is running for this device.
+        if (this.#inProgress.has(inProgressKey) || this.#inProgress.has(data.device.ieeeAddr)) {
             return;
         }
 
@@ -105,7 +140,7 @@ export default class OTAUpdate extends Extension {
         if (data.device.zh.scheduledOta) {
             // allow custom source to override check for definition `ota`
             if (data.device.zh.scheduledOta?.url !== undefined || data.device.definition.ota) {
-                this.#inProgress.add(data.device.ieeeAddr);
+                this.#inProgress.add(inProgressKey);
 
                 logger.info(`Updating '${data.device.name}' to latest firmware`);
 
@@ -135,7 +170,7 @@ export default class OTAUpdate extends Extension {
                     await this.publishEntityState(data.device, this.#getEntityPublishPayload(data.device, "scheduled"));
                 }
 
-                this.#inProgress.delete(data.device.ieeeAddr);
+                this.#inProgress.delete(inProgressKey);
 
                 return; // we're done
             }
@@ -147,15 +182,15 @@ export default class OTAUpdate extends Extension {
                 // with only 10 - 60 seconds inbetween. It doesn't make sense to check for a new update
                 // each time, so this interval can be set by the user. The default is 1,440 minutes (one day).
                 const updateCheckInterval = settings.get().ota.update_check_interval * 1000 * 60;
-                const deviceLastChecked = this.#lastChecked.get(data.device.ieeeAddr);
+                const deviceLastChecked = this.#lastChecked.get(inProgressKey);
                 const check = deviceLastChecked !== undefined ? Date.now() - deviceLastChecked > updateCheckInterval : true;
 
                 if (!check) {
                     return;
                 }
 
-                this.#inProgress.add(data.device.ieeeAddr);
-                this.#lastChecked.set(data.device.ieeeAddr, Date.now());
+                this.#inProgress.add(inProgressKey);
+                this.#lastChecked.set(inProgressKey, Date.now());
                 let availableResult: OtaUpdateAvailableResult | undefined;
 
                 try {
@@ -174,6 +209,13 @@ export default class OTAUpdate extends Extension {
 
                 if (availableResult?.available) {
                     logger.info(`OTA update available for '${data.device.name}'`);
+                    // Cache this request so the manual update flow can retry for this imageType,
+                    // avoiding the imageNotify race condition on multi-MCU devices.
+                    this.#pendingAvailableRequests.set(inProgressKey, {
+                        payload: data.data as Zcl.ClustersTypes.TClusterCommandPayload<"genOta", "queryNextImageRequest">,
+                        endpoint: data.endpoint,
+                        ts: Date.now(),
+                    });
                 }
             }
         }
@@ -187,7 +229,7 @@ export default class OTAUpdate extends Extension {
             data.meta.zclTransactionSequenceNumber,
         );
         logger.debug(`Responded to OTA request of '${data.device.name}' with 'NO_IMAGE_AVAILABLE'`);
-        this.#inProgress.delete(data.device.ieeeAddr);
+        this.#inProgress.delete(inProgressKey);
     }
 
     async #readSoftwareBuildIDAndDateCode(
@@ -267,7 +309,7 @@ export default class OTAUpdate extends Extension {
 
         if (!(device instanceof Device)) {
             error = `Device '${ID}' does not exist`;
-        } else if (this.#inProgress.has(device.ieeeAddr)) {
+        } else if (this.#hasInProgress(device.ieeeAddr)) {
             // also guards against scheduling while check/update op in progress that could result in undesired OTA state
             error = `OTA update or check for update already in progress for '${device.name}'`;
         } else {
@@ -369,7 +411,22 @@ export default class OTAUpdate extends Extension {
 
                     try {
                         const firmwareFrom = await this.#readSoftwareBuildIDAndDateCode(device, "immediate");
-                        const [fromVersion, toVersion] = await this.#update(source, device, undefined, undefined, dataSettings);
+                        let [fromVersion, toVersion] = await this.#update(source, device, undefined, undefined, dataSettings);
+
+                        if (toVersion === undefined) {
+                            // For multi-MCU devices, imageNotify may be answered by an already-up-to-date MCU first.
+                            // If another imageType has a recent pending available update, retry with a fresh imageNotify.
+                            // By now the first MCU is quiet (received NO_IMAGE_AVAILABLE), so the second MCU answers.
+                            const now = Date.now();
+                            const pendingEntry = [...this.#pendingAvailableRequests.entries()].find(
+                                ([k, v]) => k.startsWith(`${device.ieeeAddr}_`) && now - v.ts < 300_000,
+                            );
+
+                            if (pendingEntry) {
+                                this.#pendingAvailableRequests.delete(pendingEntry[0]);
+                                [fromVersion, toVersion] = await this.#update(source, device, undefined, undefined, dataSettings);
+                            }
+                        }
 
                         if (toVersion === undefined) {
                             error = `Update of '${device.name}' failed (No image currently available)`;
@@ -513,10 +570,25 @@ export default class OTAUpdate extends Extension {
             device.zh.save();
         }
 
+        // After a successful update, reset lastChecked for all imageTypes of this device.
+        // This ensures sibling MCUs (same device, different imageType) are rechecked on their
+        // next queryNextImageRequest instead of being silently ignored for up to 24 hours.
+        for (const key of [...this.#lastChecked.keys()]) {
+            if (key.startsWith(`${device.ieeeAddr}_`)) {
+                this.#lastChecked.delete(key);
+            }
+        }
+
         setTimeout(() => {
-            device.reInterview(this.eventBus).catch((error) => {
-                logger.error(`${error.message}. Re-try manually after some time.`);
-            });
+            // Only re-interview when no other OTA update is still running for this device.
+            // Prevents interrupting a second imageType update that started right after this one.
+            // Note: if two updates finish within 5s of each other, both timers may fire --
+            // this results in two reInterview calls in quick succession, which is acceptable.
+            if (!this.#hasInProgress(device.ieeeAddr)) {
+                device.reInterview(this.eventBus).catch((error) => {
+                    logger.error(`${error.message}. Re-try manually after some time.`);
+                });
+            }
         }, 5000);
 
         return [from.fileVersion, to.fileVersion];
