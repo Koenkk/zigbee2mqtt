@@ -10,6 +10,7 @@ import bind from "bind-decorator";
 import expressStaticGzip from "express-static-gzip";
 import finalhandler from "finalhandler";
 import stringify from "json-stable-stringify-without-jsonify";
+import type {IPublishPacket} from "mqtt";
 import WebSocket from "ws";
 
 import data from "../util/data";
@@ -174,7 +175,7 @@ export class Frontend extends Extension {
             if (!isBinary && data) {
                 const message = data.toString();
                 const {topic, payload} = JSON.parse(message);
-                this.mqtt.onMessage(`${this.mqttBaseTopic}/${topic}`, Buffer.from(stringify(payload)));
+                this.mqtt.onMessage(`${this.mqttBaseTopic}/${topic}`, Buffer.from(stringify(payload)), {qos: 0} as IPublishPacket);
             }
         });
 
