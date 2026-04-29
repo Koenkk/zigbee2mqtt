@@ -31,17 +31,12 @@ export interface UpdatePayload {
  * Write to `dataDir` and return created path
  */
 function writeFirmwareHexToDataDir(hex: string, fileName: string | undefined, deviceIeee: string): string {
-    if (!fileName) {
-        fileName = `${deviceIeee}_${Date.now()}`;
-    }
-
     const baseDir = dataDir.joinPath("ota");
+    const filePath = fileName ? utils.resolveSafeChildPath(baseDir, fileName) : join(baseDir, `${deviceIeee}_${Date.now()}`);
 
     if (!existsSync(baseDir)) {
         mkdirSync(baseDir, {recursive: true});
     }
-
-    const filePath = join(baseDir, fileName);
 
     writeFileSync(filePath, Buffer.from(hex, "hex"));
 
@@ -340,8 +335,13 @@ export default class OTAUpdate extends Extension {
                         if (payload.hex) {
                             assert(payload.hex.data);
 
-                            // write to `dataDir` and pass created path as source URL
-                            source.url = writeFirmwareHexToDataDir(payload.hex.data, payload.hex.file_name, device.ieeeAddr);
+                            try {
+                                // write to `dataDir` and pass created path as source URL
+                                source.url = writeFirmwareHexToDataDir(payload.hex.data, payload.hex.file_name, device.ieeeAddr);
+                            } catch (e) {
+                                error = (e as Error).message;
+                                break;
+                            }
                         } else if (payload.url) {
                             source.url = payload.url;
                         } else if (!device.definition?.ota) {
@@ -411,8 +411,13 @@ export default class OTAUpdate extends Extension {
                         if (payload.hex) {
                             assert(payload.hex.data);
 
-                            // write to `dataDir` and pass created path as source URL
-                            source.url = writeFirmwareHexToDataDir(payload.hex.data, payload.hex.file_name, device.ieeeAddr);
+                            try {
+                                // write to `dataDir` and pass created path as source URL
+                                source.url = writeFirmwareHexToDataDir(payload.hex.data, payload.hex.file_name, device.ieeeAddr);
+                            } catch (e) {
+                                error = (e as Error).message;
+                                break;
+                            }
                         } else if (payload.url) {
                             source.url = payload.url;
                         } else if (!device.definition?.ota) {
@@ -435,8 +440,14 @@ export default class OTAUpdate extends Extension {
                 }
 
                 case "unschedule": {
-                    if (device.zh.scheduledOta?.url?.startsWith(dataDir.joinPath("ota"))) {
-                        rmSync(device.zh.scheduledOta.url, {force: true});
+                    const url = device.zh.scheduledOta?.url;
+
+                    if (url) {
+                        try {
+                            rmSync(utils.resolveSafeChildPath(dataDir.joinPath("ota"), url), {force: true});
+                        } catch {
+                            // not a safe child of OTA dir (remote URL or traversal) — skip
+                        }
                     }
 
                     device.zh.unscheduleOta();
