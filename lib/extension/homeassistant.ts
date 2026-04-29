@@ -42,6 +42,13 @@ const ACTION_PATTERNS: string[] = [
     "^(?<action>dial_rotate)_(?<direction>left|right)_(?<speed>step|slow|fast)$",
     "^(?<action>brightness_step)(?:_(?<direction>up|down))?$",
 ];
+
+/**
+ * Properties that are stateless events: when published, we clear them from state and
+ * republish to a dedicated MQTT topic for device triggers (same behavior as action).
+ */
+const STATELESS_EVENT_PROPERTIES: ReadonlyArray<string> = ["action", "notificationComplete"];
+
 const ACCESS_STATE = 0b001;
 const ACCESS_SET = 0b010;
 const GROUP_SUPPORTED_TYPES: ReadonlyArray<string> = ["light", "switch", "lock", "cover"];
@@ -1418,24 +1425,30 @@ export class HomeAssistant extends Extension {
         }
 
         /**
-         * Publish an empty value for click and action payload, in this way Home Assistant
-         * can use Home Assistant entities in automations.
-         * https://github.com/Koenkk/zigbee2mqtt/issues/959#issuecomment-480341347
+         * Stateless event properties: clear from state after publish and republish to a dedicated
+         * topic so they behave as one-off events, not retained state.
+         * - action: clear only when legacyActionSensor (for HA automations).
+         *   https://github.com/Koenkk/zigbee2mqtt/issues/959#issuecomment-480341347
+         * - notificationComplete and others: always clear.
          */
-        if (this.legacyActionSensor && data.message.action) {
-            await this.publishEntityState(data.entity, {action: ""});
-        }
+        for (const key of STATELESS_EVENT_PROPERTIES) {
+            const value = data.message[key];
+            if (value === undefined || value === "") continue;
 
-        /**
-         * Implements the MQTT device trigger (https://www.home-assistant.io/integrations/device_trigger.mqtt/)
-         * The MQTT device trigger does not support JSON parsing, so it cannot listen to zigbee2mqtt/my_device
-         * Whenever a device publish an {action: *} we discover an MQTT device trigger sensor
-         * and republish it to zigbee2mqtt/my_device/action
-         */
-        if (settings.get().advanced.output === "json" && entity.isDevice() && entity.definition && data.message.action) {
-            const value = data.message.action.toString();
-            await this.publishDeviceTriggerDiscover(entity, "action", value);
-            await this.mqtt.publish(`${data.entity.name}/action`, value, {});
+            const shouldClear = key === "action" ? this.legacyActionSensor : true;
+            if (shouldClear) {
+                await this.publishEntityState(data.entity, {[key]: ""});
+            }
+
+            /**
+             * MQTT device trigger: republish to zigbee2mqtt/device/{key} so device triggers work.
+             * https://www.home-assistant.io/integrations/device_trigger.mqtt/
+             */
+            if (settings.get().advanced.output === "json" && entity.isDevice() && entity.definition) {
+                const valueStr = value.toString();
+                await this.publishDeviceTriggerDiscover(entity, key, valueStr);
+                await this.mqtt.publish(`${data.entity.name}/${key}`, valueStr, {});
+            }
         }
     }
 

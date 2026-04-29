@@ -2195,6 +2195,53 @@ describe("Extension: HomeAssistant", () => {
         expect(mockMQTTPublishAsync.mock.calls.filter((c) => c[1] === "single")).toHaveLength(1);
     });
 
+    it("Should publish notificationComplete as stateless event with device trigger and clear state", async () => {
+        settings.set(["advanced", "output"], "json");
+        mockMQTTPublishAsync.mockClear();
+
+        const device = getZ2MEntity(devices.WXKG11LM);
+        await controller.publishEntityState(device, {notificationComplete: "LED_1"});
+        await flushPromises();
+
+        const discoverPayload = {
+            automation_type: "trigger",
+            type: "notificationComplete",
+            subtype: "LED_1",
+            payload: "LED_1",
+            topic: "zigbee2mqtt/button/notificationComplete",
+            origin: origin,
+            device: {
+                identifiers: ["zigbee2mqtt_0x0017880104e45520"],
+                name: "button",
+                model: "Wireless mini switch",
+                model_id: "WXKG11LM",
+                manufacturer: "Aqara",
+                via_device: "zigbee2mqtt_bridge_0x00124b00120144ae",
+            },
+        };
+
+        expect(mockMQTTPublishAsync).toHaveBeenCalledWith(
+            "homeassistant/device_automation/0x0017880104e45520/notificationComplete_LED_1/config",
+            stringify(discoverPayload),
+            {retain: true, qos: 1},
+        );
+        expect(mockMQTTPublishAsync).toHaveBeenCalledWith("zigbee2mqtt/button/notificationComplete", "LED_1", expect.any(Object));
+
+        const jsonToButton = mockMQTTPublishAsync.mock.calls.filter((c) => c[0] === "zigbee2mqtt/button" && typeof c[1] === "string");
+        expect(JSON.parse(jsonToButton[jsonToButton.length - 1][1])).toMatchObject({notificationComplete: ""});
+    });
+
+    it("Should not publish notificationComplete device_automation when output is not json", async () => {
+        settings.set(["advanced", "output"], "attribute");
+        mockMQTTPublishAsync.mockClear();
+
+        const device = getZ2MEntity(devices.WXKG11LM);
+        await controller.publishEntityState(device, {notificationComplete: "LED_1"});
+        await flushPromises();
+
+        expect(mockMQTTPublishAsync.mock.calls.some((c) => c[0].includes("device_automation") && c[0].includes("notificationComplete"))).toBe(false);
+    });
+
     it("Should not discover device_automation when disabled", async () => {
         settings.set(["device_options"], {
             homeassistant: {device_automation: null},
