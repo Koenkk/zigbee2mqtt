@@ -8,7 +8,7 @@ import {flushPromises} from "../mocks/utils";
 import {devices, events as mockZHEvents} from "../mocks/zigbeeHerdsman";
 
 import {join} from "node:path";
-import {existsSync, readFileSync, rmSync} from "node:fs";
+import {existsSync, mkdirSync, readdirSync, readFileSync, rmSync, writeFileSync} from "node:fs";
 import stringify from "json-stable-stringify-without-jsonify";
 import {Controller} from "../../lib/controller";
 import OTAUpdate from "../../lib/extension/otaUpdate";
@@ -407,6 +407,31 @@ describe("Extension: OTAUpdate", () => {
         expect(mockMQTTPublishAsync).toHaveBeenCalledWith("zigbee2mqtt/bridge/devices", expect.any(String), {retain: true});
         expect(existsSync(saveFilePath)).toStrictEqual(true);
         expect(readFileSync(saveFilePath)).toStrictEqual(Buffer.from([0x01, 0x02, 0x03]));
+    });
+
+    it.each([
+        ["..", "update"],
+        [".", "update"],
+        ["../escape.hex", "update"],
+        ["..", "schedule"],
+        ["../escape.hex", "schedule"],
+    ])("rejects %s file_name on %s", async (badName, op) => {
+        const otaDir = join(data.mockDir, "ota");
+        const before = existsSync(otaDir) ? readdirSync(otaDir) : [];
+
+        mockMQTTEvents.message(
+            `zigbee2mqtt/bridge/request/device/ota_update/${op}`,
+            stringify({id: "bulb", hex: {data: "010203", file_name: badName}}),
+        );
+        await flushPromises();
+
+        expect(mockMQTTPublishAsync).toHaveBeenCalledWith(
+            `zigbee2mqtt/bridge/response/device/ota_update/${op}`,
+            expect.stringContaining(`Invalid file name '${badName}'`),
+            {},
+        );
+        const after = existsSync(otaDir) ? readdirSync(otaDir) : [];
+        expect(after).toStrictEqual(before);
     });
 
     it("updates with override data settings", async () => {
@@ -1210,6 +1235,27 @@ describe("Extension: OTAUpdate", () => {
             {},
         );
         expect(devices.bulb.scheduledOta).toStrictEqual(undefined);
+    });
+
+    it("does not rmSync outside ota dir on unschedule with traversal url", async () => {
+        const otaDir = join(data.mockDir, "ota");
+        mkdirSync(otaDir, {recursive: true});
+        const sentinelFile = join(data.mockDir, "canary.txt");
+        writeFileSync(sentinelFile, "do-not-delete");
+
+        // schedule with a payload.url that escapes the ota dir via traversal
+        const traversalUrl = join(otaDir, "..", "canary.txt");
+        mockMQTTEvents.message("zigbee2mqtt/bridge/request/device/ota_update/schedule", stringify({id: "bulb", url: traversalUrl}));
+        await flushPromises();
+        expect(devices.bulb.scheduledOta).toStrictEqual({url: traversalUrl, downgrade: false});
+
+        mockMQTTEvents.message("zigbee2mqtt/bridge/request/device/ota_update/unschedule", stringify({id: "bulb"}));
+        await flushPromises();
+
+        expect(existsSync(sentinelFile)).toStrictEqual(true);
+        expect(devices.bulb.scheduledOta).toStrictEqual(undefined);
+
+        rmSync(sentinelFile);
     });
 
     it("responds with NO_IMAGE_AVAILABLE when not supporting OTA", async () => {
