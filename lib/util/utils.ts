@@ -10,7 +10,15 @@ import type {Zigbee2MQTTAPI, Zigbee2MQTTResponse, Zigbee2MQTTResponseEndpoints, 
 
 import data from "./data";
 
-const BASE64_IMAGE_REGEX = /data:image\/(?<extension>.+);base64,(?<data>.+)/;
+const ICON_MIME_EXT: Record<string, string> = {
+    "image/png": "png",
+    "image/jpeg": "jpg",
+    "image/gif": "gif",
+    "image/webp": "webp",
+    "image/svg+xml": "svg",
+    "image/bmp": "bmp",
+};
+const BASE64_IMAGE_REGEX = /^data:(?<mime>[^;]+);base64,(?<data>.+)$/;
 
 export const DEFAULT_BIND_GROUP_ID = 901;
 
@@ -375,14 +383,19 @@ function deviceNotCoordinator(device: zh.Device): boolean {
 }
 
 function matchBase64File(value: string | undefined): {extension: string; data: string} | false {
-    if (value !== undefined) {
-        const match = value.match(BASE64_IMAGE_REGEX);
-        if (match) {
-            assert(match.groups?.extension && match.groups?.data);
-            return {extension: match.groups.extension, data: match.groups.data};
-        }
+    if (value === undefined) return false;
+
+    const match = value.match(BASE64_IMAGE_REGEX);
+    if (!match) return false;
+
+    assert(match.groups?.mime && match.groups?.data);
+    const extension = ICON_MIME_EXT[match.groups.mime];
+
+    if (!extension) {
+        throw new Error(`Unsupported icon mime type '${match.groups.mime}'`);
     }
-    return false;
+
+    return {extension, data: match.groups.data};
 }
 
 function saveBase64DeviceIcon(base64Match: {extension: string; data: string}): string {

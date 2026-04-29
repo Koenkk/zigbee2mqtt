@@ -3392,6 +3392,20 @@ describe("Extension: Bridge", () => {
         );
     });
 
+    it("Should reject icon data URI with disallowed mime type", async () => {
+        mockMQTTPublishAsync.mockClear();
+        const malicious = "data:image/exe;base64,QUFB";
+        mockMQTTEvents.message("zigbee2mqtt/bridge/request/device/options", stringify({options: {icon: malicious}, id: "bulb"}));
+        await flushPromises();
+
+        expect(mockMQTTPublishAsync).toHaveBeenCalledWith(
+            "zigbee2mqtt/bridge/response/device/options",
+            expect.stringContaining("Unsupported icon mime type 'image/exe'"),
+            {},
+        );
+        expect(settings.getDevice("bulb").icon).toBeUndefined();
+    });
+
     it("Should allow to remove device option", async () => {
         mockMQTTPublishAsync.mockClear();
         settings.set(["devices", "0x000b57fffec6a5b2", "qos"], 1);
