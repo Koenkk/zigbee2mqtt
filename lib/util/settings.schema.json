@@ -808,6 +808,13 @@
                     "title": "MQTT output type",
                     "description": "Examples when 'state' of a device is published json: topic: 'zigbee2mqtt/my_bulb' payload '{\"state\": \"ON\"}' attribute: topic 'zigbee2mqtt/my_bulb/state' payload 'ON' attribute_and_json: both json and attribute (see above)",
                     "default": "json"
+                },
+                "enable_external_js": {
+                    "type": "boolean",
+                    "title": "Enable external JS",
+                    "description": "Enable external JavaScript (extensions and converters) that can execute arbitrary user-provided code. WARNING: If unused, it is advised to disable this.",
+                    "default": true,
+                    "requiresRestart": true
                 }
             }
         },

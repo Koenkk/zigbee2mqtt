@@ -365,4 +365,15 @@ describe("Extension: ExternalExtensions", () => {
             );
         });
     });
+
+    it("doesn't add extension when external JS disabled", async () => {
+        settings.set(["advanced", "enable_external_js"], false);
+
+        controller = new Controller(vi.fn(), vi.fn());
+
+        await controller.start();
+        await flushPromises();
+
+        expect(controller.getExtension("ExternalExtensions")).toBeUndefined();
+    });
 });

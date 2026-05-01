@@ -215,6 +215,8 @@ export interface Zigbee2MQTTSettings {
         timestamp_format: string;
         output: "json" | "attribute" | "attribute_and_json";
         transmit_power?: number;
+        /** 3.0: default to false (JSON schema & settings `defaults`) */
+        enable_external_js: boolean;
     };
     health: {
         /** in minutes */

@@ -90,6 +90,7 @@ const SETTINGS_MINIMAL_DEFAULTS = {
         network_key: "GENERATE",
         pan_id: "GENERATE",
         ext_pan_id: "GENERATE",
+        enable_external_js: false,
     },
     frontend: {
         enabled: settings.defaults.frontend!.enabled,
@@ -147,6 +148,7 @@ const SAMPLE_SETTINGS_SAVE = {
         network_key: [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16],
         pan_id: 12345,
         ext_pan_id: [8, 7, 6, 5, 4, 3, 2, 1],
+        enable_external_js: false,
     },
     frontend: {
         enabled: true,
@@ -963,6 +965,7 @@ describe("Onboarding", () => {
                     network_key: "GENERATE",
                     pan_id: "GENERATE",
                     ext_pan_id: "GENERATE",
+                    enable_external_js: false,
                 },
                 serial: {
                     port: SAMPLE_SETTINGS_SAVE.serial.port,
