@@ -5,7 +5,6 @@ import {createServer} from "node:http";
 import {createServer as createSecureServer} from "node:https";
 import type {Socket} from "node:net";
 import {posix} from "node:path";
-import {parse} from "node:url";
 import bind from "bind-decorator";
 import expressStaticGzip from "express-static-gzip";
 import finalhandler from "finalhandler";
@@ -157,10 +156,10 @@ export class Frontend extends Extension {
     @bind private onUpgrade(request: IncomingMessage, socket: Socket, head: Buffer): void {
         this.wss.handleUpgrade(request, socket, head, (ws) => {
             // biome-ignore lint/style/noNonNullAssertion: `Only valid for request obtained from Server`
-            const {query} = parse(request.url!, true);
+            const {searchParams} = new URL(request.url!, "http://localhost"); // dummy base, may not be absolute
             const authToken = settings.get().frontend.auth_token;
 
-            if (!authToken || authToken === query.token) {
+            if (!authToken || authToken === searchParams.get("token")) {
                 this.wss.emit("connection", ws, request);
             } else {
                 ws.close(4401, "Unauthorized");
