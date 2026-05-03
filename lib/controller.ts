@@ -115,6 +115,11 @@ export class Controller {
                     logger.error("Adapter disconnected, stopping");
                     await this.stop(false, 2);
                 });
+
+                this.eventBus.onMQTTDisconnected(this, async () => {
+                    logger.error("MQTT disconnected, stopping");
+                    await this.stop(false, 3);
+                });
             }
         } catch (error) {
             // skip if aborted by `stop`

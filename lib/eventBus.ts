@@ -27,6 +27,7 @@ interface EventBusMap {
     scenesChanged: [data: eventdata.ScenesChanged];
     reconfigure: [data: eventdata.Reconfigure];
     stateChange: [data: eventdata.StateChange];
+    mqttDisconnected: [];
 }
 type EventBusListener<K> = K extends keyof EventBusMap
     ? EventBusMap[K] extends unknown[]
@@ -63,6 +64,13 @@ export default class EventBus {
     }
     public onAdapterDisconnected(key: ListenerKey, callback: () => Promise<void>): void {
         this.on("adapterDisconnected", callback, key);
+    }
+
+    public emitMQTTDisconnected(): void {
+        this.emitter.emit("mqttDisconnected");
+    }
+    public onMQTTDisconnected(key: ListenerKey, callback: () => Promise<void>): void {
+        this.on("mqttDisconnected", callback, key);
     }
 
     public emitPermitJoinChanged(data: eventdata.PermitJoinChanged): void {

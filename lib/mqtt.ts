@@ -142,6 +142,7 @@ export default class Mqtt {
         this.connectionTimer = setInterval(() => {
             if (!this.isConnected()) {
                 logger.error("Not connected to MQTT server!");
+                this.eventBus.emitMQTTDisconnected();
             }
         }, utils.seconds(10));
     }
