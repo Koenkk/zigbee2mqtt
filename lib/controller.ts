@@ -65,6 +65,8 @@ export class Controller {
 
         if (settings.get().advanced.enable_external_js) {
             this.extensions.add(new ExtensionExternalConverters(...this.extensionArgs));
+        } else {
+            logger.info("External JS (converters/extensions) is disabled");
         }
 
         this.extensions.add(new ExtensionOnEvent(...this.extensionArgs));
