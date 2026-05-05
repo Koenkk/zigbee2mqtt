@@ -749,6 +749,7 @@ describe("Extension: Bridge", () => {
                                     "fireplace",
                                     "colorloop",
                                     "sunset",
+                                    "sunrise",
                                     "sparkle",
                                     "opal",
                                     "glisten",
