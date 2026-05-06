@@ -361,6 +361,23 @@ describe("Extension: Frontend", () => {
         );
     });
 
+    it("returns 400 for malformed encoded paths", async () => {
+        controller = new Controller(vi.fn(), vi.fn());
+        await controller.start();
+
+        const response = {
+            statusCode: 200,
+            setHeader: vi.fn(),
+            end: vi.fn(),
+        };
+
+        mockHTTPOnRequest({url: "/%E0%A4%A"}, response);
+        expect(response.statusCode).toBe(400);
+        expect(response.setHeader).toHaveBeenCalledWith("Content-Type", "text/plain; charset=utf-8");
+        expect(response.end).toHaveBeenCalledTimes(1);
+        expect(mockNodeStatic[frontendPath]).not.toHaveBeenCalled();
+    });
+
     it("Static server", async () => {
         controller = new Controller(vi.fn(), vi.fn());
         await controller.start();

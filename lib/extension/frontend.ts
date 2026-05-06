@@ -17,6 +17,14 @@ import * as settings from "../util/settings";
 import utils from "../util/utils";
 import Extension from "./extension";
 
+function sendBadRequest(response: ServerResponse, error: unknown): void {
+    const message = error instanceof Error ? error.message : "Bad Request";
+
+    response.statusCode = 400;
+    response.setHeader("Content-Type", "text/plain; charset=utf-8");
+    response.end(message);
+}
+
 /**
  * This extension servers the frontend
  */
@@ -98,6 +106,14 @@ export class Frontend extends Extension {
                 request.originalUrl = request.url;
                 request.url = `/${newUrl}`;
                 request.path = request.url;
+
+                try {
+                    decodeURIComponent(request.path);
+                } catch (error) {
+                    sendBadRequest(response, error);
+
+                    return;
+                }
 
                 if (newUrl.startsWith("device_icons/")) {
                     request.path = request.path.replace("device_icons/", "");
