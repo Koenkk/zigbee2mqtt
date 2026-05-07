@@ -1,5 +1,18 @@
 # Changelog
 
+## [2.10.1](https://github.com/Koenkk/zigbee2mqtt/compare/2.10.0...2.10.1) (2026-05-07)
+
+
+### Bug Fixes
+
+* **ignore:** bump @biomejs/biome from 2.4.13 to 2.4.14 in the minor-patch group across 1 directory ([#31881](https://github.com/Koenkk/zigbee2mqtt/issues/31881)) ([55f12ff](https://github.com/Koenkk/zigbee2mqtt/commit/55f12ff52063d576be0fe82891678c52181f3b8e))
+* **ignore:** bump express-static-gzip from 3.0.0 to 3.0.1 in the minor-patch group ([#31924](https://github.com/Koenkk/zigbee2mqtt/issues/31924)) ([24e9027](https://github.com/Koenkk/zigbee2mqtt/commit/24e90273c9e712e122887e74ccf8208a8b42e762))
+* **ignore:** update zigbee-herdsman-converters to 26.43.0 ([#31878](https://github.com/Koenkk/zigbee2mqtt/issues/31878)) ([19eb05a](https://github.com/Koenkk/zigbee2mqtt/commit/19eb05a0e023c7e2e8639c1dcda18399e96ae74d))
+* **ignore:** update zigbee-herdsman-converters to 26.44.0 ([#31900](https://github.com/Koenkk/zigbee2mqtt/issues/31900)) ([845bdb7](https://github.com/Koenkk/zigbee2mqtt/commit/845bdb7dba5fe0f5e67e1b92c68872da0f3abf6a))
+* **ignore:** update zigbee-herdsman-converters to 26.45.0 ([#31925](https://github.com/Koenkk/zigbee2mqtt/issues/31925)) ([8727abd](https://github.com/Koenkk/zigbee2mqtt/commit/8727abdefc9114a5e2e1036d764271c90065e0a1))
+* **ignore:** update zigbee-herdsman-converters to 26.46.0 ([#31937](https://github.com/Koenkk/zigbee2mqtt/issues/31937)) ([cc84566](https://github.com/Koenkk/zigbee2mqtt/commit/cc8456617a4a389e7297e380901bfd6bb0223b32))
+* Replace deprecated `url.parse` ([#31845](https://github.com/Koenkk/zigbee2mqtt/issues/31845)) ([9f7ea9b](https://github.com/Koenkk/zigbee2mqtt/commit/9f7ea9b7c79db7a781b431fbe43568e15647f8e5))
+
 ## [2.10.0](https://github.com/Koenkk/zigbee2mqtt/compare/2.9.2...2.10.0) (2026-05-01)
 
 
