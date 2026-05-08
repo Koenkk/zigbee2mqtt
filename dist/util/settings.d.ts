@@ -98,6 +98,7 @@ export declare const defaults: {
         network_key: number[];
         timestamp_format: string;
         output: "json";
+        enable_external_js: true;
     };
     health: {
         interval: number;
@@ -225,6 +226,7 @@ export declare const testing: {
             network_key: number[];
             timestamp_format: string;
             output: "json";
+            enable_external_js: true;
         };
         health: {
             interval: number;
