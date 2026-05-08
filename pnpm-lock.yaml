@@ -5,7 +5,7 @@ settings:
   excludeLinksFromLockfile: false
 
 overrides:
-  zigbee-herdsman: 10.0.7
+  zigbee-herdsman: 10.0.8
 
 importers:
 
@@ -72,8 +72,8 @@ importers:
         specifier: ^8.20.0
         version: 8.20.0
       zigbee-herdsman:
-        specifier: 10.0.7
-        version: 10.0.7
+        specifier: 10.0.8
+        version: 10.0.8
       zigbee-herdsman-converters:
         specifier: 26.46.0
         version: 26.46.0
@@ -1472,8 +1472,8 @@ packages:
     resolution: {integrity: sha512-RFRQQoxGrz8si/wsFOPMdFXF1ppO0mQxU9cyRvzT98HV4bL3dnUKEWIdo6caCllLn6izA5kdob9vtxXqruU/SQ==}
     engines: {node: '>=20.15.0'}
 
-  zigbee-herdsman@10.0.7:
-    resolution: {integrity: sha512-QqKJaJryWf7IUuVNV6Dc1/qNPrs2dJANPJhRTG74nZBAsyIDn/vSyCP7g19fuEM7Cphr/0ZgCJZkHP2wKvNPMw==}
+  zigbee-herdsman@10.0.8:
+    resolution: {integrity: sha512-KFQ4W271WcMqrrNLVwtWa9hHgtOCfecjtUbJZaW+PFMUBzPp3oYXdE3T0inizz24KzqKxiUmxP1nPCupiPkOow==}
 
   zigbee-on-host@0.2.4:
     resolution: {integrity: sha512-NIG6CWp+Yfn7PjqEIRvenHqpwT1U7rSkyimnFOUIFpnmxQOJKrmcwWDfn6WjbU/YIYYWSQPlj+g13icu1xwlyg==}
@@ -2757,11 +2757,11 @@ snapshots:
     dependencies:
       iconv-lite: 0.7.2
       semver: 7.7.4
-      zigbee-herdsman: 10.0.7
+      zigbee-herdsman: 10.0.8
     transitivePeerDependencies:
       - supports-color
 
-  zigbee-herdsman@10.0.7:
+  zigbee-herdsman@10.0.8:
     dependencies:
       '@date-fns/tz': 1.4.1
       '@serialport/bindings-cpp': 13.0.1
