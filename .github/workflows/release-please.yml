@@ -16,7 +16,7 @@ jobs:
             release_created: ${{ steps.release.outputs.release_created }}
             version: '${{steps.release.outputs.major}}.${{steps.release.outputs.minor}}.${{steps.release.outputs.patch}}'
         steps:
-            - uses: pnpm/action-setup@v5
+            - uses: pnpm/action-setup@v6
               with:
                   version: 9
 
