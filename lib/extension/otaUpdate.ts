@@ -248,6 +248,7 @@ export default class OTAUpdate extends Extension {
             | Zigbee2MQTTAPI["bridge/request/device/ota_update/check/downgrade"]
             | Zigbee2MQTTAPI["bridge/request/device/ota_update/update"]
             | Zigbee2MQTTAPI["bridge/request/device/ota_update/update/downgrade"]
+            | Zigbee2MQTTAPI["bridge/request/device/ota_update/update/abort"]
             | Zigbee2MQTTAPI["bridge/request/device/ota_update/schedule"]
             | Zigbee2MQTTAPI["bridge/request/device/ota_update/schedule/downgrade"]
             | Zigbee2MQTTAPI["bridge/request/device/ota_update/unschedule"];
@@ -262,14 +263,20 @@ export default class OTAUpdate extends Extension {
         const device = this.zigbee.resolveEntity(ID);
         const type = topicMatch[1] as "check" | "update" | "schedule" | "unschedule";
         const downgrade = topicMatch[2] === "downgrade";
+        const abort = topicMatch[2] === "abort";
         let error: string | undefined;
         let errorStack: string | undefined;
 
         if (!(device instanceof Device)) {
             error = `Device '${ID}' does not exist`;
         } else if (this.#inProgress.has(device.ieeeAddr)) {
-            // also guards against scheduling while check/update op in progress that could result in undesired OTA state
-            error = `OTA update or check for update already in progress for '${device.name}'`;
+            if (abort) {
+                device.zh.abortOta();
+                this.#inProgress.delete(device.ieeeAddr);
+            } else {
+                // also guards against scheduling while check/update op in progress that could result in undesired OTA state
+                error = `OTA update or check for update already in progress for '${device.name}'`;
+            }
         } else {
             switch (type) {
                 case "check": {
@@ -321,6 +328,11 @@ export default class OTAUpdate extends Extension {
                 }
 
                 case "update": {
+                    if (abort) {
+                        error = `No OTA in progress for device '${device.name}'`;
+                        break;
+                    }
+
                     this.#inProgress.add(device.ieeeAddr);
 
                     const otaSettings = settings.get().ota;

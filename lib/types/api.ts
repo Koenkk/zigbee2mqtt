@@ -677,6 +677,10 @@ export interface Zigbee2MQTTAPI {
         default_maximum_data_size?: number | null;
     };
 
+    "bridge/request/device/ota_update/update/abort": {
+        id: string;
+    };
+
     "bridge/response/device/ota_update/update": {
         id: string;
         from:
