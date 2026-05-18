@@ -113,6 +113,7 @@ export const defaults = {
         network_key: [1, 3, 5, 7, 9, 11, 13, 15, 0, 2, 4, 6, 8, 10, 12, 13],
         timestamp_format: "YYYY-MM-DD HH:mm:ss",
         output: "json",
+        enable_external_js: true,
     },
     health: {
         interval: 10,
@@ -167,6 +168,7 @@ export function writeMinimalDefaults(): void {
             network_key: "GENERATE",
             pan_id: "GENERATE",
             ext_pan_id: "GENERATE",
+            enable_external_js: false,
         },
         frontend: {
             enabled: defaults.frontend.enabled,

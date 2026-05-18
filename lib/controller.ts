@@ -50,7 +50,6 @@ export class Controller {
         this.state = new State(this.eventBus, this.zigbee);
         this.restartCallback = restartCallback;
         this.exitCallback = exitCallback;
-
         // Initialize extensions.
         this.extensionArgs = [
             this.zigbee,
@@ -62,22 +61,29 @@ export class Controller {
             this.restartCallback,
             this.addExtension,
         ];
+        this.extensions = new Set();
 
-        this.extensions = new Set([
-            new ExtensionExternalConverters(...this.extensionArgs),
-            new ExtensionOnEvent(...this.extensionArgs),
-            new ExtensionBridge(...this.extensionArgs),
-            new ExtensionPublish(...this.extensionArgs),
-            new ExtensionReceive(...this.extensionArgs),
-            new ExtensionConfigure(...this.extensionArgs),
-            new ExtensionNetworkMap(...this.extensionArgs),
-            new ExtensionGroups(...this.extensionArgs),
-            new ExtensionBind(...this.extensionArgs),
-            new ExtensionOTAUpdate(...this.extensionArgs),
-            new ExtensionExternalExtensions(...this.extensionArgs),
-            new ExtensionAvailability(...this.extensionArgs),
-            new ExtensionHealth(...this.extensionArgs),
-        ]);
+        if (settings.get().advanced.enable_external_js) {
+            this.extensions.add(new ExtensionExternalConverters(...this.extensionArgs));
+        } else {
+            logger.info("External JS (converters/extensions) is disabled");
+        }
+
+        this.extensions.add(new ExtensionOnEvent(...this.extensionArgs));
+        this.extensions.add(new ExtensionBridge(...this.extensionArgs));
+        this.extensions.add(new ExtensionPublish(...this.extensionArgs));
+        this.extensions.add(new ExtensionReceive(...this.extensionArgs));
+        this.extensions.add(new ExtensionConfigure(...this.extensionArgs));
+        this.extensions.add(new ExtensionNetworkMap(...this.extensionArgs));
+        this.extensions.add(new ExtensionGroups(...this.extensionArgs));
+        this.extensions.add(new ExtensionBind(...this.extensionArgs));
+        this.extensions.add(new ExtensionOTAUpdate(...this.extensionArgs));
+        this.extensions.add(new ExtensionAvailability(...this.extensionArgs));
+        this.extensions.add(new ExtensionHealth(...this.extensionArgs));
+
+        if (settings.get().advanced.enable_external_js) {
+            this.extensions.add(new ExtensionExternalExtensions(...this.extensionArgs));
+        }
     }
 
     async start(): Promise<void> {
@@ -247,10 +253,12 @@ export class Controller {
             }
 
             const existingExtension = this.getExtension(name);
+
             if (existingExtension) {
                 await this.removeExtension(existingExtension);
             }
-            await this.extensions.add(extension);
+
+            this.extensions.add(extension);
         } else {
             switch (name) {
                 case "Frontend": {
