@@ -488,6 +488,25 @@ describe("Extension: ExternalConverters", () => {
             expect(mockMQTTPublishAsync).toHaveBeenCalledWith("zigbee2mqtt/bridge/converters", stringify([]), {retain: true});
         });
 
+        it("returns error on invalid name", async () => {
+            const converterName = "foo1";
+
+            await resetExtension();
+            for (const mock of mocksClear) mock.mockClear();
+
+            await (controller.getExtension("ExternalConverters")! as ExternalConverters).onMQTTMessage({
+                topic: "zigbee2mqtt/bridge/request/converter/save",
+                message: {name: converterName, code: "a"},
+            });
+
+            expect(mockMQTTPublishAsync).toHaveBeenCalledWith(
+                "zigbee2mqtt/bridge/response/converter/save",
+                expect.stringContaining(`JavaScript file must have '.mjs', '.js' or '.cjs' extension`),
+                {},
+            );
+            expect(writeFileSyncSpy).toHaveBeenCalledTimes(0);
+        });
+
         it("returns error on invalid code", async () => {
             const converterName = "foo1.js";
             const converterCode = "definetly not a correct javascript code";

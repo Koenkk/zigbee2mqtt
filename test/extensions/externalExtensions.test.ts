@@ -299,6 +299,25 @@ describe("Extension: ExternalExtensions", () => {
             expect(mockMQTTPublishAsync).toHaveBeenCalledWith("zigbee2mqtt/bridge/extensions", stringify([]), {retain: true});
         });
 
+        it("returns error on invalid name", async () => {
+            const extensionName = "foo1";
+
+            await resetExtension();
+            for (const mock of mocksClear) mock.mockClear();
+
+            await (controller.getExtension("ExternalExtensions")! as ExternalExtensions).onMQTTMessage({
+                topic: "zigbee2mqtt/bridge/request/extension/save",
+                message: {name: extensionName, code: "a"},
+            });
+
+            expect(mockMQTTPublishAsync).toHaveBeenCalledWith(
+                "zigbee2mqtt/bridge/response/extension/save",
+                expect.stringContaining(`JavaScript file must have '.mjs', '.js' or '.cjs' extension`),
+                {},
+            );
+            expect(writeFileSyncSpy).toHaveBeenCalledTimes(0);
+        });
+
         it("returns error on invalid code", async () => {
             const extensionName = "foo1.js";
             const extensionCode = "definetly not a correct javascript code";
