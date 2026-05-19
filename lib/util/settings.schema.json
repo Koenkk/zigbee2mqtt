@@ -960,7 +960,9 @@
                     "type": "string"
                 },
                 "retain": {
-                    "type": "boolean"
+                    "type": "boolean",
+                    "title": "Retain",
+                    "description": "Retain MQTT messages of this group"
                 },
                 "optimistic": {
                     "type": "boolean",
