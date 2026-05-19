@@ -963,7 +963,10 @@
                     "type": "boolean"
                 },
                 "optimistic": {
-                    "type": "boolean"
+                    "type": "boolean",
+                    "title": "Optimistic",
+                    "description": "Publish the expected state of group members after set",
+                    "default": true
                 },
                 "qos": {
                     "type": ["number"],
