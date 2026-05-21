@@ -855,7 +855,8 @@
                 "retain": {
                     "type": "boolean",
                     "title": "Retain",
-                    "description": "Retain MQTT messages of this device"
+                    "description": "Retain MQTT messages of this device",
+                    "default": false
                 },
                 "disabled": {
                     "type": "boolean",
@@ -960,10 +961,16 @@
                     "type": "string"
                 },
                 "retain": {
-                    "type": "boolean"
+                    "type": "boolean",
+                    "title": "Retain",
+                    "description": "Retain MQTT messages of this group",
+                    "default": false
                 },
                 "optimistic": {
-                    "type": "boolean"
+                    "type": "boolean",
+                    "title": "Optimistic",
+                    "description": "Publish the expected state of group members after set",
+                    "default": true
                 },
                 "qos": {
                     "type": ["number"],
