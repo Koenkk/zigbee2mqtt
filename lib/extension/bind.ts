@@ -93,7 +93,7 @@ const POLL_ON_MESSAGE = [
         read: {cluster: "genLevelCtrl" as const, attributes: ["currentLevel"] as TClusterAttributeKeys<"genLevelCtrl">},
         // When the bound devices/members of group have the following manufacturerIDs
         manufacturerIDs: [
-            Zcl.ManufacturerCode.SIGNIFY_NETHERLANDS_B_V,
+            // Note: Zcl.ManufacturerCode.SIGNIFY_NETHERLANDS_B_V, uses manuSpecificPhilips2.state instead
             Zcl.ManufacturerCode.ATMEL,
             Zcl.ManufacturerCode.GLEDOPTO_CO_LTD,
             Zcl.ManufacturerCode.MUELLER_LICHT_INTERNATIONAL_INC,
@@ -124,7 +124,7 @@ const POLL_ON_MESSAGE = [
         },
         read: {cluster: "genOnOff" as const, attributes: ["onOff"] as TClusterAttributeKeys<"genOnOff">},
         manufacturerIDs: [
-            Zcl.ManufacturerCode.SIGNIFY_NETHERLANDS_B_V,
+            // Note: Zcl.ManufacturerCode.SIGNIFY_NETHERLANDS_B_V, uses manuSpecificPhilips2.state instead
             Zcl.ManufacturerCode.ATMEL,
             Zcl.ManufacturerCode.GLEDOPTO_CO_LTD,
             Zcl.ManufacturerCode.MUELLER_LICHT_INTERNATIONAL_INC,
@@ -158,7 +158,7 @@ const POLL_ON_MESSAGE = [
             },
         },
         manufacturerIDs: [
-            Zcl.ManufacturerCode.SIGNIFY_NETHERLANDS_B_V,
+            // Note: Zcl.ManufacturerCode.SIGNIFY_NETHERLANDS_B_V, uses manuSpecificPhilips2.state instead
             Zcl.ManufacturerCode.ATMEL,
             Zcl.ManufacturerCode.GLEDOPTO_CO_LTD,
             Zcl.ManufacturerCode.MUELLER_LICHT_INTERNATIONAL_INC,
@@ -166,6 +166,36 @@ const POLL_ON_MESSAGE = [
             // Note: ManufacturerCode.BUSCH_JAEGER is left out intentionally here as their devices don't support colors
         ],
         manufacturerNames: ["GLEDOPTO", "Trust International B.V.\u0000"],
+    },
+    {
+        // Philips Hue 
+        cluster: {
+            manuSpecificPhilips: [
+                {type: "commandHueNotification", data: {button: 1}},
+                {type: "commandHueNotification", data: {button: 2}},
+                {type: "commandHueNotification", data: {button: 3}},
+                {type: "commandHueNotification", data: {button: 4}},
+            ],
+            genLevelCtrl: [
+                {type: "commandStep", data: {}},
+                {type: "commandStepWithOnOff", data: {}},
+                {type: "commandStop", data: {}},
+                {type: "commandMoveWithOnOff", data: {}},
+                {type: "commandStopWithOnOff", data: {}},
+                {type: "commandMove", data: {}},
+                {type: "commandMoveToLevelWithOnOff", data: {}},
+            ],
+            genOnOff: [
+                {type: "commandOn", data: {}},
+                {type: "commandOff", data: {}},
+                {type: "commandOffWithEffect", data: {}},
+                {type: "commandToggle", data: {}},
+            ],
+            genScenes: [{type: "commandRecall", data: {}}],
+        },
+        read: {cluster: "manuSpecificPhilips2" as const, attributes: ["state"] as TClusterAttributeKeys<"manuSpecificPhilips2">},
+        manufacturerIDs: [Zcl.ManufacturerCode.SIGNIFY_NETHERLANDS_B_V],
+        manufacturerNames: [],
     },
 ];
 
