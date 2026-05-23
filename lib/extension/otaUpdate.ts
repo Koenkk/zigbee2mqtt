@@ -50,7 +50,7 @@ function writeFirmwareHexToDataDir(hex: string, fileName: string | undefined, de
 
 export default class OTAUpdate extends Extension {
     #topicRegex = new RegExp(
-`^${settings.get().mqtt.base_topic}/bridge/request/device/ota_update/(update|check|schedule|unschedule)/?(downgrade|abort)?`,
+        `^${settings.get().mqtt.base_topic}/bridge/request/device/ota_update/(update|check|schedule|unschedule)/?(downgrade|abort)?`,
         "i",
     );
     #inProgress = new Set<string>();
