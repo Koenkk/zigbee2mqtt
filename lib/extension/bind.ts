@@ -93,7 +93,7 @@ const POLL_ON_MESSAGE = [
         read: {cluster: "genLevelCtrl" as const, attributes: ["currentLevel"] as TClusterAttributeKeys<"genLevelCtrl">},
         // When the bound devices/members of group have the following manufacturerIDs
         manufacturerIDs: [
-            // Note: Zcl.ManufacturerCode.SIGNIFY_NETHERLANDS_B_V, uses manuSpecificPhilips2.state instead
+            Zcl.ManufacturerCode.SIGNIFY_NETHERLANDS_B_V,
             Zcl.ManufacturerCode.ATMEL,
             Zcl.ManufacturerCode.GLEDOPTO_CO_LTD,
             Zcl.ManufacturerCode.MUELLER_LICHT_INTERNATIONAL_INC,
@@ -124,7 +124,7 @@ const POLL_ON_MESSAGE = [
         },
         read: {cluster: "genOnOff" as const, attributes: ["onOff"] as TClusterAttributeKeys<"genOnOff">},
         manufacturerIDs: [
-            // Note: Zcl.ManufacturerCode.SIGNIFY_NETHERLANDS_B_V, uses manuSpecificPhilips2.state instead
+            Zcl.ManufacturerCode.SIGNIFY_NETHERLANDS_B_V,
             Zcl.ManufacturerCode.ATMEL,
             Zcl.ManufacturerCode.GLEDOPTO_CO_LTD,
             Zcl.ManufacturerCode.MUELLER_LICHT_INTERNATIONAL_INC,
@@ -158,7 +158,7 @@ const POLL_ON_MESSAGE = [
             },
         },
         manufacturerIDs: [
-            // Note: Zcl.ManufacturerCode.SIGNIFY_NETHERLANDS_B_V, uses manuSpecificPhilips2.state instead
+            Zcl.ManufacturerCode.SIGNIFY_NETHERLANDS_B_V,
             Zcl.ManufacturerCode.ATMEL,
             Zcl.ManufacturerCode.GLEDOPTO_CO_LTD,
             Zcl.ManufacturerCode.MUELLER_LICHT_INTERNATIONAL_INC,
@@ -166,36 +166,6 @@ const POLL_ON_MESSAGE = [
             // Note: ManufacturerCode.BUSCH_JAEGER is left out intentionally here as their devices don't support colors
         ],
         manufacturerNames: ["GLEDOPTO", "Trust International B.V.\u0000"],
-    },
-    {
-        // Philips Hue 
-        cluster: {
-            manuSpecificPhilips: [
-                {type: "commandHueNotification", data: {button: 1}},
-                {type: "commandHueNotification", data: {button: 2}},
-                {type: "commandHueNotification", data: {button: 3}},
-                {type: "commandHueNotification", data: {button: 4}},
-            ],
-            genLevelCtrl: [
-                {type: "commandStep", data: {}},
-                {type: "commandStepWithOnOff", data: {}},
-                {type: "commandStop", data: {}},
-                {type: "commandMoveWithOnOff", data: {}},
-                {type: "commandStopWithOnOff", data: {}},
-                {type: "commandMove", data: {}},
-                {type: "commandMoveToLevelWithOnOff", data: {}},
-            ],
-            genOnOff: [
-                {type: "commandOn", data: {}},
-                {type: "commandOff", data: {}},
-                {type: "commandOffWithEffect", data: {}},
-                {type: "commandToggle", data: {}},
-            ],
-            genScenes: [{type: "commandRecall", data: {}}],
-        },
-        read: {cluster: "manuSpecificPhilips2" as const, attributes: ["state"] as TClusterAttributeKeys<"manuSpecificPhilips2">},
-        manufacturerIDs: [Zcl.ManufacturerCode.SIGNIFY_NETHERLANDS_B_V],
-        manufacturerNames: [],
     },
 ];
 
@@ -644,10 +614,17 @@ export default class Bind extends Extension {
                     }
 
                     let readAttrs = poll.read.attributes;
+                    let readCluster = poll.read.cluster;
 
                     if (poll.read.attributesForEndpoint) {
                         const attrsForEndpoint = await poll.read.attributesForEndpoint(endpoint);
                         readAttrs = [...poll.read.attributes, ...attrsForEndpoint];
+                    }
+
+                    // For devices supporting manuSpecificPhilips2 cluster, read state attribute from that cluster instead
+                    if (endpoint.supportsInputCluster("manuSpecificPhilips2")) {
+                        readCluster = "manuSpecificPhilips2" as const;
+                        readAttrs = ["state"] as TClusterAttributeKeys<"manuSpecificPhilips2">;
                     }
 
                     const key = `${device.ieeeAddr}_${endpoint.ID}_${POLL_ON_MESSAGE.indexOf(poll)}`;
@@ -655,7 +632,7 @@ export default class Bind extends Extension {
                     if (!this.pollDebouncers[key]) {
                         this.pollDebouncers[key] = debounce(async () => {
                             try {
-                                await endpoint.read(poll.read.cluster, readAttrs);
+                                await endpoint.read(readCluster, readAttrs);
                             } catch (error) {
                                 // biome-ignore lint/style/noNonNullAssertion: TODO: biome migration: ???
                                 const resolvedDevice = this.zigbee.resolveEntity(device)!;
