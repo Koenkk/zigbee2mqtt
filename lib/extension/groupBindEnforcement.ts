@@ -8,6 +8,54 @@ import * as settings from "../util/settings";
 import utils from "../util/utils";
 import Extension from "./extension";
 
+// Response shape returned by the ZCL Groups cluster's getMembership command.
+// Kept narrow so a future schema change in herdsman surfaces as a type error
+// rather than silently returning an empty group list via a `as KeyValue` cast.
+interface GetMembershipResponse {
+    capacity: number;
+    groupcount: number;
+    grouplist: number[];
+}
+
+// Returns true if the device is mains-powered (router or explicitly mains).
+// Mirrors the logic in lib/extension/availability.ts:isActiveDevice so the
+// enforcement staleness gate uses the right per-class availability timeout.
+function isActiveDevice(device: Device): boolean {
+    return (
+        (device.zh.type === "Router" && device.zh.powerSource !== "Battery") ||
+        (device.zh.powerSource !== undefined && device.zh.powerSource !== "Unknown" && device.zh.powerSource !== "Battery")
+    );
+}
+
+// Structural compare for an endpoint/group target. herdsman *currently* hands
+// back the same JS object for the same logical target on repeated reads, so
+// `b.target === target` happens to work — but that's not a guaranteed
+// contract and a future SDK refactor would silently flip every binding into
+// the "missing from device" path. Compare by stable identifiers instead.
+function bindTargetMatches(actualTarget: zh.Endpoint | zh.Group, expectedTarget: zh.Endpoint | zh.Group): boolean {
+    if (utils.isZHEndpoint(actualTarget)) {
+        if (!utils.isZHEndpoint(expectedTarget)) return false;
+        return actualTarget.deviceIeeeAddress === expectedTarget.deviceIeeeAddress && actualTarget.ID === expectedTarget.ID;
+    }
+    if (utils.isZHEndpoint(expectedTarget)) return false;
+    return actualTarget.groupID === expectedTarget.groupID;
+}
+
+// Structural compare for two drift-item arrays so the
+// `device.drift changed?` check doesn't depend on stable JSON.stringify
+// ordering. Returns true when the arrays describe the same drift set.
+function driftEquals(a: Zigbee2MQTTDriftItem[] | undefined, b: Zigbee2MQTTDriftItem[] | undefined): boolean {
+    if (a === b) return true;
+    if (!a || !b) return false;
+    if (a.length !== b.length) return false;
+    // Each item is small and has a known small set of fields; pairwise compare.
+    const key = (i: Zigbee2MQTTDriftItem): string =>
+        `${i.type}|${i.direction}|${i.endpoint}|${i.group_id ?? ""}|${i.cluster ?? ""}|${i.target ?? ""}|${i.target_endpoint ?? ""}`;
+    const aKeys = a.map(key).sort();
+    const bKeys = b.map(key).sort();
+    return aKeys.every((k, i) => k === bKeys[i]);
+}
+
 export default class GroupBindEnforcement extends Extension {
     private pollTimer?: ReturnType<typeof setTimeout>;
     private stats: Zigbee2MQTTGroupBindEnforcementStats = {
@@ -23,18 +71,20 @@ export default class GroupBindEnforcement extends Extension {
 
     private static readonly DEFAULT_POLL_INTERVAL = 10;
 
-    override async start(): Promise<void> {
+    // True when enforcement is enabled (poll loop or interview-driven sync).
+    // Computed once at start(); reads .advanced settings so we only count
+    // EXPLICITLY-configured strategy values, not defaults-applied values.
+    private isEnabled(): boolean {
         const persisted = settings.getPersistedSettings().advanced;
         const explicitCooldown = settings.get().advanced.group_bind_cooldown;
         const hasExplicitStrategy = persisted?.group_bind_unexpected !== undefined || persisted?.group_bind_missing !== undefined;
+        return (explicitCooldown !== undefined && explicitCooldown > 0) || hasExplicitStrategy;
+    }
 
-        // Enable polling if cooldown is explicitly set to >0, or if either strategy setting is configured
-        if (explicitCooldown && explicitCooldown > 0) {
-            // Explicit cooldown takes priority
-        } else if (!hasExplicitStrategy) {
-            return;
-        }
+    override async start(): Promise<void> {
+        if (!this.isEnabled()) return;
 
+        const explicitCooldown = settings.get().advanced.group_bind_cooldown;
         const interval = explicitCooldown && explicitCooldown > 0 ? explicitCooldown : GroupBindEnforcement.DEFAULT_POLL_INTERVAL;
         this.stats.poll_interval_min = interval;
 
@@ -76,6 +126,11 @@ export default class GroupBindEnforcement extends Extension {
     @bind private async onDeviceInterview(data: eventdata.DeviceInterview): Promise<void> {
         if (data.status !== "successful") return;
 
+        // Gate on the same enable check as the poll loop. Without this, an
+        // interview can trigger a syncDevice* pass with strategy=enforce
+        // even when the operator has set cooldown=0 to disable enforcement.
+        if (!this.isEnabled()) return;
+
         const device = data.device;
         if (device.options.disabled) return;
 
@@ -100,9 +155,9 @@ export default class GroupBindEnforcement extends Extension {
         this.stats.errors = 0;
         await this.publishStats();
 
-        const availabilityTimeout = settings.get().availability.enabled
-            ? utils.minutes(settings.get().availability.passive.timeout)
-            : 0;
+        const availabilityEnabled = settings.get().availability.enabled;
+        const activeTimeoutMs = availabilityEnabled ? utils.minutes(settings.get().availability.active.timeout) : 0;
+        const passiveTimeoutMs = availabilityEnabled ? utils.minutes(settings.get().availability.passive.timeout) : 0;
 
         logger.info("Group/Bind Enforcement: Starting poll...");
         for (const device of this.zigbee.devicesIterator(utils.deviceNotCoordinator)) {
@@ -111,13 +166,19 @@ export default class GroupBindEnforcement extends Extension {
                 continue;
             }
 
-            // Skip devices that haven't been seen within the availability timeout
-            if (availabilityTimeout > 0 && device.zh.lastSeen) {
-                const age = Date.now() - device.zh.lastSeen;
-                if (age > availabilityTimeout) {
-                    logger.debug(`Group/Bind Enforcement: Skipping '${device.name}' (last seen ${Math.round(age / 60000)}m ago)`);
-                    this.stats.devices_skipped++;
-                    continue;
+            // Skip devices that haven't been seen within their class's
+            // availability timeout. Routers / mains-powered devices get
+            // the (typically shorter) active timeout; battery devices get
+            // passive. Matches the per-class logic in availability.ts.
+            if (availabilityEnabled && device.zh.lastSeen) {
+                const timeoutMs = isActiveDevice(device) ? activeTimeoutMs : passiveTimeoutMs;
+                if (timeoutMs > 0) {
+                    const age = Date.now() - device.zh.lastSeen;
+                    if (age > timeoutMs) {
+                        logger.debug(`Group/Bind Enforcement: Skipping '${device.name}' (last seen ${Math.round(age / 60000)}m ago)`);
+                        this.stats.devices_skipped++;
+                        continue;
+                    }
                 }
             }
 
@@ -138,8 +199,9 @@ export default class GroupBindEnforcement extends Extension {
             device.drift = driftItems.length > 0 ? driftItems : undefined;
             this.stats.drift_items_found += driftItems.length;
 
-            // Emit devicesChanged if drift state changed
-            if (JSON.stringify(oldDrift) !== JSON.stringify(device.drift)) {
+            // Structural compare; same drift item set in a different order
+            // should not emit devicesChanged. Items are small so this is cheap.
+            if (!driftEquals(oldDrift, device.drift)) {
                 this.eventBus.emitDevicesChanged();
             }
         }
@@ -166,17 +228,26 @@ export default class GroupBindEnforcement extends Extension {
             }
 
             try {
-                // Query actual group membership from the device via ZCL Groups cluster
-                const result = await endpoint.command("genGroups", "getMembership", {groupcount: 0, grouplist: []});
-                const actualGroupIDs: number[] = (result as KeyValue)?.grouplist ?? [];
+                // Query actual group membership from the device via ZCL Groups cluster.
+                // herdsman doesn't expose a typed helper for this; the raw ZCL command
+                // returns {capacity, groupcount, grouplist}. Cast to a narrow interface
+                // (rather than KeyValue) so a future schema change shows up as a TS
+                // error, and runtime-validate the field so a silent shape break can't
+                // produce a false-empty group list.
+                const result = (await endpoint.command("genGroups", "getMembership", {groupcount: 0, grouplist: []})) as GetMembershipResponse;
+                const actualGroupIDs: number[] = Array.isArray(result?.grouplist) ? result.grouplist : [];
 
                 if (device.options.groups === undefined) {
-                    for (const groupID of actualGroupIDs) {
-                        const group = this.zigbee.groupByID(groupID);
-                        const groupKey = group ? group.name : groupID;
-                        logger.info(`Group/Bind Enforcement: First run for '${device.name}', ingesting group '${groupKey}' into config`);
-                        settings.addGroupMember(device.ieeeAddr, groupKey);
-                    }
+                    // Batch all ingestion writes for this endpoint into one
+                    // file write rather than one per group.
+                    settings.mutateBatched(() => {
+                        for (const groupID of actualGroupIDs) {
+                            const group = this.zigbee.groupByID(groupID);
+                            const groupKey = group ? group.name : groupID;
+                            logger.info(`Group/Bind Enforcement: First run for '${device.name}', ingesting group '${groupKey}' into config`);
+                            settings.addGroupMember(device.ieeeAddr, groupKey);
+                        }
+                    });
                     continue;
                 }
 
@@ -272,6 +343,56 @@ export default class GroupBindEnforcement extends Extension {
         return utils.isZHEndpoint(target) && target.getDevice().type === "Coordinator";
     }
 
+    // For each expected bind that has no from_endpoint (legacy config from
+    // before the field existed), scan all device endpoints for a unique
+    // match and write from_endpoint back to disk if found. After this pass
+    // the per-endpoint "missing" check correctly scopes each bind to one
+    // endpoint regardless of iteration order.
+    private backfillLegacyFromEndpoints(device: Device): void {
+        const expected = device.options.binds;
+        if (!expected) return;
+        const legacy = expected.filter((b) => b.from_endpoint === undefined);
+        if (legacy.length === 0) return;
+
+        // Batch any writes — there can be several legacy entries on a device.
+        settings.mutateBatched(() => {
+            for (const exp of legacy) {
+                const targetEntity = this.zigbee.resolveEntity(exp.to.toString());
+                if (!targetEntity) continue;
+                const target = targetEntity instanceof Device ? targetEntity.endpoint(exp.to_endpoint) : targetEntity.zh;
+                if (!target) continue;
+
+                // Find every endpoint that has this exact bind.
+                const matches = device.zh.endpoints.filter((ep) =>
+                    ep.binds
+                        .filter((b) => !this.isCoordinatorTarget(b.target))
+                        .some((b) => b.cluster.name === exp.cluster && bindTargetMatches(b.target, target)),
+                );
+
+                if (matches.length === 1) {
+                    // Unambiguous: backfill so future polls scope correctly.
+                    settings.setBindingFromEndpoint(device.ieeeAddr, exp.cluster, exp.to, exp.to_endpoint, matches[0].ID);
+                    logger.info(
+                        `Group/Bind Enforcement: Backfilled from_endpoint=${matches[0].ID} for '${device.name}' bind '${exp.cluster}' → '${exp.to}'`,
+                    );
+                } else if (matches.length > 1) {
+                    // Ambiguous: bind exists on multiple endpoints. We can't
+                    // pick one for the user; leave as-is and report each
+                    // endpoint missing it as drift (caller's existing logic).
+                    logger.warning(
+                        `Group/Bind Enforcement: Legacy bind '${exp.cluster}' → '${exp.to}' on '${device.name}' is present on multiple endpoints (${matches
+                            .map((m) => m.ID)
+                            .join(", ")}); cannot auto-disambiguate from_endpoint`,
+                    );
+                }
+                // matches.length === 0 → bind doesn't actually exist
+                // on-device. Drop through and let the per-endpoint loop
+                // surface it as missing/drift on every endpoint, the way
+                // the user would have seen it pre-fix.
+            }
+        });
+    }
+
     private async syncDeviceBinds(device: Device, driftItems?: Zigbee2MQTTDriftItem[], counts?: {groups: number; binds: number; errors: number}): Promise<void> {
         const unexpectedStrategy = settings.get().advanced.group_bind_unexpected ?? "report";
         const missingStrategy = settings.get().advanced.group_bind_missing ?? "report";
@@ -285,6 +406,15 @@ export default class GroupBindEnforcement extends Extension {
             return;
         }
 
+        // Legacy migration pre-pass: any expected bind without from_endpoint
+        // gets disambiguated by finding which (if any) endpoint actually
+        // hosts it on-device, before the per-endpoint "missing" check runs.
+        // Otherwise we'd report the bind missing on every endpoint it
+        // doesn't live on, then backfill it on the one that does.
+        if (device.options.binds !== undefined) {
+            this.backfillLegacyFromEndpoints(device);
+        }
+
         for (const endpoint of device.zh.endpoints) {
             const actualBinds = endpoint.binds;
 
@@ -292,18 +422,23 @@ export default class GroupBindEnforcement extends Extension {
             const userBinds = actualBinds.filter((b) => !this.isCoordinatorTarget(b.target));
 
             if (device.options.binds === undefined) {
-                for (const bind of userBinds) {
-                    const target = utils.isZHEndpoint(bind.target)
-                        ? this.zigbee.resolveEntity(bind.target.deviceIeeeAddress)?.name || bind.target.deviceIeeeAddress
-                        : this.zigbee.groupByID(bind.target.groupID)?.name || bind.target.groupID;
+                // Batch all first-run binds ingestion for this endpoint into
+                // a single YAML write. For a 145-device network this cuts
+                // hundreds of disk writes per poll down to a few.
+                settings.mutateBatched(() => {
+                    for (const bind of userBinds) {
+                        const target = utils.isZHEndpoint(bind.target)
+                            ? this.zigbee.resolveEntity(bind.target.deviceIeeeAddress)?.name || bind.target.deviceIeeeAddress
+                            : this.zigbee.groupByID(bind.target.groupID)?.name || bind.target.groupID;
 
-                    const targetEndpoint = utils.isZHEndpoint(bind.target) ? bind.target.ID : undefined;
+                        const targetEndpoint = utils.isZHEndpoint(bind.target) ? bind.target.ID : undefined;
 
-                    logger.info(
-                        `Group/Bind Enforcement: First run for '${device.name}' (endpoint ${endpoint.ID}), ingesting bind '${bind.cluster.name}' to '${target}' into config`,
-                    );
-                    settings.addBinding(device.ieeeAddr, bind.cluster.name, target, targetEndpoint, endpoint.ID);
-                }
+                        logger.info(
+                            `Group/Bind Enforcement: First run for '${device.name}' (endpoint ${endpoint.ID}), ingesting bind '${bind.cluster.name}' to '${target}' into config`,
+                        );
+                        settings.addBinding(device.ieeeAddr, bind.cluster.name, target, targetEndpoint, endpoint.ID);
+                    }
+                });
                 continue;
             }
 
@@ -326,7 +461,7 @@ export default class GroupBindEnforcement extends Extension {
 
                 if (!target) continue;
 
-                const isBound = userBinds.some((b) => b.cluster.name === expected.cluster && b.target === target);
+                const isBound = userBinds.some((b) => b.cluster.name === expected.cluster && bindTargetMatches(b.target, target));
 
                 if (!isBound) {
                     if (missingStrategy === "enforce") {
@@ -373,8 +508,9 @@ export default class GroupBindEnforcement extends Extension {
                     if (!targetEntity) return false;
 
                     const target = targetEntity instanceof Device ? targetEntity.endpoint(expected.to_endpoint) : targetEntity.zh;
+                    if (!target) return false;
 
-                    return actual.cluster.name === expected.cluster && actual.target === target;
+                    return actual.cluster.name === expected.cluster && bindTargetMatches(actual.target, target);
                 });
 
                 if (!isExpected) {

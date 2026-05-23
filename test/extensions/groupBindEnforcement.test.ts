@@ -516,4 +516,78 @@ describe("Extension: GroupBindEnforcement", () => {
         expect(s.advanced.group_bind_unexpected).toBe("accept");
         expect((s.advanced as any).group_bind_remove_unexpected).toBeUndefined();
     });
+
+    // --- bug-fix tests: legacy from_endpoint backfill ---
+
+    it("Should backfill from_endpoint on legacy binds that match exactly one endpoint", async () => {
+        // Legacy config: bind has no from_endpoint. The device has the bind
+        // on endpoint 1 only. Pre-pass should write from_endpoint:1 back to
+        // config so future polls scope the check correctly.
+        const device = devices.bulb;
+        const target = devices.bulb_color;
+        const targetEndpoint = target.getEndpoint(1)!;
+        device.getEndpoint(1)!.binds = [{cluster: {name: "genOnOff"}, target: targetEndpoint} as any];
+
+        settings.set(["advanced", "group_bind_cooldown"], 10);
+        settings.set(["advanced", "group_bind_missing"], "report");
+        // Persist a legacy bind (no from_endpoint).
+        settings.addBinding(device.ieeeAddr, "genOnOff", "bulb_color", 1);
+        expect(settings.getDevice(device.ieeeAddr)!.binds![0].from_endpoint).toBeUndefined();
+
+        const ext = Array.from(controller.extensions).find((e) => e.constructor.name.includes("GroupBindEnforcement")) as any;
+        await ext.poll();
+        await flushPromises();
+
+        const persisted = settings.getDevice(device.ieeeAddr)!.binds!;
+        expect(persisted[0].from_endpoint).toBe(1);
+        // Sanity: no spurious "missing" drift on any endpoint.
+        const driftItems = (controller.zigbee.resolveEntity(device.ieeeAddr) as Device).drift ?? [];
+        expect(driftItems.find((d) => d.type === "bind" && d.direction === "missing_from_device")).toBeUndefined();
+    });
+
+    it("Should NOT backfill from_endpoint when a legacy bind has no on-device match", async () => {
+        // Legacy bind exists in config but isn't on the device at all.
+        // We must leave it as-is and let the regular missing-handler surface
+        // it as drift on every endpoint that doesn't have it.
+        const device = devices.bulb;
+        // beforeEach clears endpoint.binds; nothing extra needed.
+
+        settings.set(["advanced", "group_bind_cooldown"], 10);
+        settings.set(["advanced", "group_bind_missing"], "report");
+        settings.addBinding(device.ieeeAddr, "genOnOff", "bulb_color", 1);
+
+        const ext = Array.from(controller.extensions).find((e) => e.constructor.name.includes("GroupBindEnforcement")) as any;
+        await ext.poll();
+        await flushPromises();
+
+        const persisted = settings.getDevice(device.ieeeAddr)!.binds!;
+        expect(persisted[0].from_endpoint).toBeUndefined();
+    });
+
+    // --- bug-fix tests: gating ---
+
+    it("Should NOT sync on interview when enforcement is disabled (cooldown=0, no strategy)", async () => {
+        // The pre-fix code would still run syncDeviceGroups/Binds when the
+        // device had pre-configured groups/binds, even with poll disabled.
+        const device = devices.bulb;
+        const cfg = settings.getDevice(device.ieeeAddr)!;
+        (cfg as any).binds = [{cluster: "genOnOff", to: "bulb_color", to_endpoint: 1, from_endpoint: 1}];
+        // Clear any prior enforcement config to ensure the gate evaluates "disabled".
+        settings.set(["advanced", "group_bind_cooldown"], 0);
+        const persistedAdv = settings.getPersistedSettings().advanced as any;
+        delete persistedAdv.group_bind_unexpected;
+        delete persistedAdv.group_bind_missing;
+        settings.reRead();
+
+        const ext = Array.from(controller.extensions).find((e) => e.constructor.name.includes("GroupBindEnforcement")) as any;
+        await ext.stop();
+        await ext.start();
+
+        const modelDevice = controller.zigbee.resolveEntity(device.ieeeAddr) as Device;
+        await ext.onDeviceInterview({device: modelDevice, status: "successful"});
+        await flushPromises();
+
+        expect(device.bindingTable).not.toHaveBeenCalled();
+        expect(mockLogger.info).not.toHaveBeenCalledWith(expect.stringContaining("interviewed successfully"));
+    });
 });

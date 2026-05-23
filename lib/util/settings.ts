@@ -646,6 +646,31 @@ export function removeGroup(IDorName: string | number): void {
     write();
 }
 
+/**
+ * Apply a batch of group/bind mutations to settings, writing to disk at most
+ * once. Each `fn` mutates the in-memory settings object via the regular
+ * addBinding/removeBinding/addGroupMember/removeGroupMember helpers, but with
+ * the `deferWrite` argument so they don't call write() themselves.
+ *
+ * Use this for first-run ingestion or any place that does many mutations in
+ * a row, where the per-call write of the YAML file becomes the bottleneck.
+ */
+export function mutateBatched(fn: () => void): void {
+    isDeferred = true;
+    try {
+        fn();
+    } finally {
+        isDeferred = false;
+    }
+    write();
+}
+
+let isDeferred = false;
+
+function maybeWrite(): void {
+    if (!isDeferred) write();
+}
+
 export function addBinding(deviceKey: string, cluster: string, to: string | number, toEndpoint?: number, fromEndpoint?: number): void {
     const device = getDeviceThrowIfNotExists(deviceKey);
     const settings = getPersistedSettings();
@@ -658,7 +683,7 @@ export function addBinding(deviceKey: string, cluster: string, to: string | numb
 
     if (!deviceSettings.binds.find((b) => b.cluster === cluster && b.to === to && b.to_endpoint === toEndpoint && b.from_endpoint === fromEndpoint)) {
         deviceSettings.binds.push({cluster, to, to_endpoint: toEndpoint, from_endpoint: fromEndpoint});
-        write();
+        maybeWrite();
     }
 }
 
@@ -675,8 +700,30 @@ export function removeBinding(deviceKey: string, cluster: string, to: string | n
             if (deviceSettings.binds.length === 0) {
                 delete deviceSettings.binds;
             }
-            write();
+            maybeWrite();
         }
+    }
+}
+
+// Backfill `from_endpoint` on a legacy bind that originally lacked it. Used
+// when we observe an unambiguous match between an expected bind (no
+// from_endpoint) and an actual bind on a specific endpoint; setting
+// from_endpoint disambiguates future polls so the bind isn't checked
+// against every endpoint on the device.
+export function setBindingFromEndpoint(deviceKey: string, cluster: string, to: string | number, toEndpoint: number | undefined, fromEndpoint: number): void {
+    const device = getDeviceThrowIfNotExists(deviceKey);
+    const settings = getPersistedSettings();
+    // biome-ignore lint/style/noNonNullAssertion: valid from above
+    const deviceSettings = settings.devices![device.ID];
+
+    if (!deviceSettings.binds) return;
+
+    const entry = deviceSettings.binds.find(
+        (b) => b.cluster === cluster && b.to === to && b.to_endpoint === toEndpoint && b.from_endpoint === undefined,
+    );
+    if (entry) {
+        entry.from_endpoint = fromEndpoint;
+        maybeWrite();
     }
 }
 
@@ -692,7 +739,7 @@ export function addGroupMember(deviceKey: string, groupKey: string | number): vo
 
     if (!deviceSettings.groups.includes(groupKey)) {
         deviceSettings.groups.push(groupKey);
-        write();
+        maybeWrite();
     }
 }
 
@@ -709,7 +756,7 @@ export function removeGroupMember(deviceKey: string, groupKey: string | number):
             if (deviceSettings.groups.length === 0) {
                 delete deviceSettings.groups;
             }
-            write();
+            maybeWrite();
         }
     }
 }
