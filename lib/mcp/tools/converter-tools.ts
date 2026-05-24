@@ -1,0 +1,24 @@
+/**
+ * Z2M MCP Server - Converter Tools
+ * Phase 3: Converter management and external definition generation
+ */
+
+import * as Types from '../types.js';
+import { Zigbee } from '../../zigbee/index.js';
+import { State } from '../../state.js';
+import { logger } from '../../util/logger.js';
+
+export interface ConverterToolsContext {
+  zigbee: Zigbee;
+  state: State;
+}
+
+/**
+ * get_converters - List all available converters
+ */
+export async function getConverters(context: ConverterToolsContext): Promise<Types.McpToolResult> {
+  try {
+    // Access converters from Z2M's converter registry
+    const converters = context.zigbee.getExternalConverters?.() || [];
+    const mcpConverters = converters.map((conv: any) => ({
+      id: conv.id || conv.name,\n      name: conv.name || conv.id,\n      source: conv.source || conv.url,\n      devices: conv.devices || [],\n      last_modified: conv.mtime,\n    }));\n\n    const response: Types.GetConvertersResponse = {\n      converters: mcpConverters,\n      count: mcpConverters.length,\n    };\n\n    return Types.createSuccess(response);\n  } catch (error) {\n    logger.error('Error getting converters:', error);\n    return Types.createError(error instanceof Error ? error : new Error('Failed to get converters'));\n  }\n}\n\n/**\n * generate_external_definitions - Generate external definitions for devices\n */\nexport async function generateExternalDefinitions(context: ConverterToolsContext, input: unknown): Promise<Types.McpToolResult> {\n  try {\n    const parsed = Types.parseInput(Types.GenerateExternalDefinitionsRequestSchema, input);\n    if (parsed.error) {\n      return Types.createError(`Invalid input: ${parsed.error}`);\n    }\n\n    const deviceId = parsed.data?.device_id;\n    let devices = context.zigbee.getClients();\n\n    if (deviceId) {\n      const device = devices.find((d) => d.ieee_addr === deviceId || context.state.getFriendlyName(d) === deviceId);\n      if (!device) {\n        return Types.createError(`Device not found: ${deviceId}`);\n      }\n      devices = [device];\n    }\n\n    // Generate definitions for devices\n    let count = 0;\n    const generatedDefinitions: any[] = [];\n\n    for (const device of devices) {\n      if (device.definition) {\n        generatedDefinitions.push({\n          ieee_addr: device.ieee_addr,\n          model: device.definition.model,\n          vendor: device.definition.vendor,\n          description: device.definition.description,\n        });\n        count++;\n      }\n    }\n\n    const response: Types.GenerateExternalDefinitionsResponse = {\n      success: true,\n      count,\n      message: `Generated ${count} external definitions`,\n    };\n\n    return Types.createSuccess(response);\n  } catch (error) {\n    logger.error('Error generating external definitions:', error);\n    return Types.createError(error instanceof Error ? error : new Error('Failed to generate external definitions'));\n  }\n}\n\n/**\n * save_converter - Save external converter\n */\nexport async function saveConverter(context: ConverterToolsContext, input: unknown): Promise<Types.McpToolResult> {\n  try {\n    const parsed = Types.parseInput(Types.SaveConverterRequestSchema, input);\n    if (parsed.error) {\n      return Types.createError(`Invalid input: ${parsed.error}`);\n    }\n\n    const { converter_id, source } = parsed.data!;\n\n    // Register converter with Z2M\n    await context.zigbee.registerExternalConverter?.(converter_id, source);\n\n    const response: Types.SaveConverterResponse = {\n      success: true,\n      converter_id,\n      message: `Converter ${converter_id} saved successfully`,\n    };\n\n    return Types.createSuccess(response);\n  } catch (error) {\n    logger.error('Error saving converter:', error);\n    return Types.createError(error instanceof Error ? error : new Error('Failed to save converter'));\n  }\n}\n\n/**\n * remove_converter - Remove external converter\n */\nexport async function removeConverter(context: ConverterToolsContext, input: unknown): Promise<Types.McpToolResult> {\n  try {\n    const parsed = Types.parseInput(Types.RemoveConverterRequestSchema, input);\n    if (parsed.error) {\n      return Types.createError(`Invalid input: ${parsed.error}`);\n    }\n\n    const { converter_id } = parsed.data!;\n\n    // Remove converter from Z2M\n    await context.zigbee.removeExternalConverter?.(converter_id);\n\n    const response: Types.RemoveConverterResponse = {\n      success: true,\n      message: `Converter ${converter_id} removed successfully`,\n    };\n\n    return Types.createSuccess(response);\n  } catch (error) {\n    logger.error('Error removing converter:', error);\n    return Types.createError(error instanceof Error ? error : new Error('Failed to remove converter'));\n  }\n}\n

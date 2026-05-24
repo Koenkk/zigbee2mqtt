@@ -473,6 +473,50 @@
             },
             "required": []
         },
+        "mcp_server": {
+            "type": "object",
+            "title": "MCP Server",
+            "description": "Configuration for the Model Context Protocol server (native AI interface)",
+            "properties": {
+                "enabled": {
+                    "type": "boolean",
+                    "title": "Enabled",
+                    "description": "Enable MCP server for AI tool integration",
+                    "default": true,
+                    "requiresRestart": true
+                },
+                "transport": {
+                    "type": "string",
+                    "enum": ["stdio", "http"],
+                    "title": "Transport",
+                    "description": "Transport protocol (stdio for local, http for remote)",
+                    "default": "stdio",
+                    "requiresRestart": true
+                },
+                "http": {
+                    "type": "object",
+                    "title": "HTTP Configuration",
+                    "description": "HTTP server configuration (only used when transport is http)",
+                    "properties": {
+                        "port": {
+                            "type": "number",
+                            "title": "Port",
+                            "description": "HTTP server port",
+                            "default": 4747,
+                            "requiresRestart": true
+                        },
+                        "host": {
+                            "type": "string",
+                            "title": "Host",
+                            "description": "HTTP server bind address",
+                            "default": "127.0.0.1",
+                            "requiresRestart": true
+                        }
+                    }
+                }
+            },
+            "required": []
+        },
         "devices": {
             "type": "object",
             "propertyNames": {

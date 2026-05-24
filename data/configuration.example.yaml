@@ -10,6 +10,19 @@ frontend:
     enabled: true
     # port: 8080
 
+# MCP Server configuration (AI tool integration)
+# Provides native MCP interface for Claude, ChatGPT, Cursor, and other AI tools
+mcp_server:
+    enabled: true
+    # transport: stdio  # Default: stdio (local AI tools). Set to 'http' for remote access
+    # http:
+    #     port: 3000
+    #     host: 0.0.0.0  # Listen on all interfaces
+    #     api_key: your-secret-key-here  # Optional: require Bearer token auth
+    #     cors_origins:  # Optional: restrict CORS origins
+    #         - localhost
+    #         - 192.168.1.x
+
 # MQTT settings
 mqtt:
     # MQTT base topic for zigbee2mqtt MQTT messages

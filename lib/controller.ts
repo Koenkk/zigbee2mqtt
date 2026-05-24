@@ -13,6 +13,7 @@ import ExtensionExternalConverters from "./extension/externalConverters";
 import ExtensionExternalExtensions from "./extension/externalExtensions";
 import ExtensionGroups from "./extension/groups";
 import ExtensionHealth from "./extension/health";
+import ExtensionMcpServer from "./extension/mcpServer";
 import ExtensionNetworkMap from "./extension/networkMap";
 import ExtensionOnEvent from "./extension/onEvent";
 import ExtensionOTAUpdate from "./extension/otaUpdate";
@@ -77,6 +78,7 @@ export class Controller {
             new ExtensionExternalExtensions(...this.extensionArgs),
             new ExtensionAvailability(...this.extensionArgs),
             new ExtensionHealth(...this.extensionArgs),
+            new ExtensionMcpServer(...this.extensionArgs),
         ]);
     }
 
