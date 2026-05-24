@@ -1,4 +1,12 @@
-import {execSync} from "node:child_process";
+import {execFileSync} from "node:child_process";
+
+function grepTypeScriptFiles(needle, dir) {
+    try {
+        return execFileSync("grep", ["-r", "-F", "--include=*.ts", "--", needle, dir], {encoding: "utf8"});
+    } catch {
+        return undefined;
+    }
+}
 
 async function checkDuplicateIssue(github, context, name) {
     // Search for existing issues with the same `name`
@@ -63,13 +71,7 @@ export async function newDeviceSupport(github, _core, context, zhcDir) {
     if (tuyaManufacturerNames.length > 0) {
         for (const [fullName, partialName] of tuyaManufacturerNames) {
             if (await checkDuplicateIssue(github, context, fullName)) return;
-            const fullMatch = (() => {
-                try {
-                    return execSync(`grep -r --include="*.ts" "${fullName}" "${zhcDir}"`, {encoding: "utf8"});
-                } catch {
-                    return undefined;
-                }
-            })();
+            const fullMatch = grepTypeScriptFiles(fullName, zhcDir);
 
             console.log(`Checking full match for '${fullName}', result: '${fullMatch}'`);
             if (fullMatch) {
@@ -94,13 +96,7 @@ If you need help with the process, feel free to ask here and we'll be happy to a
                 return;
             }
 
-            const partialMatch = (() => {
-                try {
-                    return execSync(`grep -r --include="*.ts" "${partialName}" "${zhcDir}"`, {encoding: "utf8"});
-                } catch {
-                    return undefined;
-                }
-            })();
+            const partialMatch = grepTypeScriptFiles(partialName, zhcDir);
 
             console.log(`Checking partial match for '${partialName}', result: '${partialMatch}'`);
             if (partialMatch) {
@@ -129,14 +125,8 @@ Let us know if it works so we can support this device out-of-the-box!`,
 
         if (zigbeeModels.length > 0) {
             for (const zigbeeModel of zigbeeModels) {
-                if (await checkDuplicateIssue(github, context, fullName)) return;
-                const fullMatch = (() => {
-                    try {
-                        return execSync(`grep -r --include="*.ts" '"${zigbeeModel}"' "${zhcDir}"`, {encoding: "utf8"});
-                    } catch {
-                        return undefined;
-                    }
-                })();
+                if (await checkDuplicateIssue(github, context, zigbeeModel)) return;
+                const fullMatch = grepTypeScriptFiles(`"${zigbeeModel}"`, zhcDir);
 
                 if (fullMatch) {
                     await github.rest.issues.createComment({
