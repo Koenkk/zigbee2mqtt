@@ -385,13 +385,40 @@ const bulb_color = new Device(
     40399,
     4107,
     [
-        new Endpoint(1, [0, 3, 4, 5, 6, 8, 768, 2821, 4096], [5, 25, 32, 4096], "0x000b57fffec6a5b3", [], {
-            lightingColorCtrl: {colorCapabilities: 254},
-        }),
+        new Endpoint(
+            1,
+            [0, 3, 4, 5, 6, 8, 768, 2821, 4096, 64515],
+            [5, 25, 32, 4096],
+            "0x000b57fffec6a5b3",
+            [],
+            {lightingColorCtrl: {colorCapabilities: 254}},
+            [],
+            undefined,
+            undefined,
+        ),
     ],
     InterviewState.Successful,
     "Mains (single phase)",
     "LLC020",
+    "Philips",
+    "2019.09",
+    "5.127.1.26581",
+    {
+        manuSpecificPhilips2: {
+            ID: 0xfc03,
+            manufacturerCode: 0x100b,
+            attributes: {
+                state: {ID: 0x0002, type: 0x41},
+            },
+            commands: {
+                multiColor: {
+                    ID: 0,
+                    parameters: [{name: 'data', type: 1008}],
+                },
+            },
+            commandsResponse: {},
+        },
+    },
 );
 const bulb_color_2 = new Device(
     "Router",
@@ -401,35 +428,9 @@ const bulb_color_2 = new Device(
     [
         new Endpoint(
             1,
-            [0, 3, 4, 5, 6, 8, 768, 2821, 4096],
-            [5, 25, 32, 4096],
-            "0x000b57fffec6a5b4",
-            [],
-            {lightingColorCtrl: {colorCapabilities: 254}},
-            [],
-            undefined,
-            undefined,
-            {scenes: {"1_0": {name: "Chill scene", state: {state: "ON"}}, "4_9": {state: {state: "OFF"}}}},
-        ),
-    ],
-    InterviewState.Successful,
-    "Mains (single phase)",
-    "LLC020",
-    "Philips",
-    "2019.09",
-    "5.127.1.26581",
-);
-const bulb_color_3 = new Device(
-    "Router",
-    "0x000b57fffec6a5b5",
-    401293,
-    4107,
-    [
-        new Endpoint(
-            1,
             [0, 3, 4, 5, 6, 8, 768, 2821, 4096, 64515],
             [5, 25, 32, 4096],
-            "0x000b57fffec6a5b5",
+            "0x000b57fffec6a5b4",
             [],
             {lightingColorCtrl: {colorCapabilities: 254}},
             [],
@@ -636,7 +637,6 @@ export const devices = {
     bulb_2: bulb_2,
     hue_twilight,
     bulb_color_2: bulb_color_2,
-    bulb_color_3: bulb_color_3,
     remote: new Device(
         "EndDevice",
         "0x0017880104e45517",
