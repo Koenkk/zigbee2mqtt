@@ -19,6 +19,7 @@ const mocksClear = [
     devices.bulb_color.getEndpoint(1)!.configureReporting,
     devices.bulb_color.getEndpoint(1)!.bind,
     devices.bulb_color_2.getEndpoint(1)!.read,
+    devices.bulb_color_3.getEndpoint(1)!.read,
 ];
 
 describe("Extension: Bind", () => {
@@ -738,7 +739,7 @@ describe("Extension: Bind", () => {
         await mockZHEvents.message(payload);
         await flushPromises();
         expect(mockDebounce).toHaveBeenCalledTimes(1);
-        expect(devices.bulb_color.getEndpoint(1)!.read).toHaveBeenCalledWith("manuSpecificPhilips2", ["state"]);
+        expect(devices.bulb_color.getEndpoint(1)!.read).toHaveBeenCalledWith("genLevelCtrl", ["currentLevel"]);
     });
 
     it("Should poll bounded Hue bulb when receiving message from scene controller", async () => {
@@ -760,9 +761,9 @@ describe("Extension: Bind", () => {
         await flushPromises();
         // Calls to three clusters are expected in this case
         expect(mockDebounce).toHaveBeenCalledTimes(3);
-        expect(devices.bulb_color_2.getEndpoint(1)!.read).toHaveBeenCalledWith("manuSpecificPhilips2", ["state"]);
-        expect(devices.bulb_color_2.getEndpoint(1)!.read).toHaveBeenCalledWith("manuSpecificPhilips2", ["state"]);
-        expect(devices.bulb_color_2.getEndpoint(1)!.read).toHaveBeenCalledWith("manuSpecificPhilips2", ["state"]);
+        expect(devices.bulb_color_2.getEndpoint(1)!.read).toHaveBeenCalledWith("genOnOff", ["onOff"]);
+        expect(devices.bulb_color_2.getEndpoint(1)!.read).toHaveBeenCalledWith("genLevelCtrl", ["currentLevel"]);
+        expect(devices.bulb_color_2.getEndpoint(1)!.read).toHaveBeenCalledWith("lightingColorCtrl", ["currentX", "currentY", "colorTemperature"]);
     });
 
     it("Should poll grouped Hue bulb when receiving message from TRADFRI remote", async () => {
@@ -783,8 +784,8 @@ describe("Extension: Bind", () => {
         await flushPromises();
         expect(mockDebounce).toHaveBeenCalledTimes(2);
         expect(devices.bulb_color_2.getEndpoint(1)!.read).toHaveBeenCalledTimes(2);
-        expect(devices.bulb_color_2.getEndpoint(1)!.read).toHaveBeenCalledWith("manuSpecificPhilips2", ["state"]);
-        expect(devices.bulb_color_2.getEndpoint(1)!.read).toHaveBeenCalledWith("manuSpecificPhilips2", ["state"]);
+        expect(devices.bulb_color_2.getEndpoint(1)!.read).toHaveBeenCalledWith("genLevelCtrl", ["currentLevel"]);
+        expect(devices.bulb_color_2.getEndpoint(1)!.read).toHaveBeenCalledWith("genOnOff", ["onOff"]);
 
         // Should also only debounce once
         await mockZHEvents.message(payload);
@@ -794,6 +795,24 @@ describe("Extension: Bind", () => {
 
         // Should only call Hue bulb, not e.g. tradfri
         expect(devices.bulb_2.getEndpoint(1)!.read).toHaveBeenCalledTimes(0);
+    });
+
+    it("Should poll manuSpecificPhilips2.state of bound Hue bulb when receiving message from dimmer", async () => {
+        const remote = devices.remote;
+        const data = {button: 3, unknown1: 3145728, type: 2, unknown2: 0, time: 1};
+        const payload = {
+            data,
+            cluster: "manuSpecificPhilips",
+            device: remote,
+            endpoint: remote.getEndpoint(2)!,
+            type: "commandHueNotification",
+            linkquality: 10,
+            groupID: 0,
+        };
+        await mockZHEvents.message(payload);
+        await flushPromises();
+        expect(mockDebounce).toHaveBeenCalledTimes(1);
+        expect(devices.bulb_color_3.getEndpoint(1)!.read).toHaveBeenCalledWith("manuSpecificPhilips2", ["state"]);
     });
 
     it("clears all bindings", async () => {
