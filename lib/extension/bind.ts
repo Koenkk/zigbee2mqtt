@@ -613,18 +613,16 @@ export default class Bind extends Extension {
                         continue;
                     }
 
-                    let readAttrs = poll.read.attributes;
-                    let readCluster = poll.read.cluster;
-
-                    if (poll.read.attributesForEndpoint) {
-                        const attrsForEndpoint = await poll.read.attributesForEndpoint(endpoint);
-                        readAttrs = [...poll.read.attributes, ...attrsForEndpoint];
-                    }
+                    let readAttrs = poll.read.attributes as TClusterAttributeKeys<any>;
+                    let readCluster: ClusterName = poll.read.cluster as ClusterName;
 
                     // For devices supporting manuSpecificPhilips2 cluster, read state attribute from that cluster instead
                     if (endpoint.supportsInputCluster("manuSpecificPhilips2")) {
-                        readCluster = "manuSpecificPhilips2" as unknown as typeof poll.read.cluster;
-                        readAttrs = ["state"] as unknown as typeof poll.read.attributes;
+                        readCluster = "manuSpecificPhilips2" as ClusterName;
+                        readAttrs = ["state"] as TClusterAttributeKeys<"manuSpecificPhilips2">;
+                    } else if (poll.read.attributesForEndpoint) {
+                        const attrsForEndpoint = await poll.read.attributesForEndpoint(endpoint);
+                        readAttrs = [...poll.read.attributes, ...attrsForEndpoint];
                     }
 
                     const key = `${device.ieeeAddr}_${endpoint.ID}_${POLL_ON_MESSAGE.indexOf(poll)}`;
