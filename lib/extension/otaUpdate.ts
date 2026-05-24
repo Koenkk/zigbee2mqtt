@@ -150,30 +150,28 @@ export default class OTAUpdate extends Extension {
                 const deviceLastChecked = this.#lastChecked.get(data.device.ieeeAddr);
                 const check = deviceLastChecked !== undefined ? Date.now() - deviceLastChecked > updateCheckInterval : true;
 
-                if (!check) {
-                    return;
-                }
+                if (check) {
+                    this.#inProgress.add(data.device.ieeeAddr);
+                    this.#lastChecked.set(data.device.ieeeAddr, Date.now());
+                    let availableResult: OtaUpdateAvailableResult | undefined;
 
-                this.#inProgress.add(data.device.ieeeAddr);
-                this.#lastChecked.set(data.device.ieeeAddr, Date.now());
-                let availableResult: OtaUpdateAvailableResult | undefined;
+                    try {
+                        // auto-check defaults to zigbee-OTA + potential local index, and never `downgrade`
+                        availableResult = await data.device.zh.checkOta(
+                            {downgrade: false},
+                            data.data as Zcl.ClustersTypes.TClusterCommandPayload<"genOta", "queryNextImageRequest">,
+                            data.device.otaExtraMetas,
+                            data.endpoint,
+                        );
+                    } catch (error) {
+                        logger.debug(`Failed to check if OTA update available for '${data.device.name}' (${error})`);
+                    }
 
-                try {
-                    // auto-check defaults to zigbee-OTA + potential local index, and never `downgrade`
-                    availableResult = await data.device.zh.checkOta(
-                        {downgrade: false},
-                        data.data as Zcl.ClustersTypes.TClusterCommandPayload<"genOta", "queryNextImageRequest">,
-                        data.device.otaExtraMetas,
-                        data.endpoint,
-                    );
-                } catch (error) {
-                    logger.debug(`Failed to check if OTA update available for '${data.device.name}' (${error})`);
-                }
+                    await this.publishEntityState(data.device, this.#getEntityPublishPayload(data.device, availableResult ?? "idle"));
 
-                await this.publishEntityState(data.device, this.#getEntityPublishPayload(data.device, availableResult ?? "idle"));
-
-                if (availableResult?.available) {
-                    logger.info(`OTA update available for '${data.device.name}'`);
+                    if (availableResult?.available) {
+                        logger.info(`OTA update available for '${data.device.name}'`);
+                    }
                 }
             }
         }
