@@ -724,6 +724,7 @@ describe("Extension: Bind", () => {
     });
 
     it("Should poll bounded Hue bulb when receiving message from Hue dimmer", async () => {
+        devices.bulb_color.meta = {options: {hue_native_control: true}};
         const remote = devices.remote;
         const data = {button: 3, unknown1: 3145728, type: 2, unknown2: 0, time: 1};
         const payload = {
@@ -737,6 +738,7 @@ describe("Extension: Bind", () => {
         };
         await mockZHEvents.message(payload);
         await flushPromises();
+        expect(devices.bulb_color.meta.options).toStrictEqual({hue_native_control: true});
         expect(mockDebounce).toHaveBeenCalledTimes(1);
         expect(devices.bulb_color.getEndpoint(1)!.read).toHaveBeenCalledWith("manuSpecificPhilips2", ["state"]);
     });
