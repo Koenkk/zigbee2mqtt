@@ -19,9 +19,6 @@ const mocksClear = [
     devices.bulb_color.getEndpoint(1)!.configureReporting,
     devices.bulb_color.getEndpoint(1)!.bind,
     devices.bulb_color_2.getEndpoint(1)!.read,
-    //devices.bulb_color_3.getEndpoint(1)!.configureReporting,
-    //devices.bulb_color_3.getEndpoint(1)!.bind,
-    //devices.bulb_color_3.getEndpoint(1)!.read,
 ];
 
 describe("Extension: Bind", () => {
