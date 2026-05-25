@@ -613,7 +613,7 @@ export default class Bind extends Extension {
                         continue;
                     }
 
-                    let readAttrs = poll.read.attributes as TClusterAttributeKeys<string>;
+                    let readAttrs: TClusterAttributeKeys<string> = poll.read.attributes;
                     let readCluster: ClusterName = poll.read.cluster as ClusterName;
 
                     // For devices that have hue_native_control enabled, read state attribute from manuSpecificPhilips2 cluster instead
