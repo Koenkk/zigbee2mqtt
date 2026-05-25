@@ -617,7 +617,7 @@ export default class Bind extends Extension {
                     let readCluster: ClusterName = poll.read.cluster as ClusterName;
 
                     // For devices supporting manuSpecificPhilips2 cluster, read state attribute from that cluster instead
-                    if (data.device.zh.meta?.options?.hue_native_control === true) {
+                    if (endpoint.meta?.options?.hue_native_control === true) {
                         readCluster = "manuSpecificPhilips2" as ClusterName;
                         readAttrs = ["state"] as TClusterAttributeKeys<"manuSpecificPhilips2">;
                     } else if (poll.read.attributesForEndpoint) {

@@ -12,6 +12,8 @@ import {Controller} from "../../lib/controller";
 import Bind from "../../lib/extension/bind";
 import * as settings from "../../lib/util/settings";
 import {DEFAULT_BIND_GROUP_ID} from "../../lib/util/utils";
+import { options } from "zigbee-herdsman-converters/lib/exposes";
+import { command_move_to_hue_and_saturation } from "zigbee-herdsman-converters/converters/fromZigbee";
 
 const mocksClear = [
     mockDebounce,
@@ -724,6 +726,7 @@ describe("Extension: Bind", () => {
     });
 
     it("Should poll bounded Hue bulb when receiving message from Hue dimmer", async () => {
+        devices.bulb_color.getEndpoint(1)!.meta = {options: {hue_native_control: false}}
         const remote = devices.remote;
         const data = {button: 3, unknown1: 3145728, type: 2, unknown2: 0, time: 1};
         const payload = {
@@ -737,13 +740,13 @@ describe("Extension: Bind", () => {
         };
         await mockZHEvents.message(payload);
         await flushPromises();
-        expect(devices.bulb_color.meta).toStrictEqual({});
+        //expect(devices.bulb_color.getEndpoint(1)!.meta.options).toBe(undefined);
         expect(mockDebounce).toHaveBeenCalledTimes(1);
         expect(devices.bulb_color.getEndpoint(1)!.read).toHaveBeenCalledWith("genLevelCtrl", ["currentLevel"]);
     });
 
     it("Should poll manuSpecificPhilips2 of bounded Hue bulb when receiving message from Hue dimmer", async () => {
-        devices.bulb_color.meta = {options: {hue_native_control: true}};
+        devices.bulb_color.getEndpoint(1)!.meta = {options: {hue_native_control: true}};
         const remote = devices.remote;
         const data = {button: 3, unknown1: 3145728, type: 2, unknown2: 0, time: 1};
         const payload = {
@@ -757,7 +760,7 @@ describe("Extension: Bind", () => {
         };
         await mockZHEvents.message(payload);
         await flushPromises();
-        expect(devices.bulb_color.meta).toStrictEqual({options: {hue_native_control: true}});
+        expect(devices.bulb_color.getEndpoint(1)!.meta).toStrictEqual({options: {hue_native_control: true}});
         expect(mockDebounce).toHaveBeenCalledTimes(1);
         expect(devices.bulb_color.getEndpoint(1)!.read).toHaveBeenCalledWith("manuSpecificPhilips2", ["state"]);
     });

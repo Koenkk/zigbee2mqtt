@@ -385,40 +385,13 @@ const bulb_color = new Device(
     40399,
     4107,
     [
-        new Endpoint(
-            1,
-            [0, 3, 4, 5, 6, 8, 768, 2821, 4096, 64515],
-            [5, 25, 32, 4096],
-            "0x000b57fffec6a5b3",
-            [],
-            {lightingColorCtrl: {colorCapabilities: 254}},
-            [],
-            undefined,
-            undefined,
-        ),
+        new Endpoint(1, [0, 3, 4, 5, 6, 8, 768, 2821, 4096], [5, 25, 32, 4096], "0x000b57fffec6a5b3", [], {
+            lightingColorCtrl: {colorCapabilities: 254},
+        }),
     ],
     InterviewState.Successful,
     "Mains (single phase)",
     "LLC020",
-    "Philips",
-    "2019.09",
-    "5.127.1.26581",
-    {
-        manuSpecificPhilips2: {
-            ID: 0xfc03,
-            manufacturerCode: 0x100b,
-            attributes: {
-                state: {ID: 0x0002, type: 0x41},
-            },
-            commands: {
-                multiColor: {
-                    ID: 0,
-                    parameters: [{name: 'data', type: 1008}],
-                },
-            },
-            commandsResponse: {},
-        },
-    },
 );
 const bulb_color_2 = new Device(
     "Router",
