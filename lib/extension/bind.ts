@@ -613,7 +613,7 @@ export default class Bind extends Extension {
                         continue;
                     }
 
-                    let readAttrs = poll.read.attributes as TClusterAttributeKeys<any>;
+                    let readAttrs = poll.read.attributes as TClusterAttributeKeys<string>;
                     let readCluster: ClusterName = poll.read.cluster as ClusterName;
 
                     // For devices supporting manuSpecificPhilips2 cluster, read state attribute from that cluster instead
