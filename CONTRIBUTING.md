@@ -1,5 +1,8 @@
 # Contributing to Zigbee2MQTT
 
+> [!WARNING]
+> Any AI-driven pull request with more than 500 lines of code will not be considered. If wanting to submit something that requires more, split the work into easily review-able pull requests that can be introduced in increments (e.g. pre-refactor, base feature, additional features).
+
 Everybody is invited and welcome to contribute to Zigbee2MQTT. Zigbee2MQTT is written in JavaScript and is based upon [zigbee-herdsman](https://github.com/koenkk/zigbee-herdsman) and [zigbee-herdsman-converters](https://github.com/koenkk/zigbee-herdsman-converters). Zigbee-herdsman-converters contains all device definitions, zigbee-herdsman is responsible for handling all communication with the adapter.
 
 - Pull requests are always created against the [**dev**](https://github.com/Koenkk/zigbee2mqtt/tree/dev) branch.
