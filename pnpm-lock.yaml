@@ -116,7 +116,7 @@ importers:
         version: 3.2.4(vitest@3.2.4(@types/node@24.12.4))
       tmp:
         specifier: ^0.2.5
-        version: 0.2.5
+        version: 0.2.6
       typescript:
         specifier: ^6.0.3
         version: 6.0.3
@@ -1293,8 +1293,8 @@ packages:
     resolution: {integrity: sha512-t2T/WLB2WRgZ9EpE4jgPJ9w+i66UZfDc8wHh0xrwiRNN+UwH98GIJkTeZqX9rg0i0ptwzqW+uYeIF0T4F8LR7A==}
     engines: {node: '>=14.0.0'}
 
-  tmp@0.2.5:
-    resolution: {integrity: sha512-voyz6MApa1rQGUxT3E+BK7/ROe8itEx7vD8/HEvt4xwXucvQ5G5oeEiHkmHZJuBO21RpOf+YYm9MOivj709jow==}
+  tmp@0.2.6:
+    resolution: {integrity: sha512-5sJPdPjfI5Kx+qbrDesxkglRBxW//g7hCsqspEjwkewGvBMGIKMOTKzLt1hFVJzyadba3lDUN20O9qhvbQUSTA==}
     engines: {node: '>=14.14'}
 
   toidentifier@1.0.1:
@@ -2559,7 +2559,7 @@ snapshots:
 
   tinyspy@4.0.3: {}
 
-  tmp@0.2.5: {}
+  tmp@0.2.6: {}
 
   toidentifier@1.0.1: {}
 
