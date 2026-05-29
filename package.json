@@ -68,7 +68,7 @@
         "zigbee2mqtt-windfront": "2.11.3"
     },
     "devDependencies": {
-        "@biomejs/biome": "^2.4.15",
+        "@biomejs/biome": "^2.4.16",
         "@types/finalhandler": "^1.2.3",
         "@types/humanize-duration": "^3.27.4",
         "@types/js-yaml": "^4.0.9",
@@ -78,7 +78,7 @@
         "@types/serve-static": "^2.2.0",
         "@types/ws": "8.18.1",
         "@vitest/coverage-v8": "^3.1.1",
-        "tmp": "^0.2.5",
+        "tmp": "^0.2.7",
         "typescript": "^6.0.3",
         "vitest": "^3.1.1"
     },
