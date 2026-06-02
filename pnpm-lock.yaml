@@ -5,7 +5,7 @@ settings:
   excludeLinksFromLockfile: false
 
 overrides:
-  zigbee-herdsman: 10.1.0
+  zigbee-herdsman: 10.2.0
 
 importers:
 
@@ -72,8 +72,8 @@ importers:
         specifier: ^8.21.0
         version: 8.21.0
       zigbee-herdsman:
-        specifier: 10.1.0
-        version: 10.1.0
+        specifier: 10.2.0
+        version: 10.2.0
       zigbee-herdsman-converters:
         specifier: 26.61.1
         version: 26.61.1
@@ -219,8 +219,8 @@ packages:
   '@dabh/diagnostics@2.0.8':
     resolution: {integrity: sha512-R4MSXTVnuMzGD7bzHdW2ZhhdPC/igELENcq5IjEverBvq5hn1SXCWcsi6eSsdWP0/Ur+SItRRjAktmdoX/8R/Q==}
 
-  '@date-fns/tz@1.4.1':
-    resolution: {integrity: sha512-P5LUNhtbj6YfI3iJjw5EL9eUAG6OitD0W3fWQcpQjDRc/QIsL0tRNuO1PcDvPccWL1fSTXXdE1ds+l95DV/OFA==}
+  '@date-fns/tz@1.5.0':
+    resolution: {integrity: sha512-lwYN/vDPeNRULcepoE/LO2Pgx+7/RV+S9ARfbc9lr2DtGkOD7pAiruHvbR1RX3Qyf6ja47EWJDMsNK5vK08DJg==}
 
   '@esbuild/aix-ppc64@0.25.5':
     resolution: {integrity: sha512-9o3TMmpmftaCMepOdA5k/yDw8SfInyzWWTjYTFCX3kPSDJMROQTb8jg+h9Cnwnmm1vOzvxN7gIfB5V2ewpjtGA==}
@@ -664,8 +664,8 @@ packages:
   bl@6.1.6:
     resolution: {integrity: sha512-jLsPgN/YSvPUg9UX0Kd73CXpm2Psg9FxMeCSXnk3WBO3CMT10JMwijubhGfHCnFu6TPn1ei3b975dxv7K2pWVg==}
 
-  bonjour-service@1.3.0:
-    resolution: {integrity: sha512-3YuAUiSkWykd+2Azjgyxei8OWf8thdn8AITIog2M4UICzoqfjlqr64WIjEXZllf/W6vK1goqleSR6brGomxQqA==}
+  bonjour-service@1.4.0:
+    resolution: {integrity: sha512-fGQtj1qdR9vIKjFiWPQd52qIqwjaYqhcI40JEiDuvlZ86E7ZBPBwY9fPgHy9r2rYGIjiRfctNPYz6OQU73ww2w==}
 
   brace-expansion@2.1.0:
     resolution: {integrity: sha512-TN1kCZAgdgweJhWWpgKYrQaMNHcDULHkWwQIspdtjV4Y5aurRdZpjAqn6yX3FPqTA9ngHCc4hJxMAMgGfve85w==}
@@ -1463,8 +1463,8 @@ packages:
     resolution: {integrity: sha512-cCt42o58p0KpdzeUb5zLkldnLI9nIOcOdydkV+XyI7VH95LTjCbW89ax71XV3uRV1rnLHZLeEVXsFzf2U7w8aA==}
     engines: {node: '>=20.15.0'}
 
-  zigbee-herdsman@10.1.0:
-    resolution: {integrity: sha512-qFl/QsHgnYXn3LhqqsP3ZgmdQtHxiZ5JRwUpy1KaGnmR33In99f0ZNsoekxfuXFHmvxvQkqoCPFEqV1iukS+lg==}
+  zigbee-herdsman@10.2.0:
+    resolution: {integrity: sha512-KEZQ9dvCbkPJ4CLkYG5yK+cvT8A8bJKQFro+9iNyuHeHqoNec11VA0h8X78IgYIXxnJhwutV7R/jHM7d6bnPlQ==}
 
   zigbee-on-host@0.2.4:
     resolution: {integrity: sha512-NIG6CWp+Yfn7PjqEIRvenHqpwT1U7rSkyimnFOUIFpnmxQOJKrmcwWDfn6WjbU/YIYYWSQPlj+g13icu1xwlyg==}
@@ -1545,7 +1545,7 @@ snapshots:
       enabled: 2.0.0
       kuler: 2.0.0
 
-  '@date-fns/tz@1.4.1': {}
+  '@date-fns/tz@1.5.0': {}
 
   '@esbuild/aix-ppc64@0.25.5':
     optional: true
@@ -1902,7 +1902,7 @@ snapshots:
       inherits: 2.0.4
       readable-stream: 4.7.0
 
-  bonjour-service@1.3.0:
+  bonjour-service@1.4.0:
     dependencies:
       fast-deep-equal: 3.1.3
       multicast-dns: 7.2.5
@@ -2744,17 +2744,17 @@ snapshots:
     dependencies:
       iconv-lite: 0.7.2
       semver: 7.8.1
-      zigbee-herdsman: 10.1.0
+      zigbee-herdsman: 10.2.0
     transitivePeerDependencies:
       - supports-color
 
-  zigbee-herdsman@10.1.0:
+  zigbee-herdsman@10.2.0:
     dependencies:
-      '@date-fns/tz': 1.4.1
+      '@date-fns/tz': 1.5.0
       '@serialport/bindings-cpp': 13.0.1
       '@serialport/parser-delimiter': 13.0.0
       '@serialport/stream': 13.0.0
-      bonjour-service: 1.3.0
+      bonjour-service: 1.4.0
       debounce: 3.0.0
       fast-deep-equal: 3.1.3
       slip: 1.0.2
