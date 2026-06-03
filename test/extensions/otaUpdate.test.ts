@@ -1349,4 +1349,251 @@ describe("Extension: OTAUpdate", () => {
             {},
         );
     });
+
+    it("allows independent auto-check for different imageType while another imageType check is already in progress", async () => {
+        // Auto-check path: checkOta for imageType A hangs while imageType B proceeds independently.
+        // Reset device-level flag that a previous test may have set and that afterEach does not clear.
+        settings.set(["devices", devices.bulb.ieeeAddr, "disable_automatic_update_check"], false);
+        const dataA = {imageType: 100, manufacturerCode: 0x128b, fileVersion: 1, fieldControl: 0};
+        const dataB = {imageType: 200, manufacturerCode: 0x128b, fileVersion: 1, fieldControl: 0};
+
+        let resolveCheckA!: (val: ReturnType<typeof devices.bulb.checkOta> extends Promise<infer T> ? T : never) => void;
+
+        // A's checkOta hangs
+        devices.bulb.checkOta.mockImplementationOnce(
+            () =>
+                new Promise((resolve) => {
+                    resolveCheckA = resolve as typeof resolveCheckA;
+                }),
+        );
+        // B's checkOta resolves normally
+        devices.bulb.checkOta.mockResolvedValueOnce({
+            available: true,
+            current: {...DEFAULT_CURRENT, ...dataB},
+            availableMeta: {...DEFAULT_AVAILABLE_META, ...dataB, fileVersion: 2},
+        });
+
+        const payloadA = {
+            data: dataA,
+            cluster: "genOta",
+            device: devices.bulb,
+            endpoint: devices.bulb.getEndpoint(1)!,
+            type: "commandQueryNextImageRequest",
+            linkquality: 10,
+            meta: {zclTransactionSequenceNumber: 1},
+        };
+        const payloadB = {
+            data: dataB,
+            cluster: "genOta",
+            device: devices.bulb,
+            endpoint: devices.bulb.getEndpoint(1)!,
+            type: "commandQueryNextImageRequest",
+            linkquality: 10,
+            meta: {zclTransactionSequenceNumber: 2},
+        };
+
+        // Start check for imageType A (hangs in checkOta, #inProgress has key_A)
+        const checkAPromise = mockZHEvents.message(payloadA);
+        await flushPromises();
+
+        // Send payloadA again — same imageType must be blocked by #inProgress
+        await mockZHEvents.message(payloadA);
+        await flushPromises();
+        expect(devices.bulb.checkOta).toHaveBeenCalledTimes(1); // still 1 — duplicate blocked
+
+        // While A is in progress, trigger imageType B — should NOT be blocked
+        await mockZHEvents.message(payloadB);
+        await flushPromises();
+
+        // Both A and B should have had checkOta called (2 total, one per imageType)
+        expect(devices.bulb.checkOta).toHaveBeenCalledTimes(2);
+        expect(devices.bulb.checkOta).toHaveBeenCalledWith({downgrade: false}, dataA, {}, devices.bulb.endpoints[0]);
+        expect(devices.bulb.checkOta).toHaveBeenCalledWith({downgrade: false}, dataB, {}, devices.bulb.endpoints[0]);
+
+        // Resolve A and clean up
+        resolveCheckA({available: false, current: {...DEFAULT_CURRENT, ...dataA}, availableMeta: {...DEFAULT_AVAILABLE_META, ...dataA}});
+        await checkAPromise;
+        await flushPromises();
+    });
+
+    it("uses independent lastChecked interval per imageType", async () => {
+        // imageType A was recently checked -> throttled on second request
+        // imageType B never checked -> proceeds immediately
+        // Reset device-level flag that a previous test may have set and that afterEach does not clear.
+        settings.set(["devices", devices.bulb.ieeeAddr, "disable_automatic_update_check"], false);
+        const dataA = {imageType: 100, manufacturerCode: 0x128b, fileVersion: 1, fieldControl: 0};
+        const dataB = {imageType: 200, manufacturerCode: 0x128b, fileVersion: 1, fieldControl: 0};
+
+        devices.bulb.checkOta
+            .mockResolvedValueOnce({
+                available: false,
+                current: {...DEFAULT_CURRENT, ...dataA},
+                availableMeta: {...DEFAULT_AVAILABLE_META, ...dataA},
+            })
+            .mockResolvedValueOnce({
+                available: true,
+                current: {...DEFAULT_CURRENT, ...dataB},
+                availableMeta: {...DEFAULT_AVAILABLE_META, ...dataB, fileVersion: 2},
+            });
+
+        const payloadA = {
+            data: dataA,
+            cluster: "genOta",
+            device: devices.bulb,
+            endpoint: devices.bulb.getEndpoint(1)!,
+            type: "commandQueryNextImageRequest",
+            linkquality: 10,
+            meta: {zclTransactionSequenceNumber: 1},
+        };
+        const payloadB = {
+            data: dataB,
+            cluster: "genOta",
+            device: devices.bulb,
+            endpoint: devices.bulb.getEndpoint(1)!,
+            type: "commandQueryNextImageRequest",
+            linkquality: 10,
+            meta: {zclTransactionSequenceNumber: 2},
+        };
+
+        // First check for imageType A -> sets lastChecked[key_A]
+        await mockZHEvents.message(payloadA);
+        await flushPromises();
+        expect(devices.bulb.checkOta).toHaveBeenCalledTimes(1);
+
+        // Second request for imageType A immediately -> should be throttled (within interval)
+        await mockZHEvents.message(payloadA);
+        await flushPromises();
+        expect(devices.bulb.checkOta).toHaveBeenCalledTimes(1); // still 1 -- throttled
+
+        // First request for imageType B -> key_B not in lastChecked -> should proceed
+        await mockZHEvents.message(payloadB);
+        await flushPromises();
+        expect(devices.bulb.checkOta).toHaveBeenCalledTimes(2); // now 2 -- B went through
+        expect(devices.bulb.checkOta).toHaveBeenLastCalledWith({downgrade: false}, dataB, {}, devices.bulb.endpoints[0]);
+    });
+
+    it("retries MQTT update from pending request cache when first attempt returns no image", async () => {
+        // Covers Fix 2: the pending-available-requests retry path.
+        // Also covers Fix 3: #lastChecked entries are cleared after a successful update.
+        settings.set(["devices", devices.bulb.ieeeAddr, "disable_automatic_update_check"], false);
+
+        const data = {imageType: 100, manufacturerCode: 0x128b, fileVersion: 1, fieldControl: 0};
+
+        // Step 1 — auto-check finds an available update → populates #pendingAvailableRequests and #lastChecked
+        devices.bulb.checkOta.mockResolvedValueOnce({
+            available: true,
+            current: {...DEFAULT_CURRENT, ...data},
+            availableMeta: {...DEFAULT_AVAILABLE_META, ...data, fileVersion: 2},
+        });
+
+        await mockZHEvents.message({
+            data,
+            cluster: "genOta",
+            device: devices.bulb,
+            endpoint: devices.bulb.getEndpoint(1)!,
+            type: "commandQueryNextImageRequest",
+            linkquality: 10,
+            meta: {zclTransactionSequenceNumber: 1},
+        });
+        await flushPromises();
+        expect(devices.bulb.checkOta).toHaveBeenCalledTimes(1);
+
+        // Step 2 — MQTT update: first call returns no image, pending cache triggers a retry that succeeds.
+        // Also exercises the #lastChecked reset loop (Fix 3) because #lastChecked has an entry from Step 1.
+        devices.bulb.endpoints[0].read.mockImplementation(() => ({swBuildId: "1", dateCode: "20240101"}));
+        devices.bulb.updateOta
+            .mockResolvedValueOnce([{...DEFAULT_CURRENT, ...data}, undefined]) // first: no image
+            .mockResolvedValueOnce([
+                {...DEFAULT_CURRENT, ...data, fileVersion: 1},
+                {...DEFAULT_CURRENT, ...data, fileVersion: 2},
+            ]); // retry: success
+
+        mockMQTTEvents.message("zigbee2mqtt/bridge/request/device/ota_update/update", stringify({id: "bulb"}));
+        await flushPromises();
+        await vi.advanceTimersByTimeAsync(6000);
+
+        expect(devices.bulb.updateOta).toHaveBeenCalledTimes(2);
+        expect(mockMQTTPublishAsync).toHaveBeenCalledWith(
+            "zigbee2mqtt/bridge/response/device/ota_update/update",
+            expect.stringContaining('"status":"ok"'),
+            {},
+        );
+    });
+
+    it("defers re-interview until no other imageType update is in progress", async () => {
+        // Two concurrent scheduled-OTA updates (A and B). Re-interview must fire only
+        // after the LAST update completes, not after each one.
+        const dataA = {imageType: 100, manufacturerCode: 0x128b, fileVersion: 1, fieldControl: 0};
+        const dataB = {imageType: 200, manufacturerCode: 0x128b, fileVersion: 1, fieldControl: 0};
+
+        let resolveUpdateA!: () => void;
+        let resolveUpdateB!: () => void;
+
+        // Set scheduledOta directly so device takes the scheduled-OTA path in onZigbeeEvent
+        devices.bulb.scheduledOta = {url: undefined};
+
+        devices.bulb.updateOta
+            .mockImplementationOnce(
+                (_source: unknown, _req: unknown, _tsn: unknown, _extra: unknown, _onProg: unknown) =>
+                    new Promise<[typeof DEFAULT_CURRENT, typeof DEFAULT_CURRENT]>((resolve) => {
+                        resolveUpdateA = () =>
+                            resolve([
+                                {...DEFAULT_CURRENT, ...dataA},
+                                {...DEFAULT_CURRENT, ...dataA, fileVersion: 2},
+                            ]);
+                    }),
+            )
+            .mockImplementationOnce(
+                (_source: unknown, _req: unknown, _tsn: unknown, _extra: unknown, _onProg: unknown) =>
+                    new Promise<[typeof DEFAULT_CURRENT, typeof DEFAULT_CURRENT]>((resolve) => {
+                        resolveUpdateB = () =>
+                            resolve([
+                                {...DEFAULT_CURRENT, ...dataB},
+                                {...DEFAULT_CURRENT, ...dataB, fileVersion: 2},
+                            ]);
+                    }),
+            );
+
+        const payloadA = {
+            data: dataA,
+            cluster: "genOta",
+            device: devices.bulb,
+            endpoint: devices.bulb.getEndpoint(1)!,
+            type: "commandQueryNextImageRequest",
+            linkquality: 10,
+            meta: {zclTransactionSequenceNumber: 1},
+        };
+        const payloadB = {
+            data: dataB,
+            cluster: "genOta",
+            device: devices.bulb,
+            endpoint: devices.bulb.getEndpoint(1)!,
+            type: "commandQueryNextImageRequest",
+            linkquality: 10,
+            meta: {zclTransactionSequenceNumber: 2},
+        };
+
+        // Start both updates (each hangs in updateOta)
+        const updateAPromise = mockZHEvents.message(payloadA);
+        await flushPromises();
+        const updateBPromise = mockZHEvents.message(payloadB);
+        await flushPromises();
+
+        // Finish A -- re-interview must NOT fire (B still in #inProgress)
+        resolveUpdateA();
+        await updateAPromise;
+        await flushPromises();
+        await vi.advanceTimersByTimeAsync(6000); // past the 5s setTimeout
+        expect(devices.bulb.interview).not.toHaveBeenCalled();
+
+        // Finish B -- re-interview MUST fire now (nothing else in #inProgress)
+        resolveUpdateB();
+        await updateBPromise;
+        await flushPromises();
+        await vi.advanceTimersByTimeAsync(6000);
+        expect(devices.bulb.interview).toHaveBeenCalledTimes(1);
+
+        // Clean up
+        devices.bulb.scheduledOta = undefined;
+    });
 });
