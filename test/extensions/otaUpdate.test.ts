@@ -546,6 +546,71 @@ describe("Extension: OTAUpdate", () => {
         expect(existsSync(saveFilePath)).toStrictEqual(false);
     });
 
+    it("aborts running OTA", async () => {
+        let timer: NodeJS.Timeout | undefined;
+        devices.bulb.updateOta.mockImplementationOnce(
+            async (_source, _requestPayload, _requestTsn, _extraMetas, onProgress, _dataSettings, _endpoint) => {
+                onProgress(0, 36000.5678);
+                onProgress(10, 3600.2123);
+
+                return await new Promise((resolve) => {
+                    timer = setTimeout(
+                        () =>
+                            resolve([
+                                {
+                                    ...DEFAULT_CURRENT,
+                                    fileVersion: 1,
+                                },
+                                {
+                                    ...DEFAULT_CURRENT,
+                                    fileVersion: 90,
+                                },
+                            ]),
+                        10000,
+                    );
+                });
+            },
+        );
+        mockMQTTEvents.message("zigbee2mqtt/bridge/request/device/ota_update/update", stringify({id: "bulb"}));
+        await flushPromises();
+        await vi.advanceTimersByTimeAsync(9000);
+        mockMQTTEvents.message("zigbee2mqtt/bridge/request/device/ota_update/update/abort", stringify({id: "bulb"}));
+        await flushPromises();
+
+        expect(mockMQTTPublishAsync).toHaveBeenCalledWith(
+            "zigbee2mqtt/bulb",
+            stringify({update: {state: "updating", progress: 0, remaining: 36001}}),
+            {
+                retain: true,
+                qos: 0,
+            },
+        );
+        expect(mockMQTTPublishAsync).toHaveBeenCalledWith(
+            "zigbee2mqtt/bulb",
+            stringify({update: {state: "updating", progress: 10, remaining: 3600}}),
+            {retain: true, qos: 0},
+        );
+        expect(mockMQTTPublishAsync).toHaveBeenCalledWith("zigbee2mqtt/bulb", stringify({update: {state: "available"}}), {retain: true, qos: 0});
+        expect(mockMQTTPublishAsync).toHaveBeenCalledWith(
+            "zigbee2mqtt/bridge/response/device/ota_update/update/abort",
+            stringify({data: {id: "bulb"}, status: "ok"}),
+            {},
+        );
+
+        clearTimeout(timer);
+    });
+
+    it("handles abort when no running OTA", async () => {
+        mockMQTTEvents.message("zigbee2mqtt/bridge/request/device/ota_update/update/abort", stringify({id: "bulb"}));
+        await flushPromises();
+
+        expect(mockMQTTPublishAsync).toHaveBeenCalledWith(
+            "zigbee2mqtt/bridge/response/device/ota_update/update",
+            stringify({data: {}, status: "error", error: `No OTA in progress to abort for device 'bulb'`}),
+            {},
+        );
+    });
+
     it("handles when OTA update fails", async () => {
         devices.bulb.endpoints[0].read.mockImplementation(() => {
             return {swBuildId: 1, dateCode: "2019010"};

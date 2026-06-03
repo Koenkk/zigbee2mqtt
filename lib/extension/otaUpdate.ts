@@ -259,8 +259,8 @@ export default class OTAUpdate extends Extension {
             assert(message.id, "Invalid payload");
         }
 
-        const ID = (messageObject ? message.id : message) as string;
-        const device = this.zigbee.resolveEntity(ID);
+        const id = (messageObject ? message.id : message) as string;
+        const device = this.zigbee.resolveEntity(id);
         const type = topicMatch[1] as "check" | "update" | "schedule" | "unschedule";
         const downgrade = topicMatch[2] === "downgrade";
         const abort = topicMatch[2] === "abort";
@@ -268,11 +268,18 @@ export default class OTAUpdate extends Extension {
         let errorStack: string | undefined;
 
         if (!(device instanceof Device)) {
-            error = `Device '${ID}' does not exist`;
+            error = `Device '${id}' does not exist`;
         } else if (this.#inProgress.has(device.ieeeAddr)) {
             if (abort) {
                 device.zh.abortOta();
                 this.#inProgress.delete(device.ieeeAddr);
+                // cleanup same as a fail
+                this.#removeProgressAndRemainingFromState(device);
+                await this.publishEntityState(device, this.#getEntityPublishPayload(device, "available"));
+                await this.mqtt.publish(
+                    "bridge/response/device/ota_update/update/abort",
+                    stringify(utils.getResponse<"bridge/response/device/ota_update/update/abort">(message, {id})),
+                );
             } else {
                 // also guards against scheduling while check/update op in progress that could result in undesired OTA state
                 error = `OTA update or check for update already in progress for '${device.name}'`;
@@ -311,7 +318,7 @@ export default class OTAUpdate extends Extension {
                         this.#lastChecked.set(device.ieeeAddr, Date.now());
 
                         const response = utils.getResponse<"bridge/response/device/ota_update/check">(message, {
-                            id: ID,
+                            id,
                             update_available: availableResult.available,
                             downgrade: source.downgrade,
                             source: availableResult.availableMeta?.url,
@@ -329,7 +336,7 @@ export default class OTAUpdate extends Extension {
 
                 case "update": {
                     if (abort) {
-                        error = `No OTA in progress for device '${device.name}'`;
+                        error = `No OTA in progress to abort for device '${device.name}'`;
                         break;
                     }
 
@@ -390,7 +397,7 @@ export default class OTAUpdate extends Extension {
 
                         const firmwareTo = await this.#readSoftwareBuildIDAndDateCode(device);
                         const response = utils.getResponse<"bridge/response/device/ota_update/update">(message, {
-                            id: ID,
+                            id,
                             from: {
                                 file_version: fromVersion,
                                 software_build_id: firmwareFrom?.softwareBuildID,
@@ -439,7 +446,7 @@ export default class OTAUpdate extends Extension {
                     device.zh.scheduleOta(source);
                     await this.publishEntityState(device, this.#getEntityPublishPayload(device, "scheduled"));
 
-                    const response = utils.getResponse<"bridge/response/device/ota_update/schedule">(message, {id: ID, url: source.url});
+                    const response = utils.getResponse<"bridge/response/device/ota_update/schedule">(message, {id, url: source.url});
 
                     await this.mqtt.publish("bridge/response/device/ota_update/schedule", stringify(response));
 
@@ -454,9 +461,7 @@ export default class OTAUpdate extends Extension {
                     device.zh.unscheduleOta();
                     await this.publishEntityState(device, this.#getEntityPublishPayload(device, "idle"));
 
-                    const response = utils.getResponse<"bridge/response/device/ota_update/unschedule">(message, {
-                        id: ID,
-                    });
+                    const response = utils.getResponse<"bridge/response/device/ota_update/unschedule">(message, {id});
 
                     await this.mqtt.publish("bridge/response/device/ota_update/unschedule", stringify(response));
 
