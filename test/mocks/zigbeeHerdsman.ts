@@ -283,6 +283,7 @@ export class Device {
     unscheduleOta = vi.fn(() => {
         this.scheduledOta = undefined;
     });
+    abortOta = vi.fn();
     scheduledOta: OtaSource | undefined = undefined;
 
     constructor(
@@ -345,6 +346,7 @@ export class Device {
         this.updateOta.mockClear();
         this.scheduleOta.mockClear();
         this.unscheduleOta.mockClear();
+        this.abortOta.mockClear();
         this.meta = {};
         this.scheduledOta = undefined;
 
