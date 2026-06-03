@@ -5,7 +5,7 @@ settings:
   excludeLinksFromLockfile: false
 
 overrides:
-  zigbee-herdsman: 10.2.0
+  zigbee-herdsman: 10.3.0
 
 importers:
 
@@ -33,8 +33,8 @@ importers:
         specifier: ^3.33.2
         version: 3.33.2
       js-yaml:
-        specifier: ^4.1.0
-        version: 4.1.1
+        specifier: ^4.2.0
+        version: 4.2.0
       json-stable-stringify-without-jsonify:
         specifier: ^1.0.1
         version: 1.0.1
@@ -72,8 +72,8 @@ importers:
         specifier: ^8.21.0
         version: 8.21.0
       zigbee-herdsman:
-        specifier: 10.2.0
-        version: 10.2.0
+        specifier: 10.3.0
+        version: 10.3.0
       zigbee-herdsman-converters:
         specifier: 26.61.2
         version: 26.61.2
@@ -81,8 +81,8 @@ importers:
         specifier: 0.9.21
         version: 0.9.21
       zigbee2mqtt-windfront:
-        specifier: 2.11.3
-        version: 2.11.3
+        specifier: 2.11.4
+        version: 2.11.4
     devDependencies:
       '@biomejs/biome':
         specifier: ^2.4.16
@@ -952,8 +952,8 @@ packages:
   js-tokens@9.0.1:
     resolution: {integrity: sha512-mxa9E9ITFOt0ban3j6L5MpjwegGz6lBQmM1IJkWeBZGcMxto50+eWdjC/52xDbS2vy0k7vIMK0Fe2wfL9OQSpQ==}
 
-  js-yaml@4.1.1:
-    resolution: {integrity: sha512-qQKT4zQxXl8lLwBtHMWwaTcGfFOZviOJet3Oy/xmGk2gZH677CJM9EvtfdSkgWcATZhj/55JZ0rmy3myCT5lsA==}
+  js-yaml@4.2.0:
+    resolution: {integrity: sha512-ePWsvanv0DWuDRsW8dnt+R4jQ31SCRCQ7hhNcPXZPsoBZiemuZNYGf7adZdqX2D86j6rvKp3RpCxVTSb8WQlOw==}
     hasBin: true
 
   json-schema-traverse@1.0.0:
@@ -1463,8 +1463,8 @@ packages:
     resolution: {integrity: sha512-cJw5OoV30TOPJ06Rs+agSOzhkslMWhekwnEtLIl/p7kEgxW2Fque0JU/txeaMiBRh5Ke0+XOPiLy052DmEDB0g==}
     engines: {node: '>=20.15.0'}
 
-  zigbee-herdsman@10.2.0:
-    resolution: {integrity: sha512-KEZQ9dvCbkPJ4CLkYG5yK+cvT8A8bJKQFro+9iNyuHeHqoNec11VA0h8X78IgYIXxnJhwutV7R/jHM7d6bnPlQ==}
+  zigbee-herdsman@10.3.0:
+    resolution: {integrity: sha512-ZmYYVWEtA6B/UQEOmOx+A0boaEAIQj4/Di4R0IHrrDS/IJW6hDwbordPmzB59utNFh19MBk4+6wIuH9lePvuIw==}
 
   zigbee-on-host@0.2.4:
     resolution: {integrity: sha512-NIG6CWp+Yfn7PjqEIRvenHqpwT1U7rSkyimnFOUIFpnmxQOJKrmcwWDfn6WjbU/YIYYWSQPlj+g13icu1xwlyg==}
@@ -1474,8 +1474,8 @@ packages:
     resolution: {integrity: sha512-ClHYlG7g0v/tnIsD6kycNCi1ZEKIbQuU7lGJR3WqYcDmuqEMVcHDGbRiRwYRQcZGMxkqCf7guxNsXiKnC10+kg==}
     engines: {node: '>=20.11'}
 
-  zigbee2mqtt-windfront@2.11.3:
-    resolution: {integrity: sha512-CANPCKiJMsVD6NEbtJprDGvatQ62txBWPV1sCcdR5cvR7rXuGsHlJjj1N/YJGbsQ0N+eN8+CyBXzNLj1YWcRdQ==}
+  zigbee2mqtt-windfront@2.11.4:
+    resolution: {integrity: sha512-QANNcvVpCYzydLpZP4Z4xpNpK78L1TZYDDlywz2hi1pY1fRl7a/PqmrbRLjuG+IavHkndeilYOzShDBxGLIqPw==}
     engines: {node: '>=22.12.0'}
 
 snapshots:
@@ -2190,7 +2190,7 @@ snapshots:
 
   js-tokens@9.0.1: {}
 
-  js-yaml@4.1.1:
+  js-yaml@4.2.0:
     dependencies:
       argparse: 2.0.1
 
@@ -2744,11 +2744,11 @@ snapshots:
     dependencies:
       iconv-lite: 0.7.2
       semver: 7.8.1
-      zigbee-herdsman: 10.2.0
+      zigbee-herdsman: 10.3.0
     transitivePeerDependencies:
       - supports-color
 
-  zigbee-herdsman@10.2.0:
+  zigbee-herdsman@10.3.0:
     dependencies:
       '@date-fns/tz': 1.5.0
       '@serialport/bindings-cpp': 13.0.1
@@ -2766,4 +2766,4 @@ snapshots:
 
   zigbee2mqtt-frontend@0.9.21: {}
 
-  zigbee2mqtt-windfront@2.11.3: {}
+  zigbee2mqtt-windfront@2.11.4: {}
