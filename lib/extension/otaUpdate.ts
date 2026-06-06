@@ -1,5 +1,5 @@
 import assert from "node:assert";
-import {existsSync, mkdirSync, rmSync, writeFileSync} from "node:fs";
+import {existsSync, mkdirSync, readFileSync, rmSync, writeFileSync} from "node:fs";
 import {join} from "node:path";
 import bind from "bind-decorator";
 import stringify from "json-stable-stringify-without-jsonify";
@@ -56,12 +56,11 @@ export default class OTAUpdate extends Extension {
     #inProgress = new Set<string>();
     #lastChecked = new Map<string, number>();
 
-    // biome-ignore lint/suspicious/useAwait: API
     override async start(): Promise<void> {
         this.eventBus.onMQTTMessage(this, this.onMQTTMessage);
         this.eventBus.onDeviceMessage(this, this.onZigbeeEvent);
 
-        setOtaConfiguration(dataDir.getPath(), settings.get().ota.zigbee_ota_override_index_location);
+        setOtaConfiguration(dataDir.getPath(), await this.#resolveOverrideIndexLocation(settings.get().ota.zigbee_ota_override_index_location));
 
         // In case Zigbee2MQTT is restared during an update, progress and remaining values are still in state, remove them.
         for (const device of this.zigbee.devicesIterator(utils.deviceNotCoordinator)) {
@@ -78,6 +77,67 @@ export default class OTAUpdate extends Extension {
     clearState(): void {
         this.#inProgress.clear();
         this.#lastChecked.clear();
+    }
+
+    /**
+     * Resolve the override index location(s); a list is fetched/read and merged into a single index in `dataDir`
+     */
+    async #resolveOverrideIndexLocation(location: string | string[] | undefined): Promise<string | undefined> {
+        if (location === undefined || typeof location === "string") {
+            return location;
+        }
+
+        const merged: unknown[] = [];
+
+        for (const source of location) {
+            try {
+                const index = await this.#readOverrideIndex(source);
+
+                if (!Array.isArray(index)) {
+                    throw new Error("expected a JSON array");
+                }
+
+                merged.push(...index);
+
+                logger.debug(`Loaded OTA override index '${source}' (${index.length} entries)`);
+            } catch (error) {
+                logger.warning(`Failed to load OTA override index '${source}', skipping it (${(error as Error).message})`);
+            }
+        }
+
+        if (merged.length === 0) {
+            logger.error("None of the configured OTA override index locations could be loaded, ignoring override index");
+
+            return undefined;
+        }
+
+        const baseDir = dataDir.joinPath("ota");
+
+        if (!existsSync(baseDir)) {
+            mkdirSync(baseDir, {recursive: true});
+        }
+
+        const mergedPath = join(baseDir, "override_index.json");
+
+        writeFileSync(mergedPath, stringify(merged));
+
+        logger.info(`Merged ${location.length} OTA override index sources (${merged.length} entries) into '${mergedPath}'`);
+
+        return mergedPath;
+    }
+
+    async #readOverrideIndex(source: string): Promise<unknown> {
+        if (/^https?:\/\//i.test(source)) {
+            const response = await fetch(source);
+
+            if (!response.ok) {
+                throw new Error(`status=${response.status}`);
+            }
+
+            return await response.json();
+        }
+
+        return JSON.parse(readFileSync(dataDir.joinPath(source), "utf8"));
     }
 
     #removeProgressAndRemainingFromState(device: Device): void {

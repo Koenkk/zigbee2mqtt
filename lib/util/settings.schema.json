@@ -360,11 +360,12 @@
                     "default": false
                 },
                 "zigbee_ota_override_index_location": {
-                    "type": ["string", "null"],
+                    "type": ["string", "array", "null"],
+                    "items": {"type": "string"},
                     "title": "OTA index override file name",
                     "requiresRestart": true,
-                    "description": "Location of override OTA index file",
-                    "examples": ["index.json"]
+                    "description": "Location of override OTA index file (local path or URL). Can also be a list of locations: they are fetched and merged into a single index, with earlier entries taking precedence. See https://github.com/Koenkk/zigbee2mqtt/discussions/10032",
+                    "examples": ["index.json", ["index.json", "https://example.org/ota/index.json"]]
                 },
                 "image_block_request_timeout": {
                     "type": "number",
