@@ -51,8 +51,8 @@ importers:
         specifier: ^6.1.3
         version: 6.1.3
       semver:
-        specifier: ^7.8.1
-        version: 7.8.1
+        specifier: ^7.8.3
+        version: 7.8.3
       source-map-support:
         specifier: ^0.5.21
         version: 0.5.21
@@ -81,8 +81,8 @@ importers:
         specifier: 0.9.21
         version: 0.9.21
       zigbee2mqtt-windfront:
-        specifier: 2.11.4
-        version: 2.11.4
+        specifier: 2.12.0
+        version: 2.12.0
     devDependencies:
       '@biomejs/biome':
         specifier: ^2.4.16
@@ -97,8 +97,8 @@ importers:
         specifier: ^4.0.9
         version: 4.0.9
       '@types/node':
-        specifier: ^24.12.4
-        version: 24.12.4
+        specifier: ^24.13.1
+        version: 24.13.1
       '@types/object-assign-deep':
         specifier: ^0.4.3
         version: 0.4.3
@@ -113,7 +113,7 @@ importers:
         version: 8.18.1
       '@vitest/coverage-v8':
         specifier: ^3.1.1
-        version: 3.2.4(vitest@3.2.4(@types/node@24.12.4))
+        version: 3.2.4(vitest@3.2.4(@types/node@24.13.1))
       tmp:
         specifier: ^0.2.7
         version: 0.2.7
@@ -122,7 +122,7 @@ importers:
         version: 6.0.3
       vitest:
         specifier: ^3.1.1
-        version: 3.2.4(@types/node@24.12.4)
+        version: 3.2.4(@types/node@24.13.1)
     optionalDependencies:
       unix-dgram:
         specifier: ^2.0.7
@@ -553,8 +553,8 @@ packages:
   '@types/js-yaml@4.0.9':
     resolution: {integrity: sha512-k4MGaQl5TGo/iipqb2UDG2UwjXziSWkh0uysQelTlJpX1qGlpUZYm8PnO4DxG1qBomtJUdYJ6qR6xdIah10JLg==}
 
-  '@types/node@24.12.4':
-    resolution: {integrity: sha512-GUUEShf+PBCGW2KaXwcIt3Yk+e3pkKwWKb9GSyM9WQVE+ep2jzmHdGsHzu4wgcZy5fN9FBdVzjpBQsYlpfpgLA==}
+  '@types/node@24.13.1':
+    resolution: {integrity: sha512-RSpUJGmvsJ1ZeBehQZFhIdpsz+bIpES0nIQXko4Ybq+N+kX6XvOq3Jo+iJ82FWLdblFq85AsMikd3m35jgezYg==}
 
   '@types/object-assign-deep@0.4.3':
     resolution: {integrity: sha512-d9Gxaj5j1hzrxJ61EFEg13B4g4FgrT/DYtcDWFXPehR8DF2SUZbVMFtZIs8exkVRiqrqBpdTc/lUUZjncsPpMw==}
@@ -1155,8 +1155,8 @@ packages:
   safer-buffer@2.1.2:
     resolution: {integrity: sha512-YZo3K82SD7Riyi0E1EQPojLz7kpepnSQI9IyPbHHg1XXXevb5dJI7tpyN2ADxGcQbHG7vcyRHk0cbwqcQriUtg==}
 
-  semver@7.8.1:
-    resolution: {integrity: sha512-rkVq3IXh+4FDGch+KwzX3aV9W3kO54GyEgpvBzSyctDA6Xtd7RJQV1xmXbeQp5v7+VzLOfVqiutSE6GICgPFvg==}
+  semver@7.8.3:
+    resolution: {integrity: sha512-wnilbGyMxzbY7dNOl7jpKbLSjcfeweJWU5j4+u5qW+6/wuGD9KzIGOyZnQVSBM9E7DtWaaH3CyHkppYrKYoxwg==}
     engines: {node: '>=10'}
     hasBin: true
 
@@ -1316,8 +1316,8 @@ packages:
     engines: {node: '>=14.17'}
     hasBin: true
 
-  undici-types@7.16.0:
-    resolution: {integrity: sha512-Zz+aZWSj8LE6zoxD+xrjh4VfkIG8Ya6LvYkZqtUQGJPZjYl53ypCaUwWqo7eI0x66KBGeRo+mlBEkMSeSZ38Nw==}
+  undici-types@7.18.2:
+    resolution: {integrity: sha512-AsuCzffGHJybSaRrmr5eHr81mwJU3kjw6M+uprWvCXiNeN9SOGwQ3Jn8jb8m3Z6izVgknn1R0FTCEAP2QrLY/w==}
 
   unix-dgram@2.0.6:
     resolution: {integrity: sha512-AURroAsb73BZ6CdAyMrTk/hYKNj3DuYYEuOaB8bYMOHGKupRNScw90Q5C71tWJc3uE7dIeXRyuwN0xLLq3vDTg==}
@@ -1474,8 +1474,8 @@ packages:
     resolution: {integrity: sha512-ClHYlG7g0v/tnIsD6kycNCi1ZEKIbQuU7lGJR3WqYcDmuqEMVcHDGbRiRwYRQcZGMxkqCf7guxNsXiKnC10+kg==}
     engines: {node: '>=20.11'}
 
-  zigbee2mqtt-windfront@2.11.4:
-    resolution: {integrity: sha512-QANNcvVpCYzydLpZP4Z4xpNpK78L1TZYDDlywz2hi1pY1fRl7a/PqmrbRLjuG+IavHkndeilYOzShDBxGLIqPw==}
+  zigbee2mqtt-windfront@2.12.0:
+    resolution: {integrity: sha512-sDwgEFlmKMj9Sl9FLhfZPkYEd7185v4spwxYXZl7gwQR3xrxeWmnLHtpQ3DfTJd2Ns6V6hzC80Sp8EmB2z8KKg==}
     engines: {node: '>=22.12.0'}
 
 snapshots:
@@ -1757,7 +1757,7 @@ snapshots:
 
   '@types/finalhandler@1.2.4':
     dependencies:
-      '@types/node': 24.12.4
+      '@types/node': 24.13.1
 
   '@types/http-errors@2.0.5': {}
 
@@ -1765,28 +1765,28 @@ snapshots:
 
   '@types/js-yaml@4.0.9': {}
 
-  '@types/node@24.12.4':
+  '@types/node@24.13.1':
     dependencies:
-      undici-types: 7.16.0
+      undici-types: 7.18.2
 
   '@types/object-assign-deep@0.4.3': {}
 
   '@types/readable-stream@4.0.23':
     dependencies:
-      '@types/node': 24.12.4
+      '@types/node': 24.13.1
 
   '@types/serve-static@2.2.0':
     dependencies:
       '@types/http-errors': 2.0.5
-      '@types/node': 24.12.4
+      '@types/node': 24.13.1
 
   '@types/triple-beam@1.3.5': {}
 
   '@types/ws@8.18.1':
     dependencies:
-      '@types/node': 24.12.4
+      '@types/node': 24.13.1
 
-  '@vitest/coverage-v8@3.2.4(vitest@3.2.4(@types/node@24.12.4))':
+  '@vitest/coverage-v8@3.2.4(vitest@3.2.4(@types/node@24.13.1))':
     dependencies:
       '@ampproject/remapping': 2.3.0
       '@bcoe/v8-coverage': 1.0.2
@@ -1801,7 +1801,7 @@ snapshots:
       std-env: 3.9.0
       test-exclude: 7.0.1
       tinyrainbow: 2.0.0
-      vitest: 3.2.4(@types/node@24.12.4)
+      vitest: 3.2.4(@types/node@24.13.1)
     transitivePeerDependencies:
       - supports-color
 
@@ -1813,13 +1813,13 @@ snapshots:
       chai: 5.2.0
       tinyrainbow: 2.0.0
 
-  '@vitest/mocker@3.2.4(vite@6.3.5(@types/node@24.12.4))':
+  '@vitest/mocker@3.2.4(vite@6.3.5(@types/node@24.13.1))':
     dependencies:
       '@vitest/spy': 3.2.4
       estree-walker: 3.0.3
       magic-string: 0.30.17
     optionalDependencies:
-      vite: 6.3.5(@types/node@24.12.4)
+      vite: 6.3.5(@types/node@24.13.1)
 
   '@vitest/pretty-format@3.2.4':
     dependencies:
@@ -2238,7 +2238,7 @@ snapshots:
 
   make-dir@4.0.0:
     dependencies:
-      semver: 7.8.1
+      semver: 7.8.3
 
   mime-db@1.54.0: {}
 
@@ -2427,7 +2427,7 @@ snapshots:
 
   safer-buffer@2.1.2: {}
 
-  semver@7.8.1: {}
+  semver@7.8.3: {}
 
   send@1.2.1:
     dependencies:
@@ -2571,7 +2571,7 @@ snapshots:
 
   typescript@6.0.3: {}
 
-  undici-types@7.16.0: {}
+  undici-types@7.18.2: {}
 
   unix-dgram@2.0.6:
     dependencies:
@@ -2587,13 +2587,13 @@ snapshots:
 
   util-deprecate@1.0.2: {}
 
-  vite-node@3.2.4(@types/node@24.12.4):
+  vite-node@3.2.4(@types/node@24.13.1):
     dependencies:
       cac: 6.7.14
       debug: 4.4.3
       es-module-lexer: 1.7.0
       pathe: 2.0.3
-      vite: 6.3.5(@types/node@24.12.4)
+      vite: 6.3.5(@types/node@24.13.1)
     transitivePeerDependencies:
       - '@types/node'
       - jiti
@@ -2608,7 +2608,7 @@ snapshots:
       - tsx
       - yaml
 
-  vite@6.3.5(@types/node@24.12.4):
+  vite@6.3.5(@types/node@24.13.1):
     dependencies:
       esbuild: 0.25.5
       fdir: 6.4.6(picomatch@4.0.2)
@@ -2617,14 +2617,14 @@ snapshots:
       rollup: 4.44.0
       tinyglobby: 0.2.14
     optionalDependencies:
-      '@types/node': 24.12.4
+      '@types/node': 24.13.1
       fsevents: 2.3.3
 
-  vitest@3.2.4(@types/node@24.12.4):
+  vitest@3.2.4(@types/node@24.13.1):
     dependencies:
       '@types/chai': 5.2.2
       '@vitest/expect': 3.2.4
-      '@vitest/mocker': 3.2.4(vite@6.3.5(@types/node@24.12.4))
+      '@vitest/mocker': 3.2.4(vite@6.3.5(@types/node@24.13.1))
       '@vitest/pretty-format': 3.2.4
       '@vitest/runner': 3.2.4
       '@vitest/snapshot': 3.2.4
@@ -2642,11 +2642,11 @@ snapshots:
       tinyglobby: 0.2.14
       tinypool: 1.1.1
       tinyrainbow: 2.0.0
-      vite: 6.3.5(@types/node@24.12.4)
-      vite-node: 3.2.4(@types/node@24.12.4)
+      vite: 6.3.5(@types/node@24.13.1)
+      vite-node: 3.2.4(@types/node@24.13.1)
       why-is-node-running: 2.3.0
     optionalDependencies:
-      '@types/node': 24.12.4
+      '@types/node': 24.13.1
     transitivePeerDependencies:
       - jiti
       - less
@@ -2743,7 +2743,7 @@ snapshots:
   zigbee-herdsman-converters@26.62.0:
     dependencies:
       iconv-lite: 0.7.2
-      semver: 7.8.1
+      semver: 7.8.3
       zigbee-herdsman: 10.4.0
     transitivePeerDependencies:
       - supports-color
@@ -2766,4 +2766,4 @@ snapshots:
 
   zigbee2mqtt-frontend@0.9.21: {}
 
-  zigbee2mqtt-windfront@2.11.4: {}
+  zigbee2mqtt-windfront@2.12.0: {}
