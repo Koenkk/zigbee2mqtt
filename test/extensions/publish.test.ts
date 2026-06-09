@@ -44,6 +44,7 @@ describe("Extension: Publish", () => {
         data.writeDefaultConfiguration();
         controller.state.clear();
         settings.reRead();
+        settings.set(["advanced", "desired_state", "enabled"], false);
         loadTopicGetSetRegex();
         for (const mock of mocksClear) mock.mockClear();
         for (const key in devices) {
@@ -61,9 +62,9 @@ describe("Extension: Publish", () => {
     });
 
     afterAll(async () => {
-        await vi.runOnlyPendingTimersAsync();
         mockSleep.restore();
         await controller?.stop();
+        await vi.runOnlyPendingTimersAsync();
         await flushPromises();
         vi.useRealTimers();
     });
@@ -116,6 +117,72 @@ describe("Extension: Publish", () => {
         expect(mockMQTTPublishAsync.mock.calls[0][0]).toStrictEqual("zigbee2mqtt/wohnzimmer.light.wall.right");
         expect(JSON.parse(mockMQTTPublishAsync.mock.calls[0][1])).toStrictEqual({state: "ON"});
         expect(mockMQTTPublishAsync.mock.calls[0][2]).toStrictEqual({qos: 0, retain: false});
+    });
+
+    it("Should coalesce duplicate desired state publishes until observed", async () => {
+        settings.set(["advanced", "desired_state", "enabled"], true);
+        settings.set(["advanced", "desired_state", "retry_cooldown"], 8);
+        const device = controller.zigbee.resolveEntity(devices.bulb_color.ieeeAddr)!;
+        const endpoint = device.zh.getEndpoint(1)!;
+
+        await mockMQTTEvents.message("zigbee2mqtt/bulb_color/set", stringify({state: "ON"}));
+        await mockMQTTEvents.message("zigbee2mqtt/bulb_color/set", stringify({state: "ON"}));
+        await flushPromises();
+
+        expect(endpoint.command).toHaveBeenCalledTimes(1);
+        expect(mockMQTTPublishAsync).toHaveBeenCalledTimes(1);
+
+        await vi.advanceTimersByTimeAsync(8000);
+        await flushPromises();
+
+        expect(endpoint.command).toHaveBeenCalledTimes(2);
+
+        controller.state.set(device, {state: "ON"});
+        await vi.advanceTimersByTimeAsync(8000);
+        await flushPromises();
+
+        expect(endpoint.command).toHaveBeenCalledTimes(2);
+    });
+
+    it("Should not retry desired state when the first send is observed", async () => {
+        settings.set(["advanced", "desired_state", "enabled"], true);
+        settings.set(["advanced", "desired_state", "topology_ordering"], false);
+        settings.set(["advanced", "desired_state", "retry_cooldown"], 8);
+        const device = controller.zigbee.resolveEntity(devices.bulb_color.ieeeAddr)!;
+        const endpoint = device.zh.getEndpoint(1)!;
+
+        await mockMQTTEvents.message("zigbee2mqtt/bulb_color/set", stringify({state: "ON"}));
+        await flushPromises();
+
+        expect(endpoint.command).toHaveBeenCalledTimes(1);
+
+        controller.state.set(device, {state: "ON"});
+        await vi.advanceTimersByTimeAsync(8000);
+        await flushPromises();
+
+        expect(endpoint.command).toHaveBeenCalledTimes(1);
+    });
+
+    it("Should supersede old desired state targets", async () => {
+        settings.set(["advanced", "desired_state", "enabled"], true);
+        settings.set(["advanced", "desired_state", "retry_cooldown"], 8);
+        const device = controller.zigbee.resolveEntity(devices.bulb_color.ieeeAddr)!;
+        const endpoint = device.zh.getEndpoint(1)!;
+
+        await mockMQTTEvents.message("zigbee2mqtt/bulb_color/set", stringify({state: "ON"}));
+        await flushPromises();
+        await mockMQTTEvents.message("zigbee2mqtt/bulb_color/set", stringify({state: "OFF"}));
+        await flushPromises();
+        await vi.advanceTimersByTimeAsync(8000);
+        await flushPromises();
+
+        expect(endpoint.command.mock.calls).toEqual([
+            ["genOnOff", "on", {}, {}],
+            ["genOnOff", "off", {}, {}],
+            ["genOnOff", "off", {}, {}],
+        ]);
+
+        controller.state.set(device, {state: "OFF"});
     });
 
     it("Should publish messages to zigbee devices when brightness is in %", async () => {
@@ -485,6 +552,19 @@ describe("Extension: Publish", () => {
         group.members.pop();
     });
 
+    it("Should publish desired member state for groups when desired state is enabled", async () => {
+        settings.set(["advanced", "desired_state", "enabled"], true);
+        const group = groups.group_1;
+        group.members.push(devices.bulb_color.getEndpoint(1)!);
+        await mockMQTTEvents.message("zigbee2mqtt/group_1/set", stringify({state: "ON"}));
+        await flushPromises();
+        expect(group.command).toHaveBeenCalledTimes(1);
+        expect(mockMQTTPublishAsync).toHaveBeenCalledTimes(2); // 'zigbee2mqtt/bulb_color' + below
+        expect(mockMQTTPublishAsync.mock.calls[1][0]).toStrictEqual("zigbee2mqtt/group_1");
+        expect(JSON.parse(mockMQTTPublishAsync.mock.calls[1][1])).toStrictEqual({state: "ON"});
+        group.members.pop();
+    });
+
     it("Should publish messages to groups with brightness_percent", async () => {
         const group = groups.group_1;
         group.members.push(devices.bulb_color.getEndpoint(1)!);
@@ -647,6 +727,29 @@ describe("Extension: Publish", () => {
         await mockMQTTEvents.message("zigbee2mqtt/group_2/set", stringify({brightness: "200"}));
         await flushPromises();
         expect(mockMQTTPublishAsync).toHaveBeenCalledTimes(0);
+    });
+
+    it("Should publish desired member state from device converters", async () => {
+        settings.set(["advanced", "desired_state", "enabled"], true);
+        const device = controller.zigbee.resolveEntity(devices.bulb_color.ieeeAddr)!;
+        const originalDefinition = device.definition;
+        device.definition = {
+            ...device.definition!,
+            toZigbee: [
+                {
+                    key: ["members_state_test"],
+                    convertSet: vi.fn().mockResolvedValue({membersState: {[devices.bulb.ieeeAddr]: {state: "ON"}}}),
+                },
+            ],
+        };
+
+        await mockMQTTEvents.message("zigbee2mqtt/bulb_color/set", stringify({members_state_test: "ON"}));
+        await flushPromises();
+
+        expect(mockMQTTPublishAsync).toHaveBeenCalledTimes(1);
+        expect(mockMQTTPublishAsync.mock.calls[0][0]).toStrictEqual("zigbee2mqtt/bulb");
+        expect(JSON.parse(mockMQTTPublishAsync.mock.calls[0][1])).toStrictEqual({state: "ON"});
+        device.definition = originalDefinition;
     });
 
     it("Should handle non-valid topics", async () => {

@@ -126,6 +126,13 @@ describe("Extension: Bridge", () => {
                         cache_state_persistent: true,
                         cache_state_send_on_startup: true,
                         channel: 11,
+                        desired_state: {
+                            deadline: 90,
+                            enabled: true,
+                            max_attempts: 3,
+                            retry_cooldown: 8,
+                            topology_ordering: true,
+                        },
                         elapsed: false,
                         ext_pan_id: [221, 221, 221, 221, 221, 221, 221, 221],
                         last_seen: "disable",

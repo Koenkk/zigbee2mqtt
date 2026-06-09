@@ -206,6 +206,13 @@ export interface Zigbee2MQTTSettings {
         channel: number;
         adapter_concurrent?: number;
         adapter_delay?: number;
+        desired_state: {
+            enabled: boolean;
+            max_attempts: number;
+            retry_cooldown: number;
+            deadline: number;
+            topology_ordering: boolean;
+        };
         cache_state: boolean;
         cache_state_persistent: boolean;
         cache_state_send_on_startup: boolean;

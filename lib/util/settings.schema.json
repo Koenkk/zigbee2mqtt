@@ -736,6 +736,58 @@
                     "default": null,
                     "description": "Adapter delay"
                 },
+                "desired_state": {
+                    "type": "object",
+                    "title": "Desired state",
+                    "description": "Apply verifiable device set commands until the requested state is observed, superseded or exhausted. When the first command is confirmed by a normal device state update, no retry is sent.",
+                    "properties": {
+                        "enabled": {
+                            "type": "boolean",
+                            "title": "Enable desired state scheduler",
+                            "description": "When enabled, Zigbee2MQTT tracks optimistic device set commands and retries only if the requested state is not later observed. Set to false to keep the old one-shot behavior.",
+                            "default": true
+                        },
+                        "max_attempts": {
+                            "type": "number",
+                            "minimum": 1,
+                            "maximum": 10,
+                            "default": 3,
+                            "title": "Maximum desired state attempts",
+                            "description": "Maximum total sends for one unresolved desired state, including the initial send"
+                        },
+                        "retry_cooldown": {
+                            "type": "number",
+                            "minimum": 1,
+                            "maximum": 300,
+                            "default": 8,
+                            "title": "Desired state retry cooldown",
+                            "description": "Seconds to wait before retrying a desired state after it was not observed"
+                        },
+                        "deadline": {
+                            "type": "number",
+                            "minimum": 1,
+                            "maximum": 3600,
+                            "default": 90,
+                            "title": "Desired state deadline",
+                            "description": "Seconds after which an unresolved desired state is failed"
+                        },
+                        "topology_ordering": {
+                            "type": "boolean",
+                            "default": true,
+                            "title": "Desired state topology ordering",
+                            "description": "Order same-burst desired state sends by cached topology and observed apply latency when available. This never performs a network scan while handling a set command; unknown topology falls back to FIFO."
+                        }
+                    },
+                    "required": ["enabled", "max_attempts", "retry_cooldown", "deadline", "topology_ordering"],
+                    "additionalProperties": false,
+                    "default": {
+                        "enabled": true,
+                        "max_attempts": 3,
+                        "retry_cooldown": 8,
+                        "deadline": 90,
+                        "topology_ordering": true
+                    }
+                },
                 "cache_state": {
                     "type": "boolean",
                     "title": "Cache state",

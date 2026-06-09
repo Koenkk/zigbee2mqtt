@@ -38,6 +38,22 @@ mqtt:
 # Advanced settings
 advanced:
     # channel: 11
+    # Keeps verifiable device /set commands alive until the requested state is
+    # observed from the device, a newer target supersedes it, or the bounded
+    # attempts/deadline are exhausted. In a healthy network this sends only the
+    # original command: the first real state report completes the desired state.
+    # desired_state:
+    #     enabled: true
+    #     # Total sends including the first command.
+    #     max_attempts: 3
+    #     # Seconds to wait for a real state report before retrying.
+    #     retry_cooldown: 8
+    #     # Seconds after which an unresolved target is abandoned.
+    #     deadline: 90
+    #     # Orders same-burst sends by cached network-map topology and observed
+    #     # apply latency when available. Unknown topology remains FIFO and this
+    #     # never scans the network while handling a set command.
+    #     topology_ordering: true
     # Let Zigbee2MQTT generate a network key on first start
     network_key: GENERATE
     # Let Zigbee2MQTT generate a pan_id on first start

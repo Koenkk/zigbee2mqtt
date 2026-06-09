@@ -5,6 +5,7 @@ import type {LQITableEntry, RoutingTableEntry} from "zigbee-herdsman/dist/zspec/
 import type {Zigbee2MQTTAPI, Zigbee2MQTTNetworkMap} from "../types/api";
 import logger from "../util/logger";
 import * as settings from "../util/settings";
+import topologyState from "../util/topologyState";
 import utils from "../util/utils";
 import Extension from "./extension";
 
@@ -19,6 +20,9 @@ export default class NetworkMap extends Extension {
     // biome-ignore lint/suspicious/useAwait: API
     override async start(): Promise<void> {
         this.eventBus.onMQTTMessage(this, this.onMQTTMessage);
+        this.eventBus.onDeviceJoined(this, () => topologyState.invalidateNetworkMap());
+        this.eventBus.onDeviceLeave(this, () => topologyState.invalidateNetworkMap());
+        this.eventBus.onDeviceNetworkAddressChanged(this, () => topologyState.invalidateNetworkMap());
     }
 
     @bind async onMQTTMessage(data: eventdata.MQTTMessage): Promise<void> {
@@ -34,6 +38,7 @@ export default class NetworkMap extends Extension {
 
                 const routes = typeof message === "object" && message.routes;
                 const topology = await this.networkScan(routes);
+                topologyState.updateFromNetworkMap(topology);
                 let responseData: Zigbee2MQTTAPI["bridge/response/networkmap"];
 
                 switch (type) {

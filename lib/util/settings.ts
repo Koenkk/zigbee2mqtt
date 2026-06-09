@@ -105,6 +105,13 @@ export const defaults = {
         channel: 11,
         adapter_concurrent: undefined,
         adapter_delay: undefined,
+        desired_state: {
+            enabled: true,
+            max_attempts: 3,
+            retry_cooldown: 8,
+            deadline: 90,
+            topology_ordering: true,
+        },
         cache_state: true,
         cache_state_persistent: true,
         cache_state_send_on_startup: true,

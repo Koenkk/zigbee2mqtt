@@ -42,6 +42,7 @@ describe("Extension: Groups", () => {
         resetGroupMembers();
         data.writeDefaultConfiguration();
         settings.reRead();
+        settings.set(["advanced", "desired_state", "enabled"], false);
         mockMQTTPublishAsync.mockClear();
         groups.gledopto_group.command.mockClear();
         zhcGlobalStore.clear();

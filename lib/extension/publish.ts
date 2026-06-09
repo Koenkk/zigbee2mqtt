@@ -4,8 +4,10 @@ import type * as zhc from "zigbee-herdsman-converters";
 
 import Device from "../model/device";
 import Group from "../model/group";
+import DesiredStateScheduler from "../util/desiredStateScheduler";
 import logger from "../util/logger";
 import * as settings from "../util/settings";
+import topologyState from "../util/topologyState";
 import utils from "../util/utils";
 import Extension from "./extension";
 
@@ -27,10 +29,19 @@ interface ParsedTopic {
 }
 
 export default class Publish extends Extension {
+    private desiredStateScheduler: DesiredStateScheduler | undefined;
+
     // biome-ignore lint/suspicious/useAwait: API
     override async start(): Promise<void> {
         loadTopicGetSetRegex();
+        this.desiredStateScheduler = new DesiredStateScheduler(this.eventBus);
+        this.desiredStateScheduler.start();
         this.eventBus.onMQTTMessage(this, this.onMQTTMessage);
+    }
+
+    override async stop(): Promise<void> {
+        this.desiredStateScheduler?.stop();
+        await super.stop();
     }
 
     parseTopic(topic: string): ParsedTopic | undefined {
@@ -242,31 +253,59 @@ export default class Publish extends Extension {
 
             try {
                 if (parsedTopic.type === "set" && converter.convertSet) {
-                    logger.debug(`Publishing '${parsedTopic.type}' '${key}' to '${re.name}'`);
-                    const result = await converter.convertSet(localTarget, key, value, meta);
-                    const optimistic = entitySettings.optimistic === undefined || entitySettings.optimistic;
+                    const convertSet = converter.convertSet;
+                    const publishSet = async (): Promise<KeyValue | undefined> => {
+                        logger.debug(`Publishing '${parsedTopic.type}' '${key}' to '${re.name}'`);
+                        const result = await convertSet(localTarget, key, value, meta);
+                        const optimistic = entitySettings.optimistic === undefined || entitySettings.optimistic;
+                        let desiredState: KeyValue | undefined;
 
-                    if (result?.state && optimistic) {
-                        const msg = result.state;
+                        if (result?.state && optimistic) {
+                            const msg = this.stateForEndpoint(result.state, endpointName);
 
-                        if (endpointName) {
-                            for (const key of Object.keys(msg)) {
-                                msg[`${key}_${endpointName}`] = msg[key];
-                                delete msg[key];
+                            // filter out attribute listed in filtered_optimistic
+                            utils.filterProperties(entitySettings.filtered_optimistic, msg);
+                            desiredState = {...msg};
+
+                            if (this.desiredStateScheduler?.enabled()) {
+                                await this.publishEntityState(re, msg, "publishOptimistic");
+                            } else {
+                                addToToPublish(re, msg);
                             }
                         }
 
-                        // filter out attribute listed in filtered_optimistic
-                        utils.filterProperties(entitySettings.filtered_optimistic, msg);
+                        if (result?.membersState && optimistic) {
+                            for (const [ieeeAddr, state] of Object.entries(result.membersState)) {
+                                // biome-ignore lint/style/noNonNullAssertion: might be a bit much assumed here?
+                                const entity = this.zigbee.resolveEntity(ieeeAddr)!;
 
-                        addToToPublish(re, msg);
-                    }
-
-                    if (result?.membersState && optimistic) {
-                        for (const [ieeeAddr, state] of Object.entries(result.membersState)) {
-                            // biome-ignore lint/style/noNonNullAssertion: might be a bit much assumed here?
-                            addToToPublish(this.zigbee.resolveEntity(ieeeAddr)!, state);
+                                if (this.desiredStateScheduler?.enabled()) {
+                                    await this.publishEntityState(entity, state, "publishOptimistic");
+                                } else {
+                                    addToToPublish(entity, state);
+                                }
+                            }
                         }
+
+                        return desiredState;
+                    };
+
+                    if (this.desiredStateScheduler?.enabled() && re instanceof Device && !utils.isZHGroup(localTarget)) {
+                        const useTopologyOrdering = settings.get().advanced.desired_state.topology_ordering;
+
+                        this.desiredStateScheduler.enqueue({
+                            entity: re,
+                            endpointName,
+                            endpointID: endpointOrGroupID,
+                            orderHint: useTopologyOrdering ? topologyState.orderHint(re.ieeeAddr) : 0,
+                            onApplied: (latencyMs) => topologyState.observeDesiredStateApplied(re.ieeeAddr, latencyMs),
+                            onFailed: () => topologyState.observeDesiredStateFailure(re.ieeeAddr),
+                            property: key,
+                            value,
+                            send: publishSet,
+                        });
+                    } else {
+                        await publishSet();
                     }
                 } else if (parsedTopic.type === "get" && converter.convertGet) {
                     logger.debug(`Publishing get '${parsedTopic.type}' '${key}' to '${re.name}'`);
@@ -306,5 +345,18 @@ export default class Publish extends Extension {
         }
 
         return definition?.toZigbee;
+    }
+
+    private stateForEndpoint(state: KeyValue, endpointName: string | undefined): KeyValue {
+        const msg = {...state};
+
+        if (endpointName) {
+            for (const key of Object.keys(msg)) {
+                msg[`${key}_${endpointName}`] = msg[key];
+                delete msg[key];
+            }
+        }
+
+        return msg;
     }
 }

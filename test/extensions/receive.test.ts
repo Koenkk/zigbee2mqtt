@@ -664,9 +664,10 @@ describe("Extension: Receive", () => {
         settings.set(["advanced", "elapsed"], true);
         const device = devices.E1743;
         const payload = {data: {}, cluster: "genLevelCtrl", device, endpoint: device.getEndpoint(1), type: "commandStopWithOnOff"};
-        vi.spyOn(Date, "now").mockReturnValueOnce(150).mockReturnValueOnce(200);
+        vi.setSystemTime(150);
         await mockZHEvents.message({...payload, meta: {zclTransactionSequenceNumber: 2}});
         await flushPromises();
+        vi.setSystemTime(200);
         await mockZHEvents.message({...payload, meta: {zclTransactionSequenceNumber: 3}});
         await flushPromises();
         expect(mockMQTTPublishAsync).toHaveBeenCalledTimes(2);

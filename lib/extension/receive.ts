@@ -9,6 +9,7 @@ import * as zhc from "zigbee-herdsman-converters";
 
 import logger from "../util/logger";
 import * as settings from "../util/settings";
+import topologyState from "../util/topologyState";
 import utils from "../util/utils";
 import Extension from "./extension";
 
@@ -105,6 +106,8 @@ export default class Receive extends Extension {
     @bind async onDeviceMessage(data: eventdata.DeviceMessage): Promise<void> {
         /* v8 ignore next */
         if (!data.device) return;
+
+        topologyState.observeMessage(data.device.ieeeAddr, data.linkquality);
 
         if (!data.device.definition || !data.device.interviewed) {
             logger.debug("Skipping message, still interviewing");
