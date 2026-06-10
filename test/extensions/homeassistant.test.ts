@@ -1722,6 +1722,7 @@ describe("Extension: HomeAssistant", () => {
         await flushPromises();
         await vi.runOnlyPendingTimersAsync();
         await flushPromises();
+        expect(mockMQTTPublishAsync).toHaveBeenCalledWith("zigbee2mqtt/bridge/state", stringify({state: "online"}), {retain: true, qos: 1});
         expect(mockMQTTPublishAsync).toHaveBeenCalledWith(
             "zigbee2mqtt/bulb",
             stringify({
@@ -1762,6 +1763,7 @@ describe("Extension: HomeAssistant", () => {
         await flushPromises();
         await vi.runOnlyPendingTimersAsync();
         await flushPromises();
+        expect(mockMQTTPublishAsync).toHaveBeenCalledWith("zigbee2mqtt/bridge/state", stringify({state: "online"}), {retain: true, qos: 1});
         expect(mockMQTTPublishAsync).toHaveBeenCalledWith(
             "zigbee2mqtt/bulb",
             stringify({
