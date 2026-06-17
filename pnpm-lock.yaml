@@ -5,7 +5,7 @@ settings:
   excludeLinksFromLockfile: false
 
 overrides:
-  zigbee-herdsman: 10.4.0
+  zigbee-herdsman: 10.4.1
 
 importers:
 
@@ -72,8 +72,8 @@ importers:
         specifier: ^8.21.0
         version: 8.21.0
       zigbee-herdsman:
-        specifier: 10.4.0
-        version: 10.4.0
+        specifier: 10.4.1
+        version: 10.4.1
       zigbee-herdsman-converters:
         specifier: 26.66.0
         version: 26.66.0
@@ -664,8 +664,8 @@ packages:
   bl@6.1.6:
     resolution: {integrity: sha512-jLsPgN/YSvPUg9UX0Kd73CXpm2Psg9FxMeCSXnk3WBO3CMT10JMwijubhGfHCnFu6TPn1ei3b975dxv7K2pWVg==}
 
-  bonjour-service@1.4.0:
-    resolution: {integrity: sha512-fGQtj1qdR9vIKjFiWPQd52qIqwjaYqhcI40JEiDuvlZ86E7ZBPBwY9fPgHy9r2rYGIjiRfctNPYz6OQU73ww2w==}
+  bonjour-service@1.4.1:
+    resolution: {integrity: sha512-9KM4QMPKnaJqaja1v7gYO/+TXZGLtzPA05NmUTqDAJjcsWeVoOXKMvU9g0gfuuoYTQqJZ924hivICd5R/bCJbA==}
 
   brace-expansion@2.1.0:
     resolution: {integrity: sha512-TN1kCZAgdgweJhWWpgKYrQaMNHcDULHkWwQIspdtjV4Y5aurRdZpjAqn6yX3FPqTA9ngHCc4hJxMAMgGfve85w==}
@@ -1463,8 +1463,8 @@ packages:
     resolution: {integrity: sha512-7J9zKVc3Pflwh12iTUGeC1F3Zz6ycM9GBeg4or7ZAPguCholcaKGjUubusFfKwz7W1byn5Vsj2JN5GO4QleS+w==}
     engines: {node: '>=20.15.0'}
 
-  zigbee-herdsman@10.4.0:
-    resolution: {integrity: sha512-LO0LV9Qibgv4GuEoDjwZa1No18owetv0iQ1vZZ06rbv+SOUsg8uILBTCv5+S7PKYUYF4krVJH32x2qXYu02r5Q==}
+  zigbee-herdsman@10.4.1:
+    resolution: {integrity: sha512-PL6W91YeVBpbD4uU+iIRpCRADeTADcLk4toBASxCP71XvUC4ZzYKr5zyTpADKVZ1DBJp4EumuMYOV2Ps3z3Vvg==}
 
   zigbee-on-host@0.2.4:
     resolution: {integrity: sha512-NIG6CWp+Yfn7PjqEIRvenHqpwT1U7rSkyimnFOUIFpnmxQOJKrmcwWDfn6WjbU/YIYYWSQPlj+g13icu1xwlyg==}
@@ -1902,7 +1902,7 @@ snapshots:
       inherits: 2.0.4
       readable-stream: 4.7.0
 
-  bonjour-service@1.4.0:
+  bonjour-service@1.4.1:
     dependencies:
       fast-deep-equal: 3.1.3
       multicast-dns: 7.2.5
@@ -2744,17 +2744,17 @@ snapshots:
     dependencies:
       iconv-lite: 0.7.2
       semver: 7.8.4
-      zigbee-herdsman: 10.4.0
+      zigbee-herdsman: 10.4.1
     transitivePeerDependencies:
       - supports-color
 
-  zigbee-herdsman@10.4.0:
+  zigbee-herdsman@10.4.1:
     dependencies:
       '@date-fns/tz': 1.5.0
       '@serialport/bindings-cpp': 13.0.1
       '@serialport/parser-delimiter': 13.0.0
       '@serialport/stream': 13.0.0
-      bonjour-service: 1.4.0
+      bonjour-service: 1.4.1
       debounce: 3.0.0
       fast-deep-equal: 3.1.3
       slip: 1.0.2
