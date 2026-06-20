@@ -234,6 +234,7 @@ const NUMERIC_DISCOVERY_LOOKUP: {[s: string]: KeyValue} = {
         icon: "mdi:brightness-5",
     },
     smoke_density: {icon: "mdi:google-circles-communities", state_class: "measurement"},
+    soil_fertility: {device_class: "conductivity", state_class: "measurement"},
     soil_moisture: {device_class: "moisture", state_class: "measurement"},
     temperature: {device_class: "temperature", state_class: "measurement"},
     temperature_probe: {device_class: "temperature", state_class: "measurement"},
