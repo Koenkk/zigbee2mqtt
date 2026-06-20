@@ -12,7 +12,7 @@
         "bracketSpacing": false
     },
     "files": {
-        "includes": ["**", "!package.json", "!!**/dist", "!!**/coverage"]
+        "includes": ["**", "!package.json", "!!**/dist", "!!**/coverage", "!images"]
     },
     "linter": {
         "includes": ["**"],

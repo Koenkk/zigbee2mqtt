@@ -1939,6 +1939,9 @@ export class HomeAssistant extends Extension {
             }
         } else if (data.topic === this.statusTopic && data.message.toLowerCase() === "online") {
             const timer = setTimeout(async () => {
+                // Re-publish bridge state so HA marks all entities as available before receiving cached device states.
+                await this.mqtt.publish("bridge/state", stringify({state: "online"}), {clientOptions: {retain: true, qos: 1}});
+
                 // Publish all device states.
                 for (const entity of this.zigbee.devicesAndGroupsIterator(utils.deviceNotCoordinator)) {
                     if (this.state.exists(entity)) {
