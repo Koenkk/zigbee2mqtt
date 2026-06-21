@@ -1196,6 +1196,24 @@ describe("Extension: HomeAssistant", () => {
         });
     });
 
+    it("Should apply user configuration after converter compatibility mapping", async () => {
+        settings.set(["devices", "0x18fc2600000d7ae2", "homeassistant", "climate"], {
+            modes: ["off", "heat", "auto"],
+            mode_command_template: null,
+        });
+
+        await resetExtension();
+        await flushPromises();
+
+        const call = mockMQTTPublishAsync.mock.calls.find((c) => c[0] === "homeassistant/climate/0x18fc2600000d7ae2/climate/config");
+        expect(call).toBeDefined();
+        const payload = JSON.parse(call![1] as string);
+
+        expect(payload.modes).toStrictEqual(["off", "heat", "auto"]);
+        expect(payload.mode_command_template).toBeUndefined();
+        expect(payload.mode_command_topic).toStrictEqual("zigbee2mqtt/bosch_radiator/set");
+    });
+
     it("does not throw when discovery payload override throws", async () => {
         const bosch = getZ2MEntity(devices["RBSH-TRV0-ZB-EU"]) as Device;
         assert(typeof bosch.definition?.meta?.overrideHaDiscoveryPayload === "function");

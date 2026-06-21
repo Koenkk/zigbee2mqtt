@@ -1815,7 +1815,16 @@ export class HomeAssistant extends Extension {
                 payload.current_humidity_topic = stateTopic;
             }
 
-            // Override configuration with user settings.
+            if (entity.isDevice()) {
+                try {
+                    entity.definition?.meta?.overrideHaDiscoveryPayload?.(payload);
+                } catch (error) {
+                    logger.error(`Failed to override HA discovery payload (${(error as Error).stack})`);
+                }
+            }
+
+            // Override configuration with user settings after converter compatibility
+            // mappings, so per-device configuration remains the final authority.
             if (entity.options.homeassistant != null) {
                 const add = (obj: KeyValue, ignoreName: boolean): void => {
                     for (const key in obj) {
@@ -1843,14 +1852,6 @@ export class HomeAssistant extends Extension {
 
                 if (entity.options.homeassistant[config.object_id] != null) {
                     add(entity.options.homeassistant[config.object_id], false);
-                }
-            }
-
-            if (entity.isDevice()) {
-                try {
-                    entity.definition?.meta?.overrideHaDiscoveryPayload?.(payload);
-                } catch (error) {
-                    logger.error(`Failed to override HA discovery payload (${(error as Error).stack})`);
                 }
             }
 
