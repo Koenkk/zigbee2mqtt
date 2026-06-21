@@ -335,6 +335,39 @@ const featurePropertyWithoutEndpoint = (feature: zhc.Feature): string => {
     return feature.property;
 };
 
+const isSensitiveCompositeFeature = (feature: zhc.Feature): boolean => {
+    return /pass(word)?|token|secret|credential|key/i.test(feature.name) || /pass(word)?|token|secret|credential|key/i.test(feature.property);
+};
+
+const compositePathValueTemplate = (path: string[], lower = false): string => {
+    const pathExpression = path.map((part) => `["${part}"]`).join("");
+    const checks = path.map(
+        (part, index) =>
+            `${
+                index === 0
+                    ? "value_json"
+                    : `value_json${path
+                          .slice(0, index)
+                          .map((p) => `["${p}"]`)
+                          .join("")}`
+            }["${part}"] is defined`,
+    );
+    const value = `value_json${pathExpression}`;
+    const renderedValue = lower ? `${value} | string | lower` : value;
+
+    return `{% if ${checks.join(" and ")} %}{{ ${renderedValue} }}{% endif %}`;
+};
+
+const compositePathCommandTemplate = (path: string[], valueTemplate: string): string => {
+    let result = valueTemplate;
+
+    for (let i = path.length - 1; i >= 0; i--) {
+        result = `{"${path[i]}": ${result}}`;
+    }
+
+    return result;
+};
+
 /**
  * This class handles the bridge entity configuration for Home Assistant Discovery.
  */
@@ -1298,6 +1331,110 @@ export class HomeAssistant extends Extension {
 
                     discoveryEntries.push(discoveryEntry);
                     break;
+                }
+
+                if (firstExposeTyped.type === "composite") {
+                    const firstComposite = firstExposeTyped as zhc.Composite;
+                    const addCompositeFeatureDiscovery = (feature: zhc.Feature, path: string[], labelParts: string[]): void => {
+                        if (isSensitiveCompositeFeature(feature)) {
+                            return;
+                        }
+
+                        if (feature.type === "composite") {
+                            for (const child of (feature as zhc.Composite).features) {
+                                addCompositeFeatureDiscovery(child, [...path, child.property], [...labelParts, child.label]);
+                            }
+                            return;
+                        }
+
+                        const allowsState = !!(feature.access & ACCESS_STATE);
+                        const allowsSet = !!(feature.access & ACCESS_SET);
+                        if (!allowsState && !allowsSet) {
+                            return;
+                        }
+
+                        const objectId = path.join("_");
+                        const name = endpointName ? `${labelParts.join(" ")} ${endpointName}` : labelParts.join(" ");
+                        const discoveryPayload: KeyValue = {
+                            name,
+                            state_topic: allowsState,
+                            ...(allowsState && {
+                                value_template: compositePathValueTemplate(path, isBinaryExpose(feature) && typeof feature.value_on === "boolean"),
+                            }),
+                            ...(allowsSet && {
+                                command_topic: true,
+                                optimistic: !allowsState,
+                            }),
+                        };
+
+                        if (isNumericExpose(feature)) {
+                            if (allowsSet) discoveryPayload.command_template = compositePathCommandTemplate(path, "{{ value }}");
+                            if (feature.unit) discoveryPayload.unit_of_measurement = feature.unit;
+                            if (feature.value_step) discoveryPayload.step = feature.value_step;
+                            if (feature.value_min != null) discoveryPayload.min = feature.value_min;
+                            if (feature.value_max != null) discoveryPayload.max = feature.value_max;
+                            Object.assign(discoveryPayload, NUMERIC_DISCOVERY_LOOKUP[feature.name]);
+
+                            if (NUMERIC_DISCOVERY_LOOKUP[feature.name]?.device_class === "temperature") {
+                                discoveryPayload.device_class = NUMERIC_DISCOVERY_LOOKUP[feature.name]?.device_class;
+                            } else {
+                                delete discoveryPayload.device_class;
+                            }
+
+                            discoveryEntries.push({
+                                type: allowsSet ? "number" : "sensor",
+                                object_id: objectId,
+                                mockProperties: [{property: firstComposite.property, value: null}],
+                                discovery_payload: discoveryPayload,
+                            });
+                        } else if (isEnumExpose(feature)) {
+                            if (allowsSet) {
+                                discoveryPayload.options = feature.values.map((v) => v.toString());
+                                discoveryPayload.command_template = compositePathCommandTemplate(path, "{{ value | tojson }}");
+                            }
+                            Object.assign(discoveryPayload, ENUM_DISCOVERY_LOOKUP[feature.name]);
+                            discoveryEntries.push({
+                                type: allowsSet ? "select" : "sensor",
+                                object_id: objectId,
+                                mockProperties: [{property: firstComposite.property, value: null}],
+                                discovery_payload: discoveryPayload,
+                            });
+                        } else if (isBinaryExpose(feature)) {
+                            discoveryPayload.payload_on = feature.value_on.toString();
+                            discoveryPayload.payload_off = feature.value_off.toString();
+                            if (allowsSet) {
+                                discoveryPayload.command_template = compositePathCommandTemplate(
+                                    path,
+                                    typeof feature.value_on === "boolean" ? "{{ value }}" : "{{ value | tojson }}",
+                                );
+                            }
+                            Object.assign(discoveryPayload, BINARY_DISCOVERY_LOOKUP[feature.name]);
+                            discoveryEntries.push({
+                                type: allowsSet ? "switch" : "binary_sensor",
+                                object_id: objectId,
+                                mockProperties: [{property: firstComposite.property, value: null}],
+                                discovery_payload: discoveryPayload,
+                            });
+                        } else if (feature.type === "text") {
+                            const textFeature = feature as zhc.Text;
+                            if (allowsSet) discoveryPayload.command_template = compositePathCommandTemplate(path, "{{ value | tojson }}");
+                            Object.assign(discoveryPayload, LIST_DISCOVERY_LOOKUP[textFeature.name]);
+                            discoveryEntries.push({
+                                type: allowsSet ? "text" : "sensor",
+                                object_id: objectId,
+                                mockProperties: [{property: firstComposite.property, value: null}],
+                                discovery_payload: discoveryPayload,
+                            });
+                        }
+                    };
+
+                    for (const feature of firstComposite.features) {
+                        addCompositeFeatureDiscovery(feature, [firstComposite.property, feature.property], [firstComposite.label, feature.label]);
+                    }
+
+                    if (discoveryEntries.length > 0) {
+                        break;
+                    }
                 }
 
                 if (firstExposeTyped.type === "text" && firstExposeTyped.access & ACCESS_SET) {
