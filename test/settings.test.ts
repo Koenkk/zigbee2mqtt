@@ -3,7 +3,7 @@ import {beforeEach, describe, expect, it} from "vitest";
 import "./mocks/data";
 
 import fs from "node:fs";
-import yaml from "js-yaml";
+import {dump, load} from "js-yaml";
 import objectAssignDeep from "object-assign-deep";
 
 import mockedData from "../lib/util/data";
@@ -21,14 +21,14 @@ const minimalConfig = {
 
 describe("Settings", () => {
     const write = (file: string, json: Record<string, unknown>, reread = true): void => {
-        fs.writeFileSync(file, yaml.dump(json));
+        fs.writeFileSync(file, dump(json));
 
         if (reread) {
             settings.reRead();
         }
     };
 
-    const read = (file: string): unknown => yaml.load(fs.readFileSync(file, "utf8"));
+    const read = (file: string): unknown => load(fs.readFileSync(file, "utf8"));
 
     const remove = (file: string): void => {
         if (fs.existsSync(file)) {
