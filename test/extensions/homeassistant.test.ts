@@ -1079,6 +1079,16 @@ describe("Extension: HomeAssistant", () => {
                     },
                     {
                         type: "numeric",
+                        name: "seasonal_watering_adjustment_january",
+                        property: "seasonal_january",
+                        label: "January adjustment",
+                        access: 3,
+                        value_min: 0,
+                        value_max: 200,
+                        value_step: 1,
+                    },
+                    {
+                        type: "numeric",
                         name: "ignored",
                         property: "ignored",
                         label: "Ignored",
@@ -1135,7 +1145,13 @@ describe("Extension: HomeAssistant", () => {
                             id.startsWith("select:network_") ||
                             id.startsWith("switch:network_"),
                     ),
-            ).toStrictEqual(["number:network_timeout", "sensor:network_temperature", "select:network_mode", "switch:network_advanced_enabled"]);
+            ).toStrictEqual([
+                "number:network_timeout",
+                "sensor:network_temperature",
+                "number:network_seasonal_january",
+                "select:network_mode",
+                "switch:network_advanced_enabled",
+            ]);
             expect(configs.find((config) => config.object_id === "network_timeout")?.discovery_payload).toMatchObject({
                 value_template:
                     '{% if value_json["network"] is defined and value_json["network"]["timeout"] is defined %}{{ value_json["network"]["timeout"] }}{% endif %}',
@@ -1152,6 +1168,14 @@ describe("Extension: HomeAssistant", () => {
                 device_class: "temperature",
                 state_class: "measurement",
             });
+            expect(configs.find((config) => config.object_id === "network_seasonal_january")?.discovery_payload).toMatchObject({
+                enabled_by_default: false,
+                entity_category: "config",
+                icon: "mdi:sprinkler-variant",
+                min: 0,
+                max: 200,
+                step: 1,
+            });
             expect(configs.find((config) => config.object_id === "network_mode")?.discovery_payload).toMatchObject({
                 command_template: '{"network": {"mode": {{ value | tojson }}}}',
                 entity_category: "config",
@@ -1167,6 +1191,118 @@ describe("Extension: HomeAssistant", () => {
             });
             expect(configs.find((config) => config.object_id.includes("password"))).toBeUndefined();
             expect(configs.find((config) => config.object_id.includes("ignored"))).toBeUndefined();
+        } finally {
+            siren.definition.exposes = originalExposes;
+        }
+    });
+
+    it("Should discover write-only composite settings as disabled config entities", () => {
+        const siren = getZ2MEntity(devices.HS2WD) as Device;
+        assert(siren.definition);
+        const originalExposes = siren.definition.exposes;
+
+        siren.definition.exposes = [
+            {
+                type: "composite",
+                name: "settings",
+                property: "settings",
+                label: "Settings",
+                access: 2,
+                category: "config",
+                features: [
+                    {
+                        type: "numeric",
+                        name: "duration",
+                        property: "duration",
+                        label: "Duration",
+                        access: 2,
+                        unit: "min",
+                        value_min: 1,
+                        value_max: 60,
+                        value_step: 1,
+                    },
+                    {
+                        type: "enum",
+                        name: "mode",
+                        property: "mode",
+                        label: "Mode",
+                        access: 2,
+                        values: ["auto", "manual"],
+                    },
+                ],
+            },
+        ] as zhc.Expose[];
+
+        try {
+            // @ts-expect-error private
+            const configs = extension.getConfigs(siren);
+
+            expect(configs.find((config) => config.object_id === "settings_duration")?.discovery_payload).toMatchObject({
+                command_template: '{"settings": {"duration": {{ value }}}}',
+                enabled_by_default: false,
+                entity_category: "config",
+                optimistic: true,
+            });
+            expect(configs.find((config) => config.object_id === "settings_mode")?.discovery_payload).toMatchObject({
+                command_template: '{"settings": {"mode": {{ value | tojson }}}}',
+                enabled_by_default: false,
+                entity_category: "config",
+                optimistic: true,
+                options: ["auto", "manual"],
+            });
+        } finally {
+            siren.definition.exposes = originalExposes;
+        }
+    });
+
+    it("Should discover Wi-Fi composite settings as disabled config entities", () => {
+        const siren = getZ2MEntity(devices.HS2WD) as Device;
+        assert(siren.definition);
+        const originalExposes = siren.definition.exposes;
+
+        siren.definition.exposes = [
+            {
+                type: "composite",
+                name: "wifi_config",
+                property: "wifi_config",
+                label: "Wi-Fi Configuration",
+                access: 3,
+                category: "config",
+                features: [
+                    {
+                        type: "binary",
+                        name: "enabled",
+                        property: "enabled",
+                        label: "Wi-Fi enabled",
+                        access: 3,
+                        value_on: true,
+                        value_off: false,
+                    },
+                    {
+                        type: "text",
+                        name: "ssid",
+                        property: "ssid",
+                        label: "Network",
+                        access: 3,
+                    },
+                ],
+            },
+        ] as zhc.Expose[];
+
+        try {
+            // @ts-expect-error private
+            const configs = extension.getConfigs(siren);
+
+            expect(configs.find((config) => config.object_id === "wifi_config_enabled")?.discovery_payload).toMatchObject({
+                enabled_by_default: false,
+                entity_category: "config",
+                payload_on: "true",
+                payload_off: "false",
+            });
+            expect(configs.find((config) => config.object_id === "wifi_config_ssid")?.discovery_payload).toMatchObject({
+                enabled_by_default: false,
+                entity_category: "config",
+            });
         } finally {
             siren.definition.exposes = originalExposes;
         }

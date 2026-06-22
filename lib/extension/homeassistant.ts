@@ -78,6 +78,7 @@ const BINARY_DISCOVERY_LOOKUP: {[s: string]: KeyValue} = {
     color_sync: {entity_category: "config", icon: "mdi:sync-circle"},
     consumer_connected: {device_class: "plug"},
     contact: {device_class: "door"},
+    dhcp_enabled: {enabled_by_default: false, entity_category: "diagnostic", icon: "mdi:check-network-outline"},
     garage_door_contact: {device_class: "garage_door", payload_on: false, payload_off: true},
     frost_protection: {entity_category: "config", icon: "mdi:snowflake-thermometer"},
     heating_stop: {entity_category: "config", icon: "mdi:radiator-off"},
@@ -186,6 +187,11 @@ const NUMERIC_DISCOVERY_LOOKUP: {[s: string]: KeyValue} = {
     humidity_calibration: {entity_category: "config", icon: "mdi:wrench-clock"},
     humidity_max: {entity_category: "config", icon: "mdi:water-percent"},
     humidity_min: {entity_category: "config", icon: "mdi:water-percent"},
+    ip_address: {
+        device_class: "ip_address",
+        enabled_by_default: false,
+        entity_category: "diagnostic",
+    },
     illuminance_calibration: {entity_category: "config", icon: "mdi:wrench-clock"},
     illuminance: {device_class: "illuminance", state_class: "measurement"},
     illuminance_raw: {state_class: "measurement"},
@@ -243,6 +249,18 @@ const NUMERIC_DISCOVERY_LOOKUP: {[s: string]: KeyValue} = {
         entity_category: "diagnostic",
         icon: "mdi:brightness-5",
     },
+    seasonal_watering_adjustment_april: {enabled_by_default: false, entity_category: "config", icon: "mdi:sprinkler-variant"},
+    seasonal_watering_adjustment_august: {enabled_by_default: false, entity_category: "config", icon: "mdi:sprinkler-variant"},
+    seasonal_watering_adjustment_december: {enabled_by_default: false, entity_category: "config", icon: "mdi:sprinkler-variant"},
+    seasonal_watering_adjustment_february: {enabled_by_default: false, entity_category: "config", icon: "mdi:sprinkler-variant"},
+    seasonal_watering_adjustment_january: {enabled_by_default: false, entity_category: "config", icon: "mdi:sprinkler-variant"},
+    seasonal_watering_adjustment_july: {enabled_by_default: false, entity_category: "config", icon: "mdi:sprinkler-variant"},
+    seasonal_watering_adjustment_june: {enabled_by_default: false, entity_category: "config", icon: "mdi:sprinkler-variant"},
+    seasonal_watering_adjustment_march: {enabled_by_default: false, entity_category: "config", icon: "mdi:sprinkler-variant"},
+    seasonal_watering_adjustment_may: {enabled_by_default: false, entity_category: "config", icon: "mdi:sprinkler-variant"},
+    seasonal_watering_adjustment_november: {enabled_by_default: false, entity_category: "config", icon: "mdi:sprinkler-variant"},
+    seasonal_watering_adjustment_october: {enabled_by_default: false, entity_category: "config", icon: "mdi:sprinkler-variant"},
+    seasonal_watering_adjustment_september: {enabled_by_default: false, entity_category: "config", icon: "mdi:sprinkler-variant"},
     smoke_density: {icon: "mdi:google-circles-communities", state_class: "measurement"},
     soil_fertility: {device_class: "conductivity", state_class: "measurement"},
     soil_moisture: {device_class: "moisture", state_class: "measurement"},
@@ -325,6 +343,7 @@ const LIST_DISCOVERY_LOOKUP: {[s: string]: KeyValue} = {
     level_config: {entity_category: "diagnostic"},
     programming_mode: {icon: "mdi:calendar-clock"},
     schedule_settings: {icon: "mdi:calendar-clock"},
+    wifi_status: {enabled_by_default: false, entity_category: "diagnostic", icon: "mdi:wifi"},
 } as const;
 
 const featurePropertyWithoutEndpoint = (feature: zhc.Feature): string => {
@@ -1335,14 +1354,22 @@ export class HomeAssistant extends Extension {
 
                 if (firstExposeTyped.type === "composite") {
                     const firstComposite = firstExposeTyped as zhc.Composite;
-                    const addCompositeFeatureDiscovery = (feature: zhc.Feature, path: string[], labelParts: string[]): void => {
+                    const addCompositeFeatureDiscovery = (
+                        feature: zhc.Feature,
+                        path: string[],
+                        labelParts: string[],
+                        inheritedCategory?: "config" | "diagnostic",
+                    ): void => {
                         if (isSensitiveCompositeFeature(feature)) {
                             return;
                         }
 
+                        const featureCategory =
+                            feature.category === "config" || feature.category === "diagnostic" ? feature.category : inheritedCategory;
+
                         if (feature.type === "composite") {
                             for (const child of (feature as zhc.Composite).features) {
-                                addCompositeFeatureDiscovery(child, [...path, child.property], [...labelParts, child.label]);
+                                addCompositeFeatureDiscovery(child, [...path, child.property], [...labelParts, child.label], featureCategory);
                             }
                             return;
                         }
@@ -1355,6 +1382,8 @@ export class HomeAssistant extends Extension {
 
                         const objectId = path.join("_");
                         const name = endpointName ? `${labelParts.join(" ")} ${endpointName}` : labelParts.join(" ");
+                        const writeOnlyConfig = allowsSet && !allowsState;
+                        const advancedConfigGroup = ["wifi_config"].includes(firstComposite.property);
                         const discoveryPayload: KeyValue = {
                             name,
                             state_topic: allowsState,
@@ -1366,8 +1395,14 @@ export class HomeAssistant extends Extension {
                                 optimistic: !allowsState,
                             }),
                         };
-                        if (feature.category === "config" || feature.category === "diagnostic") {
-                            discoveryPayload.entity_category = feature.category;
+
+                        if (writeOnlyConfig || advancedConfigGroup) {
+                            discoveryPayload.entity_category = "config";
+                            discoveryPayload.enabled_by_default = false;
+                        }
+
+                        if (featureCategory) {
+                            discoveryPayload.entity_category ??= featureCategory;
                         }
 
                         if (isNumericExpose(feature)) {
@@ -1432,7 +1467,12 @@ export class HomeAssistant extends Extension {
                     };
 
                     for (const feature of firstComposite.features) {
-                        addCompositeFeatureDiscovery(feature, [firstComposite.property, feature.property], [firstComposite.label, feature.label]);
+                        addCompositeFeatureDiscovery(
+                            feature,
+                            [firstComposite.property, feature.property],
+                            [firstComposite.label, feature.label],
+                            firstComposite.category,
+                        );
                     }
 
                     if (discoveryEntries.length > 0) {
