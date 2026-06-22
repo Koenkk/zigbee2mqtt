@@ -1366,6 +1366,9 @@ export class HomeAssistant extends Extension {
                                 optimistic: !allowsState,
                             }),
                         };
+                        if (feature.category === "config" || feature.category === "diagnostic") {
+                            discoveryPayload.entity_category = feature.category;
+                        }
 
                         if (isNumericExpose(feature)) {
                             if (allowsSet) discoveryPayload.command_template = compositePathCommandTemplate(path, "{{ value }}");
@@ -1476,7 +1479,7 @@ export class HomeAssistant extends Extension {
         // This takes precedence over definitions in this file.
         if (firstExpose.category === "config" || firstExpose.category === "diagnostic") {
             for (const entry of discoveryEntries) {
-                entry.discovery_payload.entity_category = firstExpose.category;
+                entry.discovery_payload.entity_category ??= firstExpose.category;
             }
         }
 

@@ -1054,6 +1054,7 @@ describe("Extension: HomeAssistant", () => {
                 property: "network",
                 label: "Network",
                 access: 3,
+                category: "config",
                 features: [
                     {
                         type: "numeric",
@@ -1061,6 +1062,7 @@ describe("Extension: HomeAssistant", () => {
                         property: "timeout",
                         label: "Timeout",
                         access: 3,
+                        category: "config",
                         unit: "min",
                         value_min: 1,
                         value_max: 60,
@@ -1072,6 +1074,7 @@ describe("Extension: HomeAssistant", () => {
                         property: "temperature",
                         label: "Temperature",
                         access: 1,
+                        category: "diagnostic",
                         unit: "°C",
                     },
                     {
@@ -1137,24 +1140,28 @@ describe("Extension: HomeAssistant", () => {
                 value_template:
                     '{% if value_json["network"] is defined and value_json["network"]["timeout"] is defined %}{{ value_json["network"]["timeout"] }}{% endif %}',
                 command_template: '{"network": {"timeout": {{ value }}}}',
+                entity_category: "config",
                 unit_of_measurement: "min",
                 min: 1,
                 max: 60,
                 step: 1,
             });
             expect(configs.find((config) => config.object_id === "network_temperature")?.discovery_payload).toMatchObject({
+                entity_category: "diagnostic",
                 unit_of_measurement: "°C",
                 device_class: "temperature",
                 state_class: "measurement",
             });
             expect(configs.find((config) => config.object_id === "network_mode")?.discovery_payload).toMatchObject({
                 command_template: '{"network": {"mode": {{ value | tojson }}}}',
+                entity_category: "config",
                 options: ["auto", "manual"],
             });
             expect(configs.find((config) => config.object_id === "network_advanced_enabled")?.discovery_payload).toMatchObject({
                 value_template:
                     '{% if value_json["network"] is defined and value_json["network"]["advanced"] is defined and value_json["network"]["advanced"]["enabled"] is defined %}{{ value_json["network"]["advanced"]["enabled"] | string | lower }}{% endif %}',
                 command_template: '{"network": {"advanced": {"enabled": {{ value }}}}}',
+                entity_category: "config",
                 payload_on: "true",
                 payload_off: "false",
             });
@@ -1436,6 +1443,18 @@ describe("Extension: HomeAssistant", () => {
         });
         expect(mockLogger.error).toHaveBeenCalledWith(expect.stringContaining("Failed to override HA discovery payload"));
 
+        overrideSpy.mockRestore();
+    });
+
+    it("passes device options to discovery payload overrides", async () => {
+        const bosch = getZ2MEntity(devices.BTH_RM230Z) as Device;
+        assert(typeof bosch.definition?.meta?.overrideHaDiscoveryPayload === "function");
+        const overrideSpy = vi.spyOn(bosch.definition.meta, "overrideHaDiscoveryPayload") as MockInstance;
+        settings.set(["devices", "0x18fc2600000d7ae3", "expose_cooling"], true);
+
+        await resetExtension();
+
+        expect(overrideSpy).toHaveBeenCalledWith(expect.any(Object), expect.objectContaining({expose_cooling: true}));
         overrideSpy.mockRestore();
     });
 
