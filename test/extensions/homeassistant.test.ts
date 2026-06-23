@@ -3041,11 +3041,15 @@ describe("Extension: HomeAssistant", () => {
         settings.set(["homeassistant", "legacy_action_sensor"], true);
         await resetExtension();
 
-        // Should discovery action sensor
-        expect(mockMQTTPublishAsync).toHaveBeenCalledWith("homeassistant/sensor/0x0017880104e45520/action/config", expect.any(String), {
-            retain: true,
-            qos: 1,
+        // Should discover action sensor as a diagnostic helper instead of a primary entity.
+        const actionDiscovery = mockMQTTPublishAsync.mock.calls.find(([topic]) => topic === "homeassistant/sensor/0x0017880104e45520/action/config");
+        assert(actionDiscovery);
+        expect(JSON.parse(actionDiscovery[1])).toMatchObject({
+            entity_category: "diagnostic",
+            name: "Action",
+            object_id: "button_action",
         });
+        expect(actionDiscovery[2]).toStrictEqual({retain: true, qos: 1});
 
         // Should counter an action payload with an empty payload
         mockMQTTPublishAsync.mockClear();
