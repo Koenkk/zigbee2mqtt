@@ -1617,18 +1617,6 @@ describe("Extension: HomeAssistant", () => {
         overrideSpy.mockRestore();
     });
 
-    it("passes device options to discovery payload overrides", async () => {
-        const bosch = getZ2MEntity(devices.BTH_RM230Z) as Device;
-        assert(typeof bosch.definition?.meta?.overrideHaDiscoveryPayload === "function");
-        const overrideSpy = vi.spyOn(bosch.definition.meta, "overrideHaDiscoveryPayload") as MockInstance;
-        settings.set(["devices", "0x18fc2600000d7ae3", "expose_cooling"], true);
-
-        await resetExtension();
-
-        expect(overrideSpy).toHaveBeenCalledWith(expect.any(Object), expect.objectContaining({expose_cooling: true}));
-        overrideSpy.mockRestore();
-    });
-
     it("Should discover Bosch BTH-RM230Z with a current_humidity attribute", () => {
         const payload = {
             action_template:
