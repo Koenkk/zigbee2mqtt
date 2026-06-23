@@ -1330,6 +1330,54 @@ describe("Extension: HomeAssistant", () => {
         });
     });
 
+    it("Should include endpoint names for settable composite enum controls", () => {
+        const expose = {
+            type: "composite",
+            name: "manual_default_settings",
+            property: "manual_default_settings_l1",
+            label: "Manual default settings",
+            access: 7,
+            endpoint: "l1",
+            features: [
+                {
+                    type: "enum",
+                    name: "irrigation_mode",
+                    property: "irrigation_mode",
+                    label: "Irrigation mode",
+                    access: 7,
+                    values: ["duration", "capacity"],
+                },
+            ],
+        };
+        const device = {
+            definition: {},
+            isDevice: (): boolean => true,
+            isGroup: (): boolean => false,
+            endpoint: (): string | undefined => undefined,
+            options: {ID: "0x0000000000000001"},
+            exposes: (): unknown[] => [expose],
+            zh: {endpoints: []},
+        };
+
+        // @ts-expect-error private
+        const configs = extension.getConfigs(device);
+
+        expect(configs).toContainEqual({
+            type: "select",
+            object_id: "manual_default_settings_l1_irrigation_mode_l1",
+            mockProperties: [{property: "manual_default_settings_l1", value: {irrigation_mode: null}}],
+            discovery_payload: {
+                name: "Manual default settings Irrigation mode l1",
+                value_template: "{{ value_json.manual_default_settings_l1.irrigation_mode }}",
+                state_topic: true,
+                command_topic: true,
+                command_template: '{ "manual_default_settings_l1": { "irrigation_mode": "{{ value }}" } }',
+                command_topic_prefix: "l1",
+                options: ["duration", "capacity"],
+            },
+        });
+    });
+
     it("does not throw when discovery payload override throws", async () => {
         const bosch = getZ2MEntity(devices["RBSH-TRV0-ZB-EU"]) as Device;
         assert(typeof bosch.definition?.meta?.overrideHaDiscoveryPayload === "function");
