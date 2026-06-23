@@ -1227,6 +1227,7 @@ export class HomeAssistant extends Extension {
                         discovery_payload: {
                             name: endpointName ? `${firstExpose.label} ${endpointName}` : firstExpose.label,
                             value_template: valueTemplate,
+                            ...(firstExpose.property === "action" ? {entity_category: "diagnostic"} : {}),
                             ...ENUM_DISCOVERY_LOOKUP[firstExpose.name],
                         },
                     });
