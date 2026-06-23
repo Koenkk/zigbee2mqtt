@@ -487,7 +487,6 @@ const compositePathCommandTemplate = (path: string[], valueTemplate: string): st
         result = `{"${path[i]}": ${result}}`;
     }
     return result;
-    return result;
 };
 
 /**
