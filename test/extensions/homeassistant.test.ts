@@ -128,6 +128,52 @@ describe("Extension: HomeAssistant", () => {
         expect(duplicated).toStrictEqual([]);
     });
 
+    it("Should mark thermostat configuration toggles as config entities", () => {
+        const switchExposes = [
+            new zhc.Switch().withLabel("Auto lock").withState("auto_lock", false, "Enable/disable auto lock", zhc.access.STATE_SET, "AUTO", "MANUAL"),
+            new zhc.Switch().withLabel("Away mode").withState("away_mode", false, "Enable/disable away mode", zhc.access.STATE_SET),
+            new zhc.Switch().withLabel("Valve detection").withState("valve_detection", true, "Valve detection", zhc.access.STATE_SET),
+            new zhc.Switch()
+                .withLabel("Window detection")
+                .withState("window_detection", true, "Enables/disables window detection", zhc.access.STATE_SET),
+        ];
+        const binaryExposes = [
+            new zhc.Binary("frost_protection", zhc.access.STATE_SET, "ON", "OFF").withDescription("Anti-freeze protection"),
+            new zhc.Binary("heating_stop", zhc.access.STATE_SET, "ON", "OFF").withDescription("Heating stop"),
+            new zhc.Binary("away_mode", zhc.access.STATE_SET, "ON", "OFF").withDescription("Away mode"),
+            new zhc.Binary("window_detection", zhc.access.STATE_SET, "ON", "OFF").withDescription("Open window detection"),
+        ];
+        const getDiscoveryConfigs = (expose: zhc.Expose): KeyValueAny[] => {
+            const device = {
+                definition: {},
+                isDevice: (): boolean => true,
+                isGroup: (): boolean => false,
+                endpoint: () => undefined,
+                options: {},
+                exposes: (): zhc.Expose[] => [expose],
+                zh: {endpoints: []},
+            };
+            // @ts-expect-error private method and minimal test device
+            return extension.getConfigs(device);
+        };
+
+        for (const expose of switchExposes) {
+            const [config] = getDiscoveryConfigs(expose);
+            expect(config.type).toStrictEqual("switch");
+            expect(config.object_id).toStrictEqual(expose.features[0].property);
+            expect(config.discovery_payload.entity_category).toStrictEqual("config");
+            expect(config.discovery_payload.command_topic_postfix).toStrictEqual(expose.features[0].property);
+        }
+
+        for (const expose of binaryExposes) {
+            const [config] = getDiscoveryConfigs(expose);
+            expect(config.type).toStrictEqual("switch");
+            expect(config.object_id).toStrictEqual(`switch_${expose.name}`);
+            expect(config.discovery_payload.entity_category).toStrictEqual("config");
+            expect(config.discovery_payload.command_topic_postfix).toStrictEqual(expose.property);
+        }
+    });
+
     it("Should discover devices and groups", async () => {
         settings.set(["homeassistant", "experimental_event_entities"], true);
         settings.set(["groups", "9", "homeassistant"], {name: "HA Discovery Group", icon: "mdi:lightbulb-group"});

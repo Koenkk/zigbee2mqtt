@@ -48,14 +48,22 @@ const GROUP_SUPPORTED_TYPES: ReadonlyArray<string> = ["light", "switch", "lock",
 const COVER_OPENING_LOOKUP: ReadonlyArray<string> = ["opening", "open", "forward", "up", "rising"];
 const COVER_CLOSING_LOOKUP: ReadonlyArray<string> = ["closing", "close", "backward", "back", "reverse", "down", "declining"];
 const COVER_STOPPED_LOOKUP: ReadonlyArray<string> = ["stopped", "stop", "pause", "paused"];
-const SWITCH_DIFFERENT: ReadonlyArray<string> = ["valve_detection", "window_detection", "auto_lock", "away_mode"];
+const CONFIG_SWITCH_DISCOVERY_LOOKUP: {[s: string]: KeyValue} = {
+    auto_lock: {entity_category: "config", icon: "mdi:lock"},
+    away_mode: {entity_category: "config", icon: "mdi:home-export-outline"},
+    valve_detection: {entity_category: "config", icon: "mdi:pipe-valve"},
+    window_detection: {entity_category: "config", icon: "mdi:window-open-variant"},
+} as const;
+const SWITCH_DIFFERENT: ReadonlyArray<string> = Object.keys(CONFIG_SWITCH_DISCOVERY_LOOKUP);
 const BINARY_DISCOVERY_LOOKUP: {[s: string]: KeyValue} = {
     activity_led_indicator: {icon: "mdi:led-on"},
     area1Occupancy: {device_class: "occupancy"},
     area2Occupancy: {device_class: "occupancy"},
     area3Occupancy: {device_class: "occupancy"},
     area4Occupancy: {device_class: "occupancy"},
+    auto_lock: {entity_category: "config", icon: "mdi:lock"},
     auto_off: {icon: "mdi:flash-auto"},
+    away_mode: {entity_category: "config", icon: "mdi:home-export-outline"},
     battery_low: {entity_category: "diagnostic", device_class: "battery"},
     button_lock: {entity_category: "config", icon: "mdi:lock"},
     calibration: {entity_category: "config", icon: "mdi:progress-wrench"},
@@ -71,6 +79,8 @@ const BINARY_DISCOVERY_LOOKUP: {[s: string]: KeyValue} = {
     consumer_connected: {device_class: "plug"},
     contact: {device_class: "door"},
     garage_door_contact: {device_class: "garage_door", payload_on: false, payload_off: true},
+    frost_protection: {entity_category: "config", icon: "mdi:snowflake-thermometer"},
+    heating_stop: {entity_category: "config", icon: "mdi:radiator-off"},
     eco_mode: {entity_category: "config", icon: "mdi:leaf"},
     expose_pin: {entity_category: "config", icon: "mdi:pin"},
     flip_indicator_light: {entity_category: "config", icon: "mdi:arrow-left-right"},
@@ -103,12 +113,12 @@ const BINARY_DISCOVERY_LOOKUP: {[s: string]: KeyValue} = {
     th_heater: {icon: "mdi:heat-wave"},
     trigger_indicator: {icon: "mdi:led-on"},
     valve_alarm: {device_class: "problem"},
-    valve_detection: {icon: "mdi:pipe-valve"},
+    valve_detection: {entity_category: "config", icon: "mdi:pipe-valve"},
     valve_state: {device_class: "opening"},
     vibration: {device_class: "vibration"},
     water_leak: {device_class: "moisture"},
     window: {device_class: "window"},
-    window_detection: {icon: "mdi:window-open-variant"},
+    window_detection: {entity_category: "config", icon: "mdi:window-open-variant"},
     window_open: {device_class: "window"},
 } as const;
 const NUMERIC_DISCOVERY_LOOKUP: {[s: string]: KeyValue} = {
@@ -603,10 +613,7 @@ export class HomeAssistant extends Extension {
                     discoveryEntry.discovery_payload.state_off = state.value_off;
                     discoveryEntry.discovery_payload.state_on = state.value_on;
                     discoveryEntry.object_id = property;
-
-                    if (property === "window_detection") {
-                        discoveryEntry.discovery_payload.icon = "mdi:window-open-variant";
-                    }
+                    Object.assign(discoveryEntry.discovery_payload, CONFIG_SWITCH_DISCOVERY_LOOKUP[property]);
                 }
 
                 discoveryEntries.push(discoveryEntry);
