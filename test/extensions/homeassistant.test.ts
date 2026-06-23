@@ -1255,6 +1255,41 @@ describe("Extension: HomeAssistant", () => {
         }
     });
 
+    it("Should discover irrigation plan remove index as disabled config", () => {
+        const siren = getZ2MEntity(devices.HS2WD) as Device;
+        assert(siren.definition);
+        const originalExposes = siren.definition.exposes;
+
+        siren.definition.exposes = [
+            {
+                type: "numeric",
+                name: "irrigation_plan_remove_plan_index",
+                property: "irrigation_plan_remove_plan_index",
+                label: "Irrigation plan remove plan index",
+                access: 2,
+                category: "config",
+                value_min: 0,
+                value_max: 5,
+            },
+        ] as zhc.Expose[];
+
+        try {
+            // @ts-expect-error private
+            const configs = extension.getConfigs(siren);
+
+            expect(configs.find((config) => config.object_id === "irrigation_plan_remove_plan_index")?.discovery_payload).toMatchObject({
+                command_topic: true,
+                enabled_by_default: false,
+                entity_category: "config",
+                icon: "mdi:calendar-remove",
+                min: 0,
+                max: 5,
+            });
+        } finally {
+            siren.definition.exposes = originalExposes;
+        }
+    });
+
     it("Should discover Wi-Fi composite settings as disabled config entities", () => {
         const siren = getZ2MEntity(devices.HS2WD) as Device;
         assert(siren.definition);

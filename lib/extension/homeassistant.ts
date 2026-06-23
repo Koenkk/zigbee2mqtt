@@ -195,6 +195,7 @@ const NUMERIC_DISCOVERY_LOOKUP: {[s: string]: KeyValue} = {
     illuminance_calibration: {entity_category: "config", icon: "mdi:wrench-clock"},
     illuminance: {device_class: "illuminance", state_class: "measurement"},
     illuminance_raw: {state_class: "measurement"},
+    irrigation_plan_remove_plan_index: {enabled_by_default: false, entity_category: "config", icon: "mdi:calendar-remove"},
     internalTemperature: {
         device_class: "temperature",
         entity_category: "diagnostic",
