@@ -1127,6 +1127,15 @@ describe("Extension: HomeAssistant", () => {
                             },
                         ],
                     },
+                    {
+                        type: "binary",
+                        name: "locked",
+                        property: "locked",
+                        label: "Locked",
+                        access: 1,
+                        value_on: "LOCK",
+                        value_off: "UNLOCK",
+                    },
                 ],
             },
         ] as zhc.Expose[];
@@ -1143,7 +1152,8 @@ describe("Extension: HomeAssistant", () => {
                             id.startsWith("number:network_") ||
                             id.startsWith("sensor:network_") ||
                             id.startsWith("select:network_") ||
-                            id.startsWith("switch:network_"),
+                            id.startsWith("switch:network_") ||
+                            id.startsWith("binary_sensor:network_"),
                     ),
             ).toStrictEqual([
                 "number:network_timeout",
@@ -1151,6 +1161,7 @@ describe("Extension: HomeAssistant", () => {
                 "number:network_seasonal_january",
                 "select:network_mode",
                 "switch:network_advanced_enabled",
+                "binary_sensor:network_locked",
             ]);
             expect(configs.find((config) => config.object_id === "network_timeout")?.discovery_payload).toMatchObject({
                 value_template:
@@ -1188,6 +1199,12 @@ describe("Extension: HomeAssistant", () => {
                 entity_category: "config",
                 payload_on: "true",
                 payload_off: "false",
+            });
+            expect(configs.find((config) => config.object_id === "network_locked")?.discovery_payload).toMatchObject({
+                value_template:
+                    '{% if value_json["network"] is defined and value_json["network"]["locked"] is defined %}{{ value_json["network"]["locked"] }}{% endif %}',
+                payload_on: "LOCK",
+                payload_off: "UNLOCK",
             });
             expect(configs.find((config) => config.object_id.includes("password"))).toBeUndefined();
             expect(configs.find((config) => config.object_id.includes("ignored"))).toBeUndefined();
