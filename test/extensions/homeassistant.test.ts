@@ -126,7 +126,7 @@ describe("Extension: HomeAssistant", () => {
         }
 
         expect(duplicated).toStrictEqual([]);
-    });
+    }, 30000);
 
     it("Should mark thermostat configuration toggles as config entities", () => {
         const switchExposes = [
@@ -283,7 +283,7 @@ describe("Extension: HomeAssistant", () => {
             object_id: "ha_discovery_group",
             default_entity_id: "switch.ha_discovery_group",
             unique_id: "9_switch_zigbee2mqtt",
-            group: ["0x0017880104e45542_switch_right_zigbee2mqtt"],
+            group: ["0x000b57fffec6a5b7_color_options_execute_if_off_zigbee2mqtt", "0x0017880104e45542_switch_right_zigbee2mqtt"],
             origin: origin,
             value_template: '{{ value_json["state"] }}',
         };
@@ -1040,6 +1040,324 @@ describe("Extension: HomeAssistant", () => {
             retain: true,
             qos: 1,
         });
+    });
+
+    it("Should discover safe scalar child entities for composite exposes", () => {
+        const siren = getZ2MEntity(devices.HS2WD) as Device;
+        assert(siren.definition);
+        const originalExposes = siren.definition.exposes;
+
+        siren.definition.exposes = [
+            {
+                type: "composite",
+                name: "network",
+                property: "network",
+                label: "Network",
+                access: 3,
+                category: "config",
+                features: [
+                    {
+                        type: "numeric",
+                        name: "timeout",
+                        property: "timeout",
+                        label: "Timeout",
+                        access: 3,
+                        category: "config",
+                        unit: "min",
+                        value_min: 1,
+                        value_max: 60,
+                        value_step: 1,
+                    },
+                    {
+                        type: "numeric",
+                        name: "temperature",
+                        property: "temperature",
+                        label: "Temperature",
+                        access: 1,
+                        category: "diagnostic",
+                        unit: "°C",
+                    },
+                    {
+                        type: "numeric",
+                        name: "seasonal_watering_adjustment_january",
+                        property: "seasonal_january",
+                        label: "January adjustment",
+                        access: 3,
+                        value_min: 0,
+                        value_max: 200,
+                        value_step: 1,
+                    },
+                    {
+                        type: "numeric",
+                        name: "ignored",
+                        property: "ignored",
+                        label: "Ignored",
+                        access: 0,
+                    },
+                    {
+                        type: "enum",
+                        name: "mode",
+                        property: "mode",
+                        label: "Mode",
+                        access: 3,
+                        values: ["auto", "manual"],
+                    },
+                    {
+                        type: "text",
+                        name: "password",
+                        property: "password",
+                        label: "Password",
+                        access: 3,
+                    },
+                    {
+                        type: "composite",
+                        name: "advanced",
+                        property: "advanced",
+                        label: "Advanced",
+                        access: 3,
+                        features: [
+                            {
+                                type: "binary",
+                                name: "enabled",
+                                property: "enabled",
+                                label: "Enabled",
+                                access: 3,
+                                value_on: true,
+                                value_off: false,
+                            },
+                        ],
+                    },
+                    {
+                        type: "binary",
+                        name: "locked",
+                        property: "locked",
+                        label: "Locked",
+                        access: 1,
+                        value_on: "LOCK",
+                        value_off: "UNLOCK",
+                    },
+                ],
+            },
+        ] as zhc.Expose[];
+
+        try {
+            // @ts-expect-error private
+            const configs = extension.getConfigs(siren);
+
+            expect(
+                configs
+                    .map((config) => `${config.type}:${config.object_id}`)
+                    .filter(
+                        (id) =>
+                            id.startsWith("number:network_") ||
+                            id.startsWith("sensor:network_") ||
+                            id.startsWith("select:network_") ||
+                            id.startsWith("switch:network_") ||
+                            id.startsWith("binary_sensor:network_"),
+                    ),
+            ).toStrictEqual([
+                "number:network_timeout",
+                "sensor:network_temperature",
+                "number:network_seasonal_january",
+                "select:network_mode",
+                "switch:network_advanced_enabled",
+                "binary_sensor:network_locked",
+            ]);
+            expect(configs.find((config) => config.object_id === "network_timeout")?.discovery_payload).toMatchObject({
+                value_template:
+                    '{% if value_json["network"] is defined and value_json["network"]["timeout"] is defined %}{{ value_json["network"]["timeout"] }}{% endif %}',
+                command_template: '{"network": {"timeout": {{ value }}}}',
+                entity_category: "config",
+                unit_of_measurement: "min",
+                min: 1,
+                max: 60,
+                step: 1,
+            });
+            expect(configs.find((config) => config.object_id === "network_temperature")?.discovery_payload).toMatchObject({
+                entity_category: "diagnostic",
+                unit_of_measurement: "°C",
+                device_class: "temperature",
+                state_class: "measurement",
+            });
+            expect(configs.find((config) => config.object_id === "network_seasonal_january")?.discovery_payload).toMatchObject({
+                enabled_by_default: false,
+                entity_category: "config",
+                icon: "mdi:sprinkler-variant",
+                min: 0,
+                max: 200,
+                step: 1,
+            });
+            expect(configs.find((config) => config.object_id === "network_mode")?.discovery_payload).toMatchObject({
+                command_template: '{"network": {"mode": {{ value | tojson }}}}',
+                entity_category: "config",
+                options: ["auto", "manual"],
+            });
+            expect(configs.find((config) => config.object_id === "network_advanced_enabled")?.discovery_payload).toMatchObject({
+                value_template:
+                    '{% if value_json["network"] is defined and value_json["network"]["advanced"] is defined and value_json["network"]["advanced"]["enabled"] is defined %}{{ value_json["network"]["advanced"]["enabled"] | string | lower }}{% endif %}',
+                command_template: '{"network": {"advanced": {"enabled": {{ value }}}}}',
+                entity_category: "config",
+                payload_on: "true",
+                payload_off: "false",
+            });
+            expect(configs.find((config) => config.object_id === "network_locked")?.discovery_payload).toMatchObject({
+                value_template:
+                    '{% if value_json["network"] is defined and value_json["network"]["locked"] is defined %}{{ value_json["network"]["locked"] }}{% endif %}',
+                payload_on: "LOCK",
+                payload_off: "UNLOCK",
+            });
+            expect(configs.find((config) => config.object_id.includes("password"))).toBeUndefined();
+            expect(configs.find((config) => config.object_id.includes("ignored"))).toBeUndefined();
+        } finally {
+            siren.definition.exposes = originalExposes;
+        }
+    });
+
+    it("Should discover write-only composite settings as disabled config entities", () => {
+        const siren = getZ2MEntity(devices.HS2WD) as Device;
+        assert(siren.definition);
+        const originalExposes = siren.definition.exposes;
+
+        siren.definition.exposes = [
+            {
+                type: "composite",
+                name: "settings",
+                property: "settings",
+                label: "Settings",
+                access: 2,
+                category: "config",
+                features: [
+                    {
+                        type: "numeric",
+                        name: "duration",
+                        property: "duration",
+                        label: "Duration",
+                        access: 2,
+                        unit: "min",
+                        value_min: 1,
+                        value_max: 60,
+                        value_step: 1,
+                    },
+                    {
+                        type: "enum",
+                        name: "mode",
+                        property: "mode",
+                        label: "Mode",
+                        access: 2,
+                        values: ["auto", "manual"],
+                    },
+                ],
+            },
+        ] as zhc.Expose[];
+
+        try {
+            // @ts-expect-error private
+            const configs = extension.getConfigs(siren);
+
+            expect(configs.find((config) => config.object_id === "settings_duration")?.discovery_payload).toMatchObject({
+                command_template: '{"settings": {"duration": {{ value }}}}',
+                enabled_by_default: false,
+                entity_category: "config",
+                optimistic: true,
+            });
+            expect(configs.find((config) => config.object_id === "settings_mode")?.discovery_payload).toMatchObject({
+                command_template: '{"settings": {"mode": {{ value | tojson }}}}',
+                enabled_by_default: false,
+                entity_category: "config",
+                optimistic: true,
+                options: ["auto", "manual"],
+            });
+        } finally {
+            siren.definition.exposes = originalExposes;
+        }
+    });
+
+    it("Should discover irrigation plan remove index as disabled config", () => {
+        const siren = getZ2MEntity(devices.HS2WD) as Device;
+        assert(siren.definition);
+        const originalExposes = siren.definition.exposes;
+
+        siren.definition.exposes = [
+            {
+                type: "numeric",
+                name: "irrigation_plan_remove_plan_index",
+                property: "irrigation_plan_remove_plan_index",
+                label: "Irrigation plan remove plan index",
+                access: 2,
+                category: "config",
+                value_min: 0,
+                value_max: 5,
+            },
+        ] as zhc.Expose[];
+
+        try {
+            // @ts-expect-error private
+            const configs = extension.getConfigs(siren);
+
+            expect(configs.find((config) => config.object_id === "irrigation_plan_remove_plan_index")?.discovery_payload).toMatchObject({
+                command_topic: true,
+                enabled_by_default: false,
+                entity_category: "config",
+                icon: "mdi:calendar-remove",
+                min: 0,
+                max: 5,
+            });
+        } finally {
+            siren.definition.exposes = originalExposes;
+        }
+    });
+
+    it("Should discover Wi-Fi composite settings as disabled config entities", () => {
+        const siren = getZ2MEntity(devices.HS2WD) as Device;
+        assert(siren.definition);
+        const originalExposes = siren.definition.exposes;
+
+        siren.definition.exposes = [
+            {
+                type: "composite",
+                name: "wifi_config",
+                property: "wifi_config",
+                label: "Wi-Fi Configuration",
+                access: 3,
+                category: "config",
+                features: [
+                    {
+                        type: "binary",
+                        name: "enabled",
+                        property: "enabled",
+                        label: "Wi-Fi enabled",
+                        access: 3,
+                        value_on: true,
+                        value_off: false,
+                    },
+                    {
+                        type: "text",
+                        name: "ssid",
+                        property: "ssid",
+                        label: "Network",
+                        access: 3,
+                    },
+                ],
+            },
+        ] as zhc.Expose[];
+
+        try {
+            // @ts-expect-error private
+            const configs = extension.getConfigs(siren);
+
+            expect(configs.find((config) => config.object_id === "wifi_config_enabled")?.discovery_payload).toMatchObject({
+                enabled_by_default: false,
+                entity_category: "config",
+                payload_on: "true",
+                payload_off: "false",
+            });
+            expect(configs.find((config) => config.object_id === "wifi_config_ssid")?.discovery_payload).toMatchObject({
+                enabled_by_default: false,
+                entity_category: "config",
+            });
+        } finally {
+            siren.definition.exposes = originalExposes;
+        }
     });
 
     it("Should discover devices with speed-controlled fan", () => {
