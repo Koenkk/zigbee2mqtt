@@ -1316,6 +1316,30 @@ describe("Extension: HomeAssistant", () => {
         overrideSpy.mockRestore();
     });
 
+    it("passes device options to discovery payload overrides", async () => {
+        const bosch = getZ2MEntity(devices["RBSH-TRV0-ZB-EU"]) as Device;
+        assert(typeof bosch.definition?.meta?.overrideHaDiscoveryPayload === "function");
+        const overrideSpy = vi.spyOn(bosch.definition.meta, "overrideHaDiscoveryPayload") as MockInstance;
+        settings.set(["devices", "0x18fc2600000d7ae2", "discovery_option_marker"], "passed");
+
+        overrideSpy.mockImplementation((payload, options) => {
+            if (payload.mode_command_topic?.endsWith("/system_mode")) {
+                payload.discovery_option_marker = options?.discovery_option_marker;
+            }
+        });
+
+        await resetExtension();
+
+        expect(overrideSpy).toHaveBeenCalledWith(expect.any(Object), expect.objectContaining({discovery_option_marker: "passed"}));
+        expect(mockMQTTPublishAsync).toHaveBeenCalledWith(
+            "homeassistant/climate/0x18fc2600000d7ae2/climate/config",
+            expect.stringContaining('"discovery_option_marker":"passed"'),
+            {qos: 1, retain: true},
+        );
+
+        overrideSpy.mockRestore();
+    });
+
     it("Should discover Bosch BTH-RM230Z with a current_humidity attribute", () => {
         const payload = {
             action_template:
