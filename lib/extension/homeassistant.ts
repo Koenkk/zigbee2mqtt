@@ -335,6 +335,10 @@ const featurePropertyWithoutEndpoint = (feature: zhc.Feature): string => {
     return feature.property;
 };
 
+const isValveSwitch = (expose: zhc.Expose, state: zhc.Binary): boolean => {
+    return expose.homeassistant?.type === "valve" && state.name === "state";
+};
+
 /**
  * This class handles the bridge entity configuration for Home Assistant Discovery.
  */
@@ -593,17 +597,24 @@ export class HomeAssistant extends Extension {
                 const state = (firstExpose as zhc.Switch).features.filter(isBinaryExpose).find((f) => f.name === "state");
                 assert(state, `Switch expose must have a 'state'`);
                 const property = getProperty(state);
+                const isValve = isValveSwitch(firstExpose, state);
                 const discoveryEntry: DiscoveryEntry = {
-                    type: "switch",
+                    type: isValve ? "valve" : "switch",
                     object_id: endpointName ? `switch_${endpointName}` : "switch",
                     mockProperties: [{property: property, value: null}],
                     discovery_payload: {
                         name: endpointName ? utils.capitalize(endpointName) : null,
-                        payload_off: state.value_off,
-                        payload_on: state.value_on,
                         value_template: `{{ value_json["${property}"] }}`,
                         command_topic: true,
                         command_topic_prefix: endpointName,
+                        ...(isValve
+                            ? {
+                                  payload_close: state.value_off,
+                                  payload_open: state.value_on,
+                                  state_closed: state.value_off,
+                                  state_open: state.value_on,
+                              }
+                            : {payload_off: state.value_off, payload_on: state.value_on}),
                     },
                 };
 
