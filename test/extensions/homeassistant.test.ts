@@ -174,6 +174,40 @@ describe("Extension: HomeAssistant", () => {
         }
     });
 
+    it("Should apply expose-level Home Assistant discovery metadata", () => {
+        const createDevice = (exposes: zhc.Expose[]): Device =>
+            ({
+                definition: {},
+                isDevice: (): boolean => true,
+                isGroup: (): boolean => false,
+                endpoint: () => undefined,
+                options: {},
+                exposes: (): zhc.Expose[] => exposes,
+                zh: {endpoints: []},
+            }) as Device;
+
+        const voltageExpose = new zhc.Numeric("voltage", zhc.access.STATE).withUnit("V");
+        Object.assign(voltageExpose, {
+            homeassistant: {
+                type: "valve",
+                entityCategory: "diagnostic",
+                deviceClass: "voltage",
+                enabledByDefault: false,
+                icon: "mdi:flash",
+            },
+        });
+
+        // @ts-expect-error private
+        const configs = extension.getConfigs(createDevice([voltageExpose]));
+        expect(configs.find((config) => config.object_id === "voltage")?.discovery_payload).toMatchObject({
+            device_class: "voltage",
+            enabled_by_default: false,
+            entity_category: "diagnostic",
+            icon: "mdi:flash",
+        });
+        expect(configs.find((config) => config.object_id === "voltage")?.discovery_payload).not.toHaveProperty("type");
+    });
+
     it("Should discover devices and groups", async () => {
         settings.set(["homeassistant", "experimental_event_entities"], true);
         settings.set(["groups", "9", "homeassistant"], {name: "HA Discovery Group", icon: "mdi:lightbulb-group"});
