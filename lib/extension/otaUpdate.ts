@@ -111,7 +111,7 @@ export default class OTAUpdate extends Extension {
 
     #deleteAutoInProgress(ieeeAddr: string, imageType: number): void {
         this.#inProgressAuto.delete(`${ieeeAddr}_${imageType}`);
-        const count = (this.#inProgressAutoCount.get(ieeeAddr) ?? 1) - 1;
+        const count = (this.#inProgressAutoCount.get(ieeeAddr) ?? /* v8 ignore next */ 1) - 1;
 
         if (count <= 0) {
             this.#inProgressAutoCount.delete(ieeeAddr);
@@ -608,7 +608,7 @@ export default class OTAUpdate extends Extension {
         // For concurrent auto-checks (e.g. two-firmware devices): re-interview only after the last update.
         // autoImageType is defined when called from the auto-check path; the count includes the current
         // in-progress entry (not yet deleted by the caller), so > 1 means other imageTypes still running.
-        const otherAutoRunning = autoImageType !== undefined && (this.#inProgressAutoCount.get(device.ieeeAddr) ?? 0) > 1;
+        const otherAutoRunning = autoImageType !== undefined && (this.#inProgressAutoCount.get(device.ieeeAddr) ?? /* v8 ignore next */ 0) > 1;
 
         if (!otherAutoRunning) {
             setTimeout(() => {
