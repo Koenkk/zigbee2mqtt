@@ -208,12 +208,7 @@ export default class OTAUpdate extends Extension {
 
                 try {
                     // auto-check defaults to zigbee-OTA + potential local index, and never `downgrade`
-                    availableResult = await data.device.zh.checkOta(
-                        {downgrade: false},
-                        requestPayload,
-                        data.device.otaExtraMetas,
-                        data.endpoint,
-                    );
+                    availableResult = await data.device.zh.checkOta({downgrade: false}, requestPayload, data.device.otaExtraMetas, data.endpoint);
                 } catch (error) {
                     logger.debug(`Failed to check if OTA update available for '${data.device.name}' (${error})`);
                 }

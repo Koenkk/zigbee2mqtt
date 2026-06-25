@@ -1554,12 +1554,10 @@ describe("Extension: OTAUpdate", () => {
 
         // Step 2 — MQTT update: first call returns no image, pending cache triggers a retry that succeeds
         devices.bulb.endpoints[0].read.mockImplementation(() => ({swBuildId: "1", dateCode: "20240101"}));
-        devices.bulb.updateOta
-            .mockResolvedValueOnce([{...DEFAULT_CURRENT, ...data}, undefined])
-            .mockResolvedValueOnce([
-                {...DEFAULT_CURRENT, ...data, fileVersion: 1},
-                {...DEFAULT_CURRENT, ...data, fileVersion: 2},
-            ]);
+        devices.bulb.updateOta.mockResolvedValueOnce([{...DEFAULT_CURRENT, ...data}, undefined]).mockResolvedValueOnce([
+            {...DEFAULT_CURRENT, ...data, fileVersion: 1},
+            {...DEFAULT_CURRENT, ...data, fileVersion: 2},
+        ]);
 
         mockMQTTEvents.message("zigbee2mqtt/bridge/request/device/ota_update/update", stringify({id: "bulb"}));
         await flushPromises();
@@ -1584,7 +1582,7 @@ describe("Extension: OTAUpdate", () => {
 
         // Spy on the Z2M Device wrapper's reInterview (not the ZH mock device)
         const z2mDevice = controller.zigbee.resolveEntity(devices.bulb.ieeeAddr)!;
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        // biome-ignore lint/suspicious/noExplicitAny: spying on a private-ish method for test purposes
         const reInterviewSpy = vi.spyOn(z2mDevice as any, "reInterview").mockResolvedValue(undefined);
 
         devices.bulb.updateOta
