@@ -643,15 +643,19 @@ export class HomeAssistant extends Extension {
                 break;
             }
             case "climate": {
-                const setpointProperties = ["occupied_heating_setpoint", "current_heating_setpoint"];
-                const setpoint = (firstExpose as zhc.Climate).features.filter(isNumericExpose).find((f) => setpointProperties.includes(f.name));
+                const heatingSetpoint = (firstExpose as zhc.Climate).features
+                    .filter(isNumericExpose)
+                    .find((f) => ["occupied_heating_setpoint", "current_heating_setpoint"].includes(f.name));
+                const coolingSetpoint = (firstExpose as zhc.Climate).features
+                    .filter(isNumericExpose)
+                    .find((f) => f.name === "occupied_cooling_setpoint");
+                const primarySetpoint = heatingSetpoint || coolingSetpoint;
                 assert(
-                    setpoint && setpoint.value_min !== undefined && setpoint.value_max !== undefined,
+                    primarySetpoint && primarySetpoint.value_min !== undefined && primarySetpoint.value_max !== undefined,
                     "No setpoint found or it is missing value_min/max",
                 );
                 const temperature = (firstExpose as zhc.Climate).features.find((f) => f.name === "local_temperature");
                 assert(temperature, "No temperature found");
-
                 const discoveryEntry: DiscoveryEntry = {
                     type: "climate",
                     object_id: endpointName ? `climate_${endpointName}` : "climate",
@@ -662,9 +666,9 @@ export class HomeAssistant extends Extension {
                         state_topic: false,
                         temperature_unit: "C",
                         // Setpoint
-                        temp_step: setpoint.value_step,
-                        min_temp: setpoint.value_min.toString(),
-                        max_temp: setpoint.value_max.toString(),
+                        temp_step: primarySetpoint.value_step,
+                        min_temp: primarySetpoint.value_min.toString(),
+                        max_temp: primarySetpoint.value_max.toString(),
                         // Temperature
                         current_temperature_topic: true,
                         current_temperature_template: `{{ value_json["${temperature.property}"] }}`,
@@ -693,17 +697,16 @@ export class HomeAssistant extends Extension {
                     discoveryEntry.discovery_payload.action_template = `{% set values = {None:None,'idle':'idle','heat':'heating','cool':'cooling','fan_only':'fan'} %}{{ values[value_json["${state.property}"]] }}`;
                 }
 
-                const coolingSetpoint = (firstExpose as zhc.Climate).features.find((f) => f.name === "occupied_cooling_setpoint");
-                if (coolingSetpoint) {
-                    discoveryEntry.discovery_payload.temperature_low_command_topic = setpoint.name;
-                    discoveryEntry.discovery_payload.temperature_low_state_template = `{{ value_json["${setpoint.property}"] }}`;
+                if (heatingSetpoint && coolingSetpoint) {
+                    discoveryEntry.discovery_payload.temperature_low_command_topic = heatingSetpoint.name;
+                    discoveryEntry.discovery_payload.temperature_low_state_template = `{{ value_json["${heatingSetpoint.property}"] }}`;
                     discoveryEntry.discovery_payload.temperature_low_state_topic = true;
                     discoveryEntry.discovery_payload.temperature_high_command_topic = coolingSetpoint.name;
                     discoveryEntry.discovery_payload.temperature_high_state_template = `{{ value_json["${coolingSetpoint.property}"] }}`;
                     discoveryEntry.discovery_payload.temperature_high_state_topic = true;
                 } else {
-                    discoveryEntry.discovery_payload.temperature_command_topic = setpoint.name;
-                    discoveryEntry.discovery_payload.temperature_state_template = `{{ value_json["${setpoint.property}"] }}`;
+                    discoveryEntry.discovery_payload.temperature_command_topic = primarySetpoint.name;
+                    discoveryEntry.discovery_payload.temperature_state_template = `{{ value_json["${primarySetpoint.property}"] }}`;
                     discoveryEntry.discovery_payload.temperature_state_topic = true;
                 }
 
