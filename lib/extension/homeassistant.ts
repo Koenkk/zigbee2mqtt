@@ -649,7 +649,7 @@ export class HomeAssistant extends Extension {
                 const coolingSetpoint = (firstExpose as zhc.Climate).features
                     .filter(isNumericExpose)
                     .find((f) => f.name === "occupied_cooling_setpoint");
-                const primarySetpoint = heatingSetpoint || coolingSetpoint;
+                const primarySetpoint = heatingSetpoint ?? coolingSetpoint;
                 assert(
                     primarySetpoint && primarySetpoint.value_min !== undefined && primarySetpoint.value_max !== undefined,
                     "No setpoint found or it is missing value_min/max",
