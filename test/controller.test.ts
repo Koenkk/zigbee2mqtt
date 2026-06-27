@@ -149,6 +149,7 @@ describe("Controller", () => {
             user: "user1",
             client_id: "my_client_id",
             reject_unauthorized: false,
+            server_name: "mqtt.example.com",
             version: 5,
             maximum_packet_size: 20000,
         };
@@ -166,6 +167,7 @@ describe("Controller", () => {
             username: "user1",
             clientId: "my_client_id",
             rejectUnauthorized: false,
+            servername: "mqtt.example.com",
             protocolVersion: 5,
             properties: {maximumPacketSize: 20000},
         };
