@@ -188,6 +188,13 @@
                     "description": "Disable self-signed SSL certificate",
                     "default": true
                 },
+                "server_name": {
+                    "type": "string",
+                    "title": "TLS server name (SNI)",
+                    "requiresRestart": true,
+                    "description": "Override the TLS SNI / hostname used for certificate verification when it differs from the host in 'server' (e.g. connecting to an internal service DNS name while validating a public certificate SAN). Leave unset to use the hostname from 'server'.",
+                    "examples": ["mqtt.example.com"]
+                },
                 "include_device_information": {
                     "type": "boolean",
                     "title": "Include device information",

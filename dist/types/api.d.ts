@@ -126,6 +126,7 @@ export interface Zigbee2MQTTSettings {
         cert?: string;
         client_id?: string;
         reject_unauthorized?: boolean;
+        server_name?: string;
         maximum_packet_size: number;
     };
     serial: {
