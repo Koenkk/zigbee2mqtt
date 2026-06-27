@@ -1450,6 +1450,37 @@ describe("Extension: HomeAssistant", () => {
         });
     });
 
+    it("Should discover climate with cooling-only setpoint", () => {
+        const climateExpose = new zhc.Climate()
+            .withSetpoint("occupied_cooling_setpoint", 16, 32, 0.5)
+            .withLocalTemperature()
+            .withSystemMode(["off", "cool", "auto"]);
+        const device = {
+            definition: {},
+            isDevice: (): boolean => true,
+            isGroup: (): boolean => false,
+            endpoint: () => undefined,
+            options: {},
+            exposes: (): zhc.Expose[] => [climateExpose],
+            zh: {endpoints: []},
+        } as Device;
+
+        // @ts-expect-error private
+        const configs = extension.getConfigs(device);
+        const climate = configs.find((c) => c.type === "climate");
+        expect(climate).toBeDefined();
+        expect(climate!.discovery_payload).toMatchObject({
+            temperature_command_topic: "occupied_cooling_setpoint",
+            temperature_state_template: '{{ value_json["occupied_cooling_setpoint"] }}',
+            temperature_state_topic: true,
+            min_temp: "16",
+            max_temp: "32",
+            temp_step: 0.5,
+        });
+        expect(climate!.discovery_payload).not.toHaveProperty("temperature_low_command_topic");
+        expect(climate!.discovery_payload).not.toHaveProperty("temperature_high_command_topic");
+    });
+
     it("Should discover devices with cover_position", () => {
         let payload;
 
