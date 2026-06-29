@@ -1,3 +1,6 @@
+Nu er vi snart færdige
+
+
 <div align="center">
 <h1>SU-0159</h1>
     <a href="https://github.com/koenkk/zigbee2mqtt">
