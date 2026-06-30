@@ -174,6 +174,79 @@ describe("Extension: HomeAssistant", () => {
         }
     });
 
+    it("Should mark device settings as config entities", () => {
+        const getDiscoveryConfigs = (expose: zhc.Expose): KeyValueAny[] => {
+            const device = {
+                definition: {},
+                isDevice: (): boolean => true,
+                isGroup: (): boolean => false,
+                endpoint: () => undefined,
+                options: {},
+                exposes: (): zhc.Expose[] => [expose],
+                zh: {endpoints: []},
+            };
+            // @ts-expect-error private method and minimal test device
+            return extension.getConfigs(device);
+        };
+
+        const enumExposes = [
+            new zhc.Enum("set_limits", zhc.access.STATE_SET, ["START", "END", "RESET"]),
+            new zhc.Enum("motor_direction", zhc.access.STATE_SET, ["forward", "back"]),
+            new zhc.Enum("temperature_unit", zhc.access.STATE_SET, ["celsius", "fahrenheit"]),
+        ];
+
+        for (const expose of enumExposes) {
+            const [config] = getDiscoveryConfigs(expose);
+            expect(config.type).toStrictEqual("select");
+            expect(config.object_id).toStrictEqual(expose.property);
+            expect(config.discovery_payload.entity_category).toStrictEqual("config");
+        }
+
+        const binaryExposes = [
+            new zhc.Binary("tilt_mode", zhc.access.STATE_SET, "ON", "OFF"),
+            new zhc.Binary("calibration_left", zhc.access.STATE_SET, "ON", "OFF"),
+            new zhc.Binary("motor_reversal_right", zhc.access.STATE_SET, "ON", "OFF"),
+            new zhc.Binary("enable_display", zhc.access.STATE_SET, "ON", "OFF"),
+            new zhc.Binary("indicator", zhc.access.STATE_SET, "ON", "OFF"),
+        ];
+
+        for (const expose of binaryExposes) {
+            const [config] = getDiscoveryConfigs(expose);
+            expect(config.type).toStrictEqual("switch");
+            expect(config.object_id).toStrictEqual(`switch_${expose.property}`);
+            expect(config.discovery_payload.entity_category).toStrictEqual("config");
+        }
+
+        const numericExposes = [
+            new zhc.Numeric("calibration_time_left", zhc.access.STATE_SET),
+            new zhc.Numeric("comfort_temperature_min", zhc.access.STATE_SET),
+            new zhc.Numeric("comfort_humidity_max", zhc.access.STATE_SET),
+            new zhc.Numeric("measurement_interval", zhc.access.STATE_SET),
+            new zhc.Numeric("minimum_range", zhc.access.STATE_SET),
+            new zhc.Numeric("maximum_range", zhc.access.STATE_SET),
+            new zhc.Numeric("detection_delay", zhc.access.STATE_SET),
+            new zhc.Numeric("fading_time", zhc.access.STATE_SET),
+            new zhc.Numeric("large_motion_detection_sensitivity", zhc.access.STATE_SET),
+            new zhc.Numeric("medium_motion_detection_distance", zhc.access.STATE_SET),
+            new zhc.Numeric("small_detection_sensitivity", zhc.access.STATE_SET),
+            new zhc.Numeric("soil_calibration", zhc.access.STATE_SET),
+            new zhc.Numeric("soil_sampling", zhc.access.STATE_SET),
+            new zhc.Numeric("soil_warning", zhc.access.STATE_SET),
+        ];
+
+        for (const expose of numericExposes) {
+            const [config] = getDiscoveryConfigs(expose);
+            expect(config.type).toStrictEqual("number");
+            expect(config.object_id).toStrictEqual(expose.property);
+            expect(config.discovery_payload.entity_category).toStrictEqual("config");
+        }
+
+        const [textConfig] = getDiscoveryConfigs(new zhc.Text("schedule_settings", zhc.access.STATE_SET));
+        expect(textConfig.type).toStrictEqual("text");
+        expect(textConfig.object_id).toStrictEqual("schedule_settings");
+        expect(textConfig.discovery_payload.entity_category).toStrictEqual("config");
+    });
+
     it("Should apply expose-level Home Assistant discovery metadata", () => {
         const createDevice = (exposes: zhc.Expose[]): Device =>
             ({
