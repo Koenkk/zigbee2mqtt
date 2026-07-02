@@ -5,7 +5,7 @@ settings:
   excludeLinksFromLockfile: false
 
 overrides:
-  zigbee-herdsman: 10.9.2
+  zigbee-herdsman: github:tomwilkie/zigbee-herdsman#5305a82edc9631c796437726f89daa3ba8209c80
 
 importers:
 
@@ -60,8 +60,8 @@ importers:
         specifier: ^8.21.3
         version: 8.21.3
       zigbee-herdsman:
-        specifier: 10.9.2
-        version: 10.9.2
+        specifier: github:tomwilkie/zigbee-herdsman#5305a82edc9631c796437726f89daa3ba8209c80
+        version: https://codeload.github.com/tomwilkie/zigbee-herdsman/tar.gz/5305a82edc9631c796437726f89daa3ba8209c80
       zigbee-herdsman-converters:
         specifier: 26.105.0
         version: 26.105.0
@@ -1462,8 +1462,9 @@ packages:
     resolution: {integrity: sha512-xwPnreq0YAZ+xZZ1oC90D6YWOm7q5PuuE8FuED11KHzYC8Lk6uLYHLxYwpEOJVro0gmlvDJ6NZgD1gY6BeubDA==}
     engines: {node: '>=20.15.0'}
 
-  zigbee-herdsman@10.9.2:
-    resolution: {integrity: sha512-w81/2VoM8wfBskTQtFlaQQJsB8FjENtFcgE9mTk216XgVSI9JyopQSEiqIYfxgDW4apycl1ElUJd5yE23bG45g==}
+  zigbee-herdsman@https://codeload.github.com/tomwilkie/zigbee-herdsman/tar.gz/5305a82edc9631c796437726f89daa3ba8209c80:
+    resolution: {tarball: https://codeload.github.com/tomwilkie/zigbee-herdsman/tar.gz/5305a82edc9631c796437726f89daa3ba8209c80}
+    version: 10.9.2
 
   zigbee-on-host@0.2.4:
     resolution: {integrity: sha512-NIG6CWp+Yfn7PjqEIRvenHqpwT1U7rSkyimnFOUIFpnmxQOJKrmcwWDfn6WjbU/YIYYWSQPlj+g13icu1xwlyg==}
@@ -2696,11 +2697,11 @@ snapshots:
     dependencies:
       iconv-lite: 0.7.3
       semver: 7.8.5
-      zigbee-herdsman: 10.9.2
+      zigbee-herdsman: https://codeload.github.com/tomwilkie/zigbee-herdsman/tar.gz/5305a82edc9631c796437726f89daa3ba8209c80
     transitivePeerDependencies:
       - supports-color
 
-  zigbee-herdsman@10.9.2:
+  zigbee-herdsman@https://codeload.github.com/tomwilkie/zigbee-herdsman/tar.gz/5305a82edc9631c796437726f89daa3ba8209c80:
     dependencies:
       '@date-fns/tz': 1.5.0
       '@serialport/bindings-cpp': 13.0.1
