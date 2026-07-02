@@ -4,6 +4,7 @@ allowBuilds:
   "@serialport/bindings-cpp": true
   esbuild: true
   unix-dgram: true
+  "zigbee-herdsman@https://codeload.github.com/tomwilkie/zigbee-herdsman/tar.gz/95e914ea5d9e9cdcf9ffd350ae89f7156942998c": true
 
 minimumReleaseAgeExclude:
   - zigbee-herdsman
