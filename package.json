@@ -60,7 +60,7 @@
         "winston-syslog": "^2.7.1",
         "winston-transport": "^4.9.0",
         "ws": "^8.21.1",
-        "zigbee-herdsman": "10.8.0",
+        "zigbee-herdsman": "github:tomwilkie/zigbee-herdsman#244a2b294075ee2c0dbe724ec8fe1dbbcc1361ee",
         "zigbee-herdsman-converters": "26.90.0",
         "zigbee2mqtt-frontend": "0.9.21",
         "zigbee2mqtt-windfront": "2.14.0"
@@ -87,7 +87,8 @@
             "@biomejs/biome",
             "@serialport/bindings-cpp",
             "esbuild",
-            "unix-dgram"
+            "unix-dgram",
+            "zigbee-herdsman"
         ]
     },
     "bin": {
