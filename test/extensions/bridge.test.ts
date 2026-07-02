@@ -328,6 +328,7 @@ describe("Extension: Bridge", () => {
                         update_check_interval: 1440,
                     },
                     passlist: [],
+                    prometheus_exporter: {enabled: false, port: 9142},
                     serial: {disable_led: false, port: "/dev/dummy"},
                 },
                 config_schema: settings.schemaJson,
