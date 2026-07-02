@@ -848,6 +848,37 @@
                 }
             },
             "required": []
+        },
+        "prometheus_exporter": {
+            "title": "Prometheus exporter",
+            "description": "Serve Prometheus metrics about the Zigbee network over HTTP",
+            "type": "object",
+            "properties": {
+                "enabled": {
+                    "type": "boolean",
+                    "title": "Enabled",
+                    "description": "Enable the Prometheus exporter",
+                    "default": false,
+                    "requiresRestart": true
+                },
+                "port": {
+                    "type": "number",
+                    "title": "Port",
+                    "description": "Port the metrics endpoint listens on",
+                    "default": 9142,
+                    "minimum": 1,
+                    "maximum": 65535,
+                    "requiresRestart": true
+                },
+                "host": {
+                    "type": "string",
+                    "title": "Host",
+                    "description": "Host the metrics endpoint binds to, e.g. 127.0.0.1. Binds to all interfaces when unset",
+                    "examples": ["127.0.0.1"],
+                    "requiresRestart": true
+                }
+            },
+            "required": []
         }
     },
     "required": ["mqtt"],

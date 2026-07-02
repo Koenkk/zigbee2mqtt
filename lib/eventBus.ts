@@ -19,6 +19,7 @@ interface EventBusMap {
     exposesChanged: [data: eventdata.ExposesChanged];
     deviceLeave: [data: eventdata.DeviceLeave];
     deviceMessage: [data: eventdata.DeviceMessage];
+    deviceMessageFailed: [data: eventdata.DeviceMessageFailed];
     mqttMessage: [data: eventdata.MQTTMessage];
     mqttMessagePublished: [data: eventdata.MQTTMessagePublished];
     publishEntityState: [data: eventdata.PublishEntityState];
@@ -175,6 +176,13 @@ export default class EventBus {
     }
     public onDeviceMessage(key: ListenerKey, callback: (data: eventdata.DeviceMessage) => void): void {
         this.on("deviceMessage", callback, key);
+    }
+
+    public emitDeviceMessageFailed(data: eventdata.DeviceMessageFailed): void {
+        this.emitter.emit("deviceMessageFailed", data);
+    }
+    public onDeviceMessageFailed(key: ListenerKey, callback: (data: eventdata.DeviceMessageFailed) => void): void {
+        this.on("deviceMessageFailed", callback, key);
     }
 
     public emitMQTTMessage(data: eventdata.MQTTMessage): void {
