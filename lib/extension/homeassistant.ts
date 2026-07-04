@@ -60,7 +60,11 @@ const CONFIG_SWITCH_DISCOVERY_LOOKUP: {[s: string]: KeyValue} = {
 } as const;
 const SWITCH_DIFFERENT: ReadonlyArray<string> = Object.keys(CONFIG_SWITCH_DISCOVERY_LOOKUP);
 const hasCompositeExpose = (exposes: zhc.Expose[] | undefined, predicate: (expose: zhc.Expose) => boolean): boolean => {
-    return exposes?.some((expose) => predicate(expose) || (expose.type === "composite" && hasCompositeExpose((expose as zhc.Composite).features, predicate))) ?? false;
+    return (
+        exposes?.some(
+            (expose) => predicate(expose) || (expose.type === "composite" && hasCompositeExpose((expose as zhc.Composite).features, predicate)),
+        ) ?? false
+    );
 };
 const BINARY_DISCOVERY_LOOKUP: {[s: string]: KeyValue} = {
     activity_led_indicator: {icon: "mdi:led-on"},
