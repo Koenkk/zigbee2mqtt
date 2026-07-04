@@ -488,9 +488,9 @@ describe("Extension: Publish", () => {
     it("Should skip unresolved group members when replaying membersState", async () => {
         const group = groups.group_tradfri_remote;
         const resolveEntity = controller.zigbee.resolveEntity.bind(controller.zigbee);
-        const resolveEntitySpy = vi.spyOn(controller.zigbee, "resolveEntity").mockImplementation((id) =>
-            id === devices.bulb_2.ieeeAddr ? undefined : resolveEntity(id),
-        );
+        const resolveEntitySpy = vi
+            .spyOn(controller.zigbee, "resolveEntity")
+            .mockImplementation((id) => (id === devices.bulb_2.ieeeAddr ? undefined : resolveEntity(id)));
 
         try {
             await mockMQTTEvents.message("zigbee2mqtt/group_tradfri_remote/set", stringify({scene_recall: 1}));
