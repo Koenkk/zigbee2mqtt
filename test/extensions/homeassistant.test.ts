@@ -1554,6 +1554,83 @@ describe("Extension: HomeAssistant", () => {
         expect(climate!.discovery_payload).not.toHaveProperty("temperature_high_command_topic");
     });
 
+    it("Should not duplicate thermostat current temperature when a cable sensor temperature exists", () => {
+        const bosch = getZ2MEntity(devices["RBSH-TRV0-ZB-EU"]) as Device;
+        assert(bosch.definition);
+        const originalExposes = bosch.definition.exposes;
+
+        bosch.definition.exposes = [
+            {
+                type: "climate",
+                features: [
+                    {
+                        type: "numeric",
+                        name: "occupied_heating_setpoint",
+                        property: "occupied_heating_setpoint",
+                        label: "Occupied heating setpoint",
+                        access: 3,
+                        unit: "°C",
+                        value_min: 5,
+                        value_max: 30,
+                        value_step: 0.5,
+                    },
+                    {
+                        type: "numeric",
+                        name: "local_temperature",
+                        property: "local_temperature",
+                        label: "Temperature",
+                        access: 1,
+                        unit: "°C",
+                    },
+                    {
+                        type: "enum",
+                        name: "system_mode",
+                        property: "system_mode",
+                        label: "System mode",
+                        access: 3,
+                        values: ["off", "heat", "auto"],
+                    },
+                ],
+            },
+            {
+                type: "composite",
+                name: "cable_sensor",
+                property: "cable_sensor",
+                label: "Cable sensor",
+                access: 1,
+                features: [
+                    {
+                        type: "numeric",
+                        name: "temperature",
+                        property: "temperature",
+                        label: "Temperature",
+                        access: 1,
+                        unit: "°C",
+                    },
+                ],
+            },
+        ] as zhc.Expose[];
+
+        try {
+            // @ts-expect-error private
+            const configs = extension.getConfigs(bosch);
+
+            expect(configs.find((config) => config.type === "climate")?.discovery_payload).toMatchObject({
+                current_temperature_template: '{{ value_json["local_temperature"] }}',
+                temperature_command_topic: "occupied_heating_setpoint",
+            });
+            expect(configs.find((config) => config.object_id === "cable_sensor_temperature")?.discovery_payload).toMatchObject({
+                device_class: "temperature",
+                state_class: "measurement",
+                value_template:
+                    '{% if value_json["cable_sensor"] is defined and value_json["cable_sensor"]["temperature"] is defined %}{{ value_json["cable_sensor"]["temperature"] }}{% endif %}',
+            });
+            expect(configs.find((config) => config.object_id === "local_temperature")).toBeUndefined();
+        } finally {
+            bosch.definition.exposes = originalExposes;
+        }
+    });
+
     it("Should discover devices with cover_position", () => {
         let payload;
 
