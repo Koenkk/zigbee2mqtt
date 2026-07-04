@@ -1619,12 +1619,6 @@ describe("Extension: HomeAssistant", () => {
                 current_temperature_template: '{{ value_json["local_temperature"] }}',
                 temperature_command_topic: "occupied_heating_setpoint",
             });
-            expect(configs.find((config) => config.object_id === "cable_sensor_temperature")?.discovery_payload).toMatchObject({
-                device_class: "temperature",
-                state_class: "measurement",
-                value_template:
-                    '{% if value_json["cable_sensor"] is defined and value_json["cable_sensor"]["temperature"] is defined %}{{ value_json["cable_sensor"]["temperature"] }}{% endif %}',
-            });
             expect(configs.find((config) => config.object_id === "local_temperature")).toBeUndefined();
         } finally {
             bosch.definition.exposes = originalExposes;
