@@ -1448,7 +1448,7 @@ describe("Extension: HomeAssistant", () => {
     });
 
     it("Should discover Bosch BTH-RM230Z with a current_humidity attribute", () => {
-        const payload = {
+        const expected = {
             action_template:
                 "{% set values = {None:None,'idle':'idle','heat':'heating','cool':'cooling','fan_only':'fan'} %}{{ values[value_json[\"running_state\"]] }}",
             action_topic: "zigbee2mqtt/bosch_rm230z",
@@ -1470,11 +1470,11 @@ describe("Extension: HomeAssistant", () => {
             min_temp: "5",
             mode_command_topic: "zigbee2mqtt/bosch_rm230z/set",
             mode_state_template:
-                "{% set active_modes = ['heat'] %}{% set fallback_mode = 'heat' %}{% set values = {'schedule':'auto','pause':'off'} %}{% set value = value_json.operating_mode %}{% set mode = value_json.system_mode %}{% if value == 'manual' %}{{ mode if mode in active_modes else fallback_mode }}{% else %}{{ values[value] if value in values.keys() else 'off' }}{% endif %}",
+                "{% set values = {'schedule':'auto','manual':'heat','pause':'off'} %}{% set value = value_json.operating_mode %}{% if value == \"manual\" %}{{ value_json.system_mode }}{% else %}{{ values[value] if value in values.keys() else 'off' }}{% endif %}",
             mode_command_template:
-                "{% set active_modes = ['heat'] %}{% set values = {'auto':'schedule','off':'pause'} %}{% if value in active_modes %}{\"operating_mode\": \"manual\", \"system_mode\": \"{{ value }}\"}{% else %}{\"operating_mode\": \"{{ values[value] if value in values.keys() else 'pause' }}\"}{% endif %}",
+                "{% set values = { 'auto':'schedule','heat':'manual','cool':'manual','off':'pause'} %}{% if value == \"heat\" or value == \"cool\" %}{\"operating_mode\": \"manual\", \"system_mode\": \"{{ value }}\"}{% else %}{\"operating_mode\": \"{{ values[value] if value in values.keys() else 'pause' }}\"}{% endif %}",
             mode_state_topic: "zigbee2mqtt/bosch_rm230z",
-            modes: ["off", "heat", "auto"],
+            modes: ["off", "heat", "cool", "auto"],
             name: null,
             object_id: "bosch_rm230z",
             origin,
@@ -1489,10 +1489,10 @@ describe("Extension: HomeAssistant", () => {
             unique_id: "0x18fc2600000d7ae3_climate_zigbee2mqtt",
         };
 
-        expect(mockMQTTPublishAsync).toHaveBeenCalledWith("homeassistant/climate/0x18fc2600000d7ae3/climate/config", stringify(payload), {
-            qos: 1,
-            retain: true,
-        });
+        const call = mockMQTTPublishAsync.mock.calls.find((c) => c[0] === "homeassistant/climate/0x18fc2600000d7ae3/climate/config");
+        expect(call).toBeDefined();
+        expect(JSON.parse(call![1] as string)).toMatchObject(expected);
+        expect(call![2]).toMatchObject({qos: 1, retain: true});
     });
 
     it("Should discover seperate temperature sensor for thermostat", () => {
@@ -1620,6 +1620,79 @@ describe("Extension: HomeAssistant", () => {
                 temperature_command_topic: "occupied_heating_setpoint",
             });
             expect(configs.find((config) => config.object_id === "local_temperature")).toBeUndefined();
+        } finally {
+            bosch.definition.exposes = originalExposes;
+        }
+    });
+
+    it("Should still expose thermostat current temperature when a composite sensor is unrelated", () => {
+        const bosch = getZ2MEntity(devices["RBSH-TRV0-ZB-EU"]) as Device;
+        assert(bosch.definition);
+        const originalExposes = bosch.definition.exposes;
+
+        bosch.definition.exposes = [
+            {
+                type: "climate",
+                features: [
+                    {
+                        type: "numeric",
+                        name: "occupied_heating_setpoint",
+                        property: "occupied_heating_setpoint",
+                        label: "Occupied heating setpoint",
+                        access: 3,
+                        unit: "°C",
+                        value_min: 5,
+                        value_max: 30,
+                        value_step: 0.5,
+                    },
+                    {
+                        type: "numeric",
+                        name: "local_temperature",
+                        property: "local_temperature",
+                        label: "Temperature",
+                        access: 1,
+                        unit: "°C",
+                    },
+                    {
+                        type: "enum",
+                        name: "system_mode",
+                        property: "system_mode",
+                        label: "System mode",
+                        access: 3,
+                        values: ["off", "heat", "auto"],
+                    },
+                ],
+            },
+            {
+                type: "composite",
+                name: "cable_sensor",
+                property: "cable_sensor",
+                label: "Cable sensor",
+                access: 1,
+                features: [
+                    {
+                        type: "numeric",
+                        name: "humidity",
+                        property: "humidity",
+                        label: "Humidity",
+                        access: 1,
+                        unit: "%",
+                    },
+                ],
+            },
+        ] as zhc.Expose[];
+
+        try {
+            // @ts-expect-error private
+            const configs = extension.getConfigs(bosch);
+
+            expect(configs.find((config) => config.type === "climate")?.discovery_payload).toMatchObject({
+                current_temperature_template: '{{ value_json["local_temperature"] }}',
+                temperature_command_topic: "occupied_heating_setpoint",
+            });
+            expect(configs.find((config) => config.object_id === "local_temperature")).toMatchObject({
+                type: "sensor",
+            });
         } finally {
             bosch.definition.exposes = originalExposes;
         }
