@@ -1470,11 +1470,11 @@ describe("Extension: HomeAssistant", () => {
             min_temp: "5",
             mode_command_topic: "zigbee2mqtt/bosch_rm230z/set",
             mode_state_template:
-                "{% set values = {'schedule':'auto','manual':'heat','pause':'off'} %}{% set value = value_json.operating_mode %}{% if value == \"manual\" %}{{ value_json.system_mode }}{% else %}{{ values[value] if value in values.keys() else 'off' }}{% endif %}",
+                "{% set active_modes = ['heat'] %}{% set fallback_mode = 'heat' %}{% set values = {'schedule':'auto','pause':'off'} %}{% set value = value_json.operating_mode %}{% set mode = value_json.system_mode %}{% if value == 'manual' %}{{ mode if mode in active_modes else fallback_mode }}{% else %}{{ values[value] if value in values.keys() else 'off' }}{% endif %}",
             mode_command_template:
-                "{% set values = { 'auto':'schedule','heat':'manual','cool':'manual','off':'pause'} %}{% if value == \"heat\" or value == \"cool\" %}{\"operating_mode\": \"manual\", \"system_mode\": \"{{ value }}\"}{% else %}{\"operating_mode\": \"{{ values[value] if value in values.keys() else 'pause' }}\"}{% endif %}",
+                "{% set active_modes = ['heat'] %}{% set values = {'auto':'schedule','off':'pause'} %}{% if value in active_modes %}{\"operating_mode\": \"manual\", \"system_mode\": \"{{ value }}\"}{% else %}{\"operating_mode\": \"{{ values[value] if value in values.keys() else 'pause' }}\"}{% endif %}",
             mode_state_topic: "zigbee2mqtt/bosch_rm230z",
-            modes: ["off", "heat", "cool", "auto"],
+            modes: ["off", "heat", "auto"],
             name: null,
             object_id: "bosch_rm230z",
             origin,
