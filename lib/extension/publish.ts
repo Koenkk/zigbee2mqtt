@@ -140,6 +140,7 @@ export default class Publish extends Extension {
                           const member = this.zigbee.resolveEntity(e.deviceIeeeAddress);
 
                           if (!member) {
+                              // Keep optimistic publish resilient when a group member has been removed or renamed.
                               logger.warning(`Skipping unresolved group member '${e.deviceIeeeAddress}' while publishing '${re.name}'`);
                               return [];
                           }
