@@ -1698,6 +1698,33 @@ describe("Extension: HomeAssistant", () => {
         }
     });
 
+    it("Should still expose thermostat current temperature when composite discovery has no allExposes list", () => {
+        const climateExpose = new zhc.Climate()
+            .withSetpoint("occupied_heating_setpoint", 5, 30, 0.5)
+            .withLocalTemperature()
+            .withSystemMode(["off", "heat", "auto"]);
+        const device = {
+            definition: {},
+            isDevice: (): boolean => true,
+            isGroup: (): boolean => false,
+            endpoint: () => undefined,
+            options: {},
+            exposes: (): zhc.Expose[] => [climateExpose],
+            zh: {endpoints: []},
+        } as Device;
+
+        // @ts-expect-error private
+        const configs = extension.exposeToConfig([climateExpose], device, undefined);
+
+        expect(configs.find((config) => config.type === "climate")?.discovery_payload).toMatchObject({
+            current_temperature_template: '{{ value_json["local_temperature"] }}',
+            temperature_command_topic: "occupied_heating_setpoint",
+        });
+        expect(configs.find((config) => config.object_id === "local_temperature")).toMatchObject({
+            type: "sensor",
+        });
+    });
+
     it("Should discover devices with cover_position", () => {
         let payload;
 
