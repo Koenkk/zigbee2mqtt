@@ -485,6 +485,25 @@ describe("Extension: Publish", () => {
         group.members.pop();
     });
 
+    it("Should skip unresolved group members when replaying membersState", async () => {
+        const group = groups.group_tradfri_remote;
+        const resolveEntity = controller.zigbee.resolveEntity.bind(controller.zigbee);
+        const resolveEntitySpy = vi.spyOn(controller.zigbee, "resolveEntity").mockImplementation((id) =>
+            id === devices.bulb_2.ieeeAddr ? undefined : resolveEntity(id),
+        );
+
+        try {
+            await mockMQTTEvents.message("zigbee2mqtt/group_tradfri_remote/set", stringify({scene_recall: 1}));
+            await flushPromises();
+            expect(group.command).toHaveBeenCalledTimes(1);
+            expect(mockLogger.warning).toHaveBeenCalledWith(
+                expect.stringContaining(`Skipping unresolved group member '${devices.bulb_2.ieeeAddr}' while publishing 'group_tradfri_remote'`),
+            );
+        } finally {
+            resolveEntitySpy.mockRestore();
+        }
+    });
+
     it("Should publish messages to groups with brightness_percent", async () => {
         const group = groups.group_1;
         group.members.push(devices.bulb_color.getEndpoint(1)!);
