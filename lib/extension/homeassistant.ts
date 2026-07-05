@@ -855,10 +855,10 @@ export class HomeAssistant extends Extension {
                 }
 
                 const localTemperature = (firstExpose as zhc.Climate).features.filter(isNumericExpose).find((f) => f.name === "local_temperature");
-                const hasTemperatureSensor = hasCompositeExpose(allExposes, (expose) => {
-                    return isNumericExpose(expose) && !!(expose.access & ACCESS_STATE) && ["temperature", "local_temperature"].includes(expose.name);
+                const hasLocalTemperatureSensor = hasCompositeExpose(allExposes, (expose) => {
+                    return isNumericExpose(expose) && !!(expose.access & ACCESS_STATE) && expose.name === "local_temperature";
                 });
-                if (localTemperature && !hasTemperatureSensor) {
+                if (localTemperature && !hasLocalTemperatureSensor) {
                     const discoveryEntry: DiscoveryEntry = {
                         type: "sensor",
                         object_id: endpointName ? `${localTemperature.name}_${endpointName}` : `${localTemperature.name}`,
