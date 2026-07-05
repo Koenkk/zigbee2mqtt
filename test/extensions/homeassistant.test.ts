@@ -1368,7 +1368,7 @@ describe("Extension: HomeAssistant", () => {
     });
 
     it("does not throw when discovery payload override throws", async () => {
-        const bosch = getZ2MEntity(devices["RBSH-RTH0-ZB-EU"]) as Device;
+        const bosch = getZ2MEntity(devices["RBSH-TRV0-ZB-EU"]) as Device;
         assert(typeof bosch.definition?.meta?.overrideHaDiscoveryPayload === "function");
         const overrideSpy = vi.spyOn(bosch.definition.meta, "overrideHaDiscoveryPayload") as MockInstance;
 
