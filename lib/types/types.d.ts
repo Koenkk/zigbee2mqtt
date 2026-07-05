@@ -81,6 +81,7 @@ declare global {
             data: KeyValue | Array<string | number>;
             meta: {zclTransactionSequenceNumber?: number; manufacturerCode?: number; frameControl?: ZHFrameControl; rawData: Buffer};
         };
+        type DeviceMessageFailed = {device: Device; reason: "no_converter" | "converter_error"};
         type ScenesChanged = {entity: Device | Group};
     }
 
