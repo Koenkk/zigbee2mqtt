@@ -34,7 +34,7 @@ export default class Device {
         return this.zh.type === "Coordinator" ? "Coordinator" : this.options?.friendly_name;
     }
     get isSupported(): boolean {
-        return this.zh.type === "Coordinator" || Boolean(this.definition && !this.definition.generated);
+        return this.zh.type === "Coordinator" || Boolean(this.definition && (!this.definition.generated || this.definition.vendor === "esphome"));
     }
     get customClusters(): CustomClusters {
         return this.zh.customClusters;
