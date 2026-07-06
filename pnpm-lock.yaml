@@ -75,8 +75,8 @@ importers:
         specifier: 10.6.1
         version: 10.6.1
       zigbee-herdsman-converters:
-        specifier: 26.78.0
-        version: 26.78.0
+        specifier: 26.79.0
+        version: 26.79.0
       zigbee2mqtt-frontend:
         specifier: 0.9.21
         version: 0.9.21
@@ -892,8 +892,8 @@ packages:
   humanize-duration@3.34.0:
     resolution: {integrity: sha512-NDxhYxiiRzsST6xULIHuYWRvsCtviJXRdjarhyWyh78S4Ou+MWhM2k4HQ+y7iegdrzreXe11isd0au1N2PB/pQ==}
 
-  iconv-lite@0.7.2:
-    resolution: {integrity: sha512-im9DjEDQ55s9fL4EYzOAv0yMqmMBSZp6G0VvFyTMPKWxiSBHUj9NW/qqLmXUwXrrM7AvqSlTCfvqRb0cM8yYqw==}
+  iconv-lite@0.7.3:
+    resolution: {integrity: sha512-IKXpvIzjnC9XTAUbVBcMfGS0EPaIXtW6v+zr+RRp+hqULEpo0owZax6wyRwPOJbWbzjYspQwusTsfVr0ifh4uQ==}
     engines: {node: '>=0.10.0'}
 
   ieee754@1.2.1:
@@ -1459,8 +1459,8 @@ packages:
       utf-8-validate:
         optional: true
 
-  zigbee-herdsman-converters@26.78.0:
-    resolution: {integrity: sha512-JkBcuSpYw2UpSa48HmYoKuPKTDT5vAuc92ZgyhFyUHY+vNmUA+F1bo3J5Wu5nJnxj+dHoMq1Z1OGka4//LCMYA==}
+  zigbee-herdsman-converters@26.79.0:
+    resolution: {integrity: sha512-ZcI+E8JovCN6lV2jaXmkx2vBvdirqIUwVBXbZ72VeCUiwlsb4Ol2ACHIbnUc4k+1SxuoQoq7Pyo+tNDpudj0BA==}
     engines: {node: '>=20.15.0'}
 
   zigbee-herdsman@10.6.1:
@@ -2135,7 +2135,7 @@ snapshots:
 
   humanize-duration@3.34.0: {}
 
-  iconv-lite@0.7.2:
+  iconv-lite@0.7.3:
     dependencies:
       safer-buffer: 2.1.2
 
@@ -2740,9 +2740,9 @@ snapshots:
 
   ws@8.21.0: {}
 
-  zigbee-herdsman-converters@26.78.0:
+  zigbee-herdsman-converters@26.79.0:
     dependencies:
-      iconv-lite: 0.7.2
+      iconv-lite: 0.7.3
       semver: 7.8.5
       zigbee-herdsman: 10.6.1
     transitivePeerDependencies:
