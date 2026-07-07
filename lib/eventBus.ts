@@ -247,19 +247,20 @@ export default class EventBus {
             this.callbacksByExtension.set(key.constructor.name, []);
         }
 
-        const wrappedCallback = async (...args: never[]): Promise<void> => {
+        const typedCallback = callback as (...args: EventBusMap[K]) => Promise<void> | void;
+        const wrappedCallback = (async (...args: EventBusMap[K]): Promise<void> => {
             try {
-                await callback(...args);
+                await typedCallback(...args);
             } catch (error) {
                 logger.error(`EventBus error '${key.constructor.name}/${event}': ${(error as Error).message}`);
                 // biome-ignore lint/style/noNonNullAssertion: always Error
                 logger.debug((error as Error).stack!);
             }
-        };
+        }) as EventBusListener<keyof EventBusMap>;
 
         // biome-ignore lint/style/noNonNullAssertion: just created if wasn't valid
         this.callbacksByExtension.get(key.constructor.name)!.push({event, callback: wrappedCallback});
-        this.emitter.on(event, wrappedCallback as EventBusListener<K>);
+        (this.emitter as events.EventEmitter).on(event, wrappedCallback);
     }
 
     public removeListeners(key: ListenerKey): void {
@@ -267,7 +268,7 @@ export default class EventBus {
 
         if (callbacks) {
             for (const cb of callbacks) {
-                this.emitter.removeListener(cb.event, cb.callback);
+                (this.emitter as events.EventEmitter).removeListener(cb.event, cb.callback);
             }
         }
     }
