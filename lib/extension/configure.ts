@@ -137,7 +137,7 @@ export default class Configure extends Extension {
             logger.info(`Successfully configured '${device.name}' (definition v${definitionVersion})`);
             device.zh.meta.configured = definitionVersion;
             device.zh.save();
-            this.eventBus.emitDevicesChanged();
+            this.eventBus.emitExposesAndDevicesChanged(device);
         } catch (error) {
             const newAttempts = attempts + 1;
             this.attempts.set(device.ieeeAddr, newAttempts);
