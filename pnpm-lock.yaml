@@ -75,8 +75,8 @@ importers:
         specifier: 10.6.2
         version: 10.6.2
       zigbee-herdsman-converters:
-        specifier: 26.79.0
-        version: 26.79.0
+        specifier: 26.80.0
+        version: 26.80.0
       zigbee2mqtt-frontend:
         specifier: 0.9.21
         version: 0.9.21
@@ -1459,8 +1459,8 @@ packages:
       utf-8-validate:
         optional: true
 
-  zigbee-herdsman-converters@26.79.0:
-    resolution: {integrity: sha512-ZcI+E8JovCN6lV2jaXmkx2vBvdirqIUwVBXbZ72VeCUiwlsb4Ol2ACHIbnUc4k+1SxuoQoq7Pyo+tNDpudj0BA==}
+  zigbee-herdsman-converters@26.80.0:
+    resolution: {integrity: sha512-j9SxN8bLfFCGxayVpUYw6MdA1utkcdSh0nhtEotN3k737WnE8jPTtpW2Q4q2alHkIz6ZSY0bL6iMuvOabuTx/A==}
     engines: {node: '>=20.15.0'}
 
   zigbee-herdsman@10.6.2:
@@ -2740,7 +2740,7 @@ snapshots:
 
   ws@8.21.0: {}
 
-  zigbee-herdsman-converters@26.79.0:
+  zigbee-herdsman-converters@26.80.0:
     dependencies:
       iconv-lite: 0.7.3
       semver: 7.8.5
