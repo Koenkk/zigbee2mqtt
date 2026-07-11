@@ -410,9 +410,6 @@ interface CompositeSchemaFeature {
     value_min?: number;
     value_max?: number;
     value_step?: number;
-    // Optional per-feature default (from zigbee-herdsman-converters `withDefault`), used by the card
-    // to pre-fill fields of a new/empty composite slot so it can build a complete payload.
-    default?: unknown;
     values?: (string | number)[];
     value_on?: unknown;
     value_off?: unknown;
@@ -429,7 +426,7 @@ interface CompositeSchemaFeature {
  * Instead the schema produced here is published (base64 encoded) as an attribute of a stock `sensor`
  * entity, and the external card renders the editor and writes the whole object back in one `set`.
  */
-const COMPOSITE_SCHEMA_OPTIONAL_KEYS = ["description", "unit", "value_min", "value_max", "value_step", "default", "values", "value_on", "value_off"];
+const COMPOSITE_SCHEMA_OPTIONAL_KEYS = ["description", "unit", "value_min", "value_max", "value_step", "values", "value_on", "value_off"];
 
 export const buildCompositeSchemaFeatures = (features: zhc.Feature[]): CompositeSchemaFeature[] =>
     features.map((feature) => {
@@ -1430,9 +1427,12 @@ export class HomeAssistant extends Extension {
                 // zigbee-herdsman-converters #12495/#12510 reverted by #12647). Home Assistant's MQTT
                 // discovery cannot render such a grouped/atomic form with stock entities, so we publish
                 // a plain `sensor` whose state holds the current composite value and whose attributes
-                // carry the composite `schema` (base64), `property` and `set_topic`. The custom card
-                // reads those attributes, renders a dialog for all fields and publishes the whole object
-                // back to `set_topic` in one atomic write. This keeps working on stock Home Assistant.
+                // carry the composite `schema`, `property` and `set_topic`. The custom card reads those
+                // attributes, renders a dialog for all fields and publishes the whole object back to
+                // `set_topic` in one atomic write. This keeps working on stock Home Assistant.
+                //
+                // Future: a native Home Assistant MQTT "composite" platform could consume this same
+                // `z2m_composite` schema/attributes to render the editor natively (see PR discussion).
                 if (firstExposeTyped.type === "composite" && firstExposeTyped.access & ACCESS_SET) {
                     const compositeExpose = firstExpose as zhc.Composite;
                     const property = firstExposeTyped.property;
@@ -1441,9 +1441,14 @@ export class HomeAssistant extends Extension {
                         label: compositeExpose.label,
                         features: buildCompositeSchemaFeatures(compositeExpose.features),
                     };
-                    // base64 has no quotes, so it embeds safely inside the single-quoted Jinja literal.
-                    const schemaB64 = Buffer.from(stringify(schema)).toString("base64");
                     const setTopic = `${settings.get().mqtt.base_topic}/${entity.name}/set`;
+                    // The attributes template is literal JSON (schema + property + set_topic serialized with
+                    // `stringify`) with only the live `value` filled from the state message via Jinja. This
+                    // avoids embedding JSON inside a Jinja dict-literal (and the quoting/base64 hacks that
+                    // would otherwise require); the card reads `z2m_composite.schema` directly as an object.
+                    const jsonAttributesTemplate =
+                        `{"z2m_composite": {"value": {{ value_json['${property}'] | tojson }}, ` +
+                        `"property": ${stringify(property)}, "set_topic": ${stringify(setTopic)}, "schema": ${stringify(schema)}}}`;
                     discoveryEntries.push({
                         type: "sensor",
                         object_id: property,
@@ -1453,9 +1458,7 @@ export class HomeAssistant extends Extension {
                             state_topic: true,
                             value_template: `{{ value_json['${property}'] | tojson }}`,
                             json_attributes_topic: true,
-                            json_attributes_template:
-                                `{{ {'z2m_composite': {'property': '${property}', 'set_topic': '${setTopic}', ` +
-                                `'schema_b64': '${schemaB64}', 'value': value_json['${property}'] | default(None, true)}} | tojson }}`,
+                            json_attributes_template: jsonAttributesTemplate,
                             icon: "mdi:tune-variant",
                         },
                     });

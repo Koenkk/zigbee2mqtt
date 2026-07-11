@@ -1167,14 +1167,17 @@ describe("Extension: HomeAssistant", () => {
         expect(payload.value_template).toBe("{{ value_json['led_effect'] | tojson }}");
         expect(payload.json_attributes_topic).toBe("zigbee2mqtt/inovelli_switch");
         expect(payload.icon).toBe("mdi:tune-variant");
-        expect(payload.json_attributes_template).toContain("'z2m_composite'");
-        expect(payload.json_attributes_template).toContain("'set_topic': 'zigbee2mqtt/inovelli_switch/set'");
 
-        const schemaMatch = (payload.json_attributes_template as string).match(/'schema_b64': '([^']+)'/);
-        expect(schemaMatch).not.toBeNull();
-        const schema = JSON.parse(Buffer.from(schemaMatch![1], "base64").toString("utf8"));
-        expect(schema.property).toBe("led_effect");
-        expect(schema.features.map((f: {name: string}) => f.name)).toStrictEqual(["effect", "color", "level", "duration"]);
+        // The attributes template is literal JSON (schema/property/set_topic) with only the live `value`
+        // filled via a single Jinja expression. Replacing that expression with `null` must yield valid
+        // JSON, which also documents the shape the card consumes.
+        const template = payload.json_attributes_template as string;
+        expect(template).toContain("\"value\": {{ value_json['led_effect'] | tojson }}");
+        const attributes = JSON.parse(template.replace(/\{\{.*?\}\}/, "null"));
+        expect(attributes.z2m_composite.property).toBe("led_effect");
+        expect(attributes.z2m_composite.set_topic).toBe("zigbee2mqtt/inovelli_switch/set");
+        expect(attributes.z2m_composite.schema.property).toBe("led_effect");
+        expect(attributes.z2m_composite.schema.features.map((f: {name: string}) => f.name)).toStrictEqual(["effect", "color", "level", "duration"]);
     });
 
     it("Should discover devices with speed-controlled fan", () => {
@@ -3340,9 +3343,9 @@ describe("Extension: HomeAssistant", () => {
 
 describe("HomeAssistant: composite schema", () => {
     it("serializes all feature field types and nested features", () => {
-        // Build a synthetic composite feature tree covering numeric/enum/binary/text/nested composite,
-        // including an explicit `default` (from zigbee-herdsman-converters `withDefault`) so the card
-        // can pre-fill new/empty composite slots.
+        // Build a synthetic composite feature tree covering numeric/enum/binary/text/nested composite.
+        // The card derives its own field defaults from the schema (numeric→value_min, enum→first value,
+        // binary→value_off, text→''), so no per-feature default is needed here.
         const features = [
             {
                 name: "amount",
@@ -3354,7 +3357,6 @@ describe("HomeAssistant: composite schema", () => {
                 value_min: 0,
                 value_max: 100,
                 value_step: 1,
-                default: 5,
             },
             {name: "mode", property: "mode", label: "Mode", type: "enum", access: 3, values: ["a", "b"], description: "The mode"},
             {name: "enabled", property: "enabled", label: "Enabled", type: "binary", access: 3, value_on: "ON", value_off: "OFF"},
@@ -3381,7 +3383,6 @@ describe("HomeAssistant: composite schema", () => {
             value_min: 0,
             value_max: 100,
             value_step: 1,
-            default: 5,
         });
         expect(schema[1]).toStrictEqual({
             name: "mode",
