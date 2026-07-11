@@ -396,6 +396,65 @@ const applyHomeAssistantExposeMetadata = (payload: KeyValue, homeAssistant: zhc.
 };
 
 /**
+ * Schema for a single feature of a settable `composite` expose, consumed by the external
+ * `z2m-composite-card` Home Assistant Lovelace card.
+ */
+interface CompositeSchemaFeature {
+    name: string;
+    property: string;
+    label: string;
+    type: string;
+    access: number;
+    description?: string;
+    unit?: string;
+    value_min?: number;
+    value_max?: number;
+    value_step?: number;
+    // Optional per-feature default (from zigbee-herdsman-converters `withDefault`), used by the card
+    // to pre-fill fields of a new/empty composite slot so it can build a complete payload.
+    default?: unknown;
+    values?: (string | number)[];
+    value_on?: unknown;
+    value_off?: unknown;
+    features?: CompositeSchemaFeature[];
+}
+
+/**
+ * Serializes a composite expose's feature tree into a compact schema.
+ *
+ * Home Assistant's MQTT discovery has no native "composite"/form entity, and a `composite` must be
+ * written to the device as one complete object in a single message (independently writing fields
+ * breaks devices like the SONOFF valve, see zigbee-herdsman-converters #12495/#12510 which were
+ * reverted by #12647). We therefore cannot represent an editable composite with stock entities.
+ * Instead the schema produced here is published (base64 encoded) as an attribute of a stock `sensor`
+ * entity, and the external card renders the editor and writes the whole object back in one `set`.
+ */
+const COMPOSITE_SCHEMA_OPTIONAL_KEYS = ["description", "unit", "value_min", "value_max", "value_step", "default", "values", "value_on", "value_off"];
+
+export const buildCompositeSchemaFeatures = (features: zhc.Feature[]): CompositeSchemaFeature[] =>
+    features.map((feature) => {
+        // Features are a union of expose types; read optional fields defensively via a loose view.
+        const f = feature as KeyValue;
+        const result: KeyValue = {
+            name: feature.name,
+            property: feature.property,
+            label: feature.label,
+            type: feature.type,
+            access: feature.access,
+        };
+        for (const key of COMPOSITE_SCHEMA_OPTIONAL_KEYS) {
+            if (f[key] !== undefined) {
+                result[key] = f[key];
+            }
+        }
+        // Recurse for nested composite/list features (e.g. `loop_type_week_days` in SONOFF plans).
+        if (Array.isArray(f.features)) {
+            result.features = buildCompositeSchemaFeatures(f.features as zhc.Feature[]);
+        }
+        return result as CompositeSchemaFeature;
+    });
+
+/**
  * This class handles the bridge entity configuration for Home Assistant Discovery.
  */
 class Bridge {
@@ -1363,6 +1422,46 @@ export class HomeAssistant extends Extension {
                     break;
                 }
 
+                // Settable composite → editor entity for the external `z2m-composite-card`.
+                //
+                // A composite is written to the device as ONE complete object in a single message and
+                // its fields are not independently writable (this is the whole point of using
+                // `composite`; independently exposing fields broke the SONOFF valve, see
+                // zigbee-herdsman-converters #12495/#12510 reverted by #12647). Home Assistant's MQTT
+                // discovery cannot render such a grouped/atomic form with stock entities, so we publish
+                // a plain `sensor` whose state holds the current composite value and whose attributes
+                // carry the composite `schema` (base64), `property` and `set_topic`. The custom card
+                // reads those attributes, renders a dialog for all fields and publishes the whole object
+                // back to `set_topic` in one atomic write. This keeps working on stock Home Assistant.
+                if (firstExposeTyped.type === "composite" && firstExposeTyped.access & ACCESS_SET) {
+                    const compositeExpose = firstExpose as zhc.Composite;
+                    const property = firstExposeTyped.property;
+                    const schema = {
+                        property: compositeExpose.property,
+                        label: compositeExpose.label,
+                        features: buildCompositeSchemaFeatures(compositeExpose.features),
+                    };
+                    // base64 has no quotes, so it embeds safely inside the single-quoted Jinja literal.
+                    const schemaB64 = Buffer.from(stringify(schema)).toString("base64");
+                    const setTopic = `${settings.get().mqtt.base_topic}/${entity.name}/set`;
+                    discoveryEntries.push({
+                        type: "sensor",
+                        object_id: property,
+                        mockProperties: [{property: property, value: null}],
+                        discovery_payload: {
+                            name: endpointName ? `${firstExposeTyped.label} ${endpointName}` : firstExposeTyped.label,
+                            state_topic: true,
+                            value_template: `{{ value_json['${property}'] | tojson }}`,
+                            json_attributes_topic: true,
+                            json_attributes_template:
+                                `{{ {'z2m_composite': {'property': '${property}', 'set_topic': '${setTopic}', ` +
+                                `'schema_b64': '${schemaB64}', 'value': value_json['${property}'] | default(None, true)}} | tojson }}`,
+                            icon: "mdi:tune-variant",
+                        },
+                    });
+                    break;
+                }
+
                 if (firstExposeTyped.type === "text" && firstExposeTyped.access & ACCESS_SET) {
                     discoveryEntries.push({
                         type: "text",
@@ -1704,6 +1803,12 @@ export class HomeAssistant extends Extension {
                 if (payload.state_topic !== undefined) {
                     delete payload.state_topic;
                 }
+            }
+
+            // A `json_attributes_topic: true` shorthand resolves to the entity state topic (like `state_topic`).
+            // Used by the settable-composite editor entity to carry its schema/value as attributes.
+            if (payload.json_attributes_topic === true) {
+                payload.json_attributes_topic = stateTopic;
             }
 
             if (payload.position_topic) {

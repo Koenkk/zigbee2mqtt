@@ -14,7 +14,7 @@ import type {MockInstance} from "vitest";
 import * as zhc from "zigbee-herdsman-converters";
 import type {KeyValueAny} from "zigbee-herdsman-converters/lib/types";
 import {Controller} from "../../lib/controller";
-import HomeAssistant from "../../lib/extension/homeassistant";
+import HomeAssistant, {buildCompositeSchemaFeatures} from "../../lib/extension/homeassistant";
 
 import type Device from "../../lib/model/device";
 import type Group from "../../lib/model/group";
@@ -1147,6 +1147,34 @@ describe("Extension: HomeAssistant", () => {
             retain: true,
             qos: 1,
         });
+    });
+
+    it("Should discover settable composite as z2m-composite-card editor entity", async () => {
+        // A `composite` must be written to the device as one complete object; its fields are not
+        // independently writable and HA MQTT discovery has no composite/form entity. We therefore
+        // publish a stock `sensor` carrying the composite schema/value/set-topic as attributes for the
+        // external z2m-composite-card. See https://github.com/Koenkk/zigbee-herdsman-converters/pull/12647.
+        settings.set(["devices", "0xb43a31fffe2f1f6a"], {friendly_name: "inovelli_switch", retain: false});
+        mockMQTTPublishAsync.mockClear();
+        await resetExtension();
+
+        const configTopic = "homeassistant/sensor/0xb43a31fffe2f1f6a/led_effect/config";
+        const call = mockMQTTPublishAsync.mock.calls.find((c) => c[0] === configTopic);
+        expect(call).toBeDefined();
+
+        const payload = JSON.parse(call![1] as string);
+        expect(payload.state_topic).toBe("zigbee2mqtt/inovelli_switch");
+        expect(payload.value_template).toBe("{{ value_json['led_effect'] | tojson }}");
+        expect(payload.json_attributes_topic).toBe("zigbee2mqtt/inovelli_switch");
+        expect(payload.icon).toBe("mdi:tune-variant");
+        expect(payload.json_attributes_template).toContain("'z2m_composite'");
+        expect(payload.json_attributes_template).toContain("'set_topic': 'zigbee2mqtt/inovelli_switch/set'");
+
+        const schemaMatch = (payload.json_attributes_template as string).match(/'schema_b64': '([^']+)'/);
+        expect(schemaMatch).not.toBeNull();
+        const schema = JSON.parse(Buffer.from(schemaMatch![1], "base64").toString("utf8"));
+        expect(schema.property).toBe("led_effect");
+        expect(schema.features.map((f: {name: string}) => f.name)).toStrictEqual(["effect", "color", "level", "duration"]);
     });
 
     it("Should discover devices with speed-controlled fan", () => {
@@ -3307,5 +3335,48 @@ describe("Extension: HomeAssistant", () => {
         await controller.enableDisableExtension(false, "HomeAssistant");
 
         await vi.waitFor(() => controller.getExtension("HomeAssistant") === undefined);
+    });
+});
+
+describe("HomeAssistant: composite schema", () => {
+    it("serializes all feature field types and nested features", () => {
+        // Build a synthetic composite feature tree covering numeric/enum/binary/text/nested composite,
+        // including an explicit `default` (from zigbee-herdsman-converters `withDefault`) so the card
+        // can pre-fill new/empty composite slots.
+        const features = [
+            {name: "amount", property: "amount", label: "Amount", type: "numeric", access: 3, unit: "L", value_min: 0, value_max: 100, value_step: 1, default: 5},
+            {name: "mode", property: "mode", label: "Mode", type: "enum", access: 3, values: ["a", "b"], description: "The mode"},
+            {name: "enabled", property: "enabled", label: "Enabled", type: "binary", access: 3, value_on: "ON", value_off: "OFF"},
+            {name: "note", property: "note", label: "Note", type: "text", access: 3},
+            {
+                name: "week",
+                property: "week",
+                label: "Week",
+                type: "composite",
+                access: 3,
+                features: [{name: "monday", property: "monday", label: "Monday", type: "binary", access: 3, value_on: true, value_off: false}],
+            },
+        ] as unknown as zhc.Composite["features"];
+
+        const schema = buildCompositeSchemaFeatures(features);
+
+        expect(schema[0]).toStrictEqual({
+            name: "amount",
+            property: "amount",
+            label: "Amount",
+            type: "numeric",
+            access: 3,
+            unit: "L",
+            value_min: 0,
+            value_max: 100,
+            value_step: 1,
+            default: 5,
+        });
+        expect(schema[1]).toStrictEqual({name: "mode", property: "mode", label: "Mode", type: "enum", access: 3, values: ["a", "b"], description: "The mode"});
+        expect(schema[2]).toStrictEqual({name: "enabled", property: "enabled", label: "Enabled", type: "binary", access: 3, value_on: "ON", value_off: "OFF"});
+        expect(schema[3]).toStrictEqual({name: "note", property: "note", label: "Note", type: "text", access: 3});
+        expect(schema[4].features).toStrictEqual([
+            {name: "monday", property: "monday", label: "Monday", type: "binary", access: 3, value_on: true, value_off: false},
+        ]);
     });
 });
