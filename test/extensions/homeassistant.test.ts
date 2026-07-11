@@ -3344,7 +3344,18 @@ describe("HomeAssistant: composite schema", () => {
         // including an explicit `default` (from zigbee-herdsman-converters `withDefault`) so the card
         // can pre-fill new/empty composite slots.
         const features = [
-            {name: "amount", property: "amount", label: "Amount", type: "numeric", access: 3, unit: "L", value_min: 0, value_max: 100, value_step: 1, default: 5},
+            {
+                name: "amount",
+                property: "amount",
+                label: "Amount",
+                type: "numeric",
+                access: 3,
+                unit: "L",
+                value_min: 0,
+                value_max: 100,
+                value_step: 1,
+                default: 5,
+            },
             {name: "mode", property: "mode", label: "Mode", type: "enum", access: 3, values: ["a", "b"], description: "The mode"},
             {name: "enabled", property: "enabled", label: "Enabled", type: "binary", access: 3, value_on: "ON", value_off: "OFF"},
             {name: "note", property: "note", label: "Note", type: "text", access: 3},
@@ -3372,8 +3383,24 @@ describe("HomeAssistant: composite schema", () => {
             value_step: 1,
             default: 5,
         });
-        expect(schema[1]).toStrictEqual({name: "mode", property: "mode", label: "Mode", type: "enum", access: 3, values: ["a", "b"], description: "The mode"});
-        expect(schema[2]).toStrictEqual({name: "enabled", property: "enabled", label: "Enabled", type: "binary", access: 3, value_on: "ON", value_off: "OFF"});
+        expect(schema[1]).toStrictEqual({
+            name: "mode",
+            property: "mode",
+            label: "Mode",
+            type: "enum",
+            access: 3,
+            values: ["a", "b"],
+            description: "The mode",
+        });
+        expect(schema[2]).toStrictEqual({
+            name: "enabled",
+            property: "enabled",
+            label: "Enabled",
+            type: "binary",
+            access: 3,
+            value_on: "ON",
+            value_off: "OFF",
+        });
         expect(schema[3]).toStrictEqual({name: "note", property: "note", label: "Note", type: "text", access: 3});
         expect(schema[4].features).toStrictEqual([
             {name: "monday", property: "monday", label: "Monday", type: "binary", access: 3, value_on: true, value_off: false},
