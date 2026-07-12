@@ -1478,7 +1478,7 @@ export class HomeAssistant extends Extension {
 
                 if (match) {
                     const endpoint = match[1];
-                    const endpointRegExp = new RegExp(`(.*)_${endpoint}`);
+                    const endpointRegExp = new RegExp(`(.*)_${endpoint}$`);
                     const payload: KeyValue = {};
                     for (const key of Object.keys(data.message)) {
                         const keyMatch = endpointRegExp.exec(key);
