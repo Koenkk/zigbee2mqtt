@@ -1,0 +1,11 @@
+{
+    "editor.defaultFormatter": "biomejs.biome",
+    "notebook.defaultFormatter": "biomejs.biome",
+    "editor.tabSize": 4,
+    "editor.insertSpaces": true,
+    "files.defaultLanguage": "typescript",
+    "files.eol": "\n",
+    "[typescript]": {
+        "editor.defaultFormatter": "biomejs.biome"
+    }
+}
