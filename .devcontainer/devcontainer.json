@@ -1,0 +1,23 @@
+{
+    "image": "mcr.microsoft.com/devcontainers/javascript-node:24",
+
+    "postCreateCommand": "pnpm config set store-dir /home/node/.local/share/pnpm/store && npm install typescript -g",
+
+    "customizations": {
+        "vscode": {
+            "settings": {
+                "workbench.colorTheme": "Default Dark Modern",
+                "window.menuBarVisibility": "classic",
+                "editor.defaultFormatter": "biomejs.biome",
+                "notebook.defaultFormatter": "biomejs.biome",
+                "editor.formatOnPaste": true,
+                "editor.formatOnSave": true,
+                "editor.tabSize": 4,
+                "editor.insertSpaces": true,
+                "files.defaultLanguage": "typescript",
+                "files.eol": "\n"
+            },
+            "extensions": ["biomejs.biome", "vitest.explorer"]
+        }
+    }
+}
