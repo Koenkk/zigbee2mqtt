@@ -6,6 +6,7 @@ minimumReleaseAgeExclude:
   - zigbee-herdsman-converters
   - zigbee2mqtt-windfront
   - zigbee2mqtt-frontend
+  - throttleit
 
 allowBuilds:
   '@serialport/bindings-cpp': true
