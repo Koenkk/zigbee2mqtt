@@ -58,6 +58,7 @@ declare function saveBase64DeviceIcon(base64Match: {
     extension: string;
     data: string;
 }): string;
+declare const noop: () => void;
 declare const _default: {
     matchBase64File: typeof matchBase64File;
     saveBase64DeviceIcon: typeof saveBase64DeviceIcon;
@@ -75,9 +76,9 @@ declare const _default: {
     toNetworkAddressHex: typeof toNetworkAddressHex;
     isZHEndpoint: typeof isZHEndpoint;
     isZHGroup: typeof isZHGroup;
-    hours: (hours: number) => number;
-    minutes: (minutes: number) => number;
-    seconds: (seconds: number) => number;
+    hours: typeof hours;
+    minutes: typeof minutes;
+    seconds: typeof seconds;
     validateFriendlyName: typeof validateFriendlyName;
     sleep: typeof sleep;
     sanitizeImageParameter: typeof sanitizeImageParameter;
@@ -89,7 +90,7 @@ declare const _default: {
     arrayUnique: typeof arrayUnique;
     getScenes: typeof getScenes;
     deviceNotCoordinator: typeof deviceNotCoordinator;
-    noop: () => void;
+    noop: typeof noop;
 };
 export default _default;
 //# sourceMappingURL=utils.d.ts.map

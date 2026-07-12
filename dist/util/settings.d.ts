@@ -76,10 +76,10 @@ export declare const defaults: {
         log_rotation: true;
         log_console_json: false;
         log_symlink_current: false;
-        log_output: ("file" | "console")[];
+        log_output: ("console" | "file")[];
         log_directory: string;
         log_file: string;
-        log_level: "info" | "debug";
+        log_level: "debug" | "info";
         log_namespaced_levels: {};
         log_syslog: {};
         log_debug_to_mqtt_frontend: false;
@@ -204,10 +204,10 @@ export declare const testing: {
             log_rotation: true;
             log_console_json: false;
             log_symlink_current: false;
-            log_output: ("file" | "console")[];
+            log_output: ("console" | "file")[];
             log_directory: string;
             log_file: string;
-            log_level: "info" | "debug";
+            log_level: "debug" | "info";
             log_namespaced_levels: {};
             log_syslog: {};
             log_debug_to_mqtt_frontend: false;
