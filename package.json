@@ -33,7 +33,7 @@
         "test:watch": "vitest watch --config ./test/vitest.config.mts",
         "bench": "vitest bench --run --config ./test/vitest.config.mts",
         "prepack": "pnpm run clean && pnpm run build",
-        "clean": "rimraf coverage dist tsconfig.tsbuildinfo"
+        "clean": "node -e \"for (const p of ['coverage', 'dist', 'tsconfig.tsbuildinfo']) require('node:fs').rmSync(p, {recursive: true, force: true, maxRetries: process.platform === 'win32' ? 10 : 0})\""
     },
     "author": "Koen Kanters",
     "license": "GPL-3.0",
