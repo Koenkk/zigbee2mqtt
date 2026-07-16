@@ -2,7 +2,6 @@ import assert from "node:assert";
 import fs from "node:fs";
 import path from "node:path";
 
-import {rimrafSync} from "rimraf";
 import winston from "winston";
 import * as settings from "./settings";
 
@@ -235,7 +234,7 @@ class Logger {
             for (const dir of directories) {
                 this.debug(`Removing old log directory '${dir.path}'`);
                 try {
-                    rimrafSync(dir.path);
+                    fs.rmSync(dir.path, {recursive: true, force: true});
                 } catch (e) {
                     this.error(`Failed to remove old log directory '${dir.path}': ${e}`);
                 }

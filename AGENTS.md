@@ -9,7 +9,7 @@ Zigbee2MQTT is a Zigbee to MQTT bridge that allows you to use your Zigbee device
 - **Language**: TypeScript 5.9.3 compiled to JavaScript (ES modules with NodeNext resolution)
 - **Runtime**: Node.js (versions 20, 22, or 24)
 - **Package Manager**: pnpm 10.12.1 (strictly enforced via `packageManager` field)
-- **Core Dependencies**: 
+- **Core Dependencies**:
   - `zigbee-herdsman` (6.2.0 - exact version, handles Zigbee adapter communication)
   - `zigbee-herdsman-converters` (25.42.0 - exact version, device definitions)
   - `mqtt` (5.14.1 - MQTT client)
@@ -227,7 +227,7 @@ abstract class Extension {
     protected state: State;
     protected publishEntityState: PublishEntityState;
     protected eventBus: EventBus;
-    
+
     async start(): Promise<void> {}  // Initialize extension
     async stop(): Promise<void> {}   // Cleanup extension
 }
@@ -326,7 +326,7 @@ https://www.zigbee2mqtt.io/guide/installation/01_linux.html
 
 ### Performance Considerations
 
-- Use `rimrafSync` for synchronous file operations
+- Use `fs.rmSync(path, {recursive: true, force: true})` for synchronous file operations
 - Leverage async/await to avoid blocking
 - Cache computed values in getters when appropriate
 - EventBus provides loose coupling between components
@@ -344,7 +344,7 @@ These dependencies use **exact versions** (no semver ranges) - do not upgrade wi
 
 Only these Node.js versions are supported:
 - Node.js 20.x
-- Node.js 22.x  
+- Node.js 22.x
 - Node.js 24.x
 
 Using other versions may cause runtime errors or incompatibilities.
