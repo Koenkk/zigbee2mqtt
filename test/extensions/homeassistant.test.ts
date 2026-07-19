@@ -1755,14 +1755,18 @@ describe("Extension: HomeAssistant", () => {
         settings.set(["advanced", "cache_state"], false);
         mockLogger.warning.mockClear();
         await resetExtension();
-        expect(mockLogger.warning).toHaveBeenCalledWith("In order for Home Assistant integration to work properly, set `cache_state: true` under `advanced`");
+        expect(mockLogger.warning).toHaveBeenCalledWith(
+            "In order for Home Assistant integration to work properly, set `cache_state: true` under `advanced`",
+        );
     });
 
     it("Should warn when starting with output attribute_and_json", async () => {
         settings.set(["advanced", "output"], "attribute_and_json");
         mockLogger.warning.mockClear();
         await resetExtension();
-        expect(mockLogger.warning).toHaveBeenCalledWith("In order for Home Assistant integration to work properly, set `output: json` under `advanced`");
+        expect(mockLogger.warning).toHaveBeenCalledWith(
+            "In order for Home Assistant integration to work properly, set `output: json` under `advanced`",
+        );
     });
 
     it("Should set missing values to null", async () => {
