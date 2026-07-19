@@ -1089,7 +1089,10 @@ export class HomeAssistant extends Extension {
                         mockProperties: [{property: firstExpose.property, value: null}],
                         object_id: endpointName ? `switch_${firstExpose.name}_${endpointName}` : `switch_${firstExpose.name}`,
                         discovery_payload: {
-                            name: endpointName ? /* v8 ignore next */ `${firstExpose.label} ${endpointName}` : firstExpose.label,
+                            name:
+                                endpointName && !firstExpose.labelIsCustom
+                                    ? /* v8 ignore next */ `${firstExpose.label} ${endpointName}`
+                                    : firstExpose.label,
                             value_template:
                                 typeof firstExpose.value_on === "boolean"
                                     ? `{% if value_json["${firstExpose.property}"] %}true{% else %}false{% endif %}`
@@ -1110,7 +1113,10 @@ export class HomeAssistant extends Extension {
                         object_id: endpointName ? `${firstExpose.name}_${endpointName}` : `${firstExpose.name}`,
                         mockProperties: [{property: firstExpose.property, value: null}],
                         discovery_payload: {
-                            name: endpointName ? /* v8 ignore next */ `${firstExpose.label} ${endpointName}` : firstExpose.label,
+                            name:
+                                endpointName && !firstExpose.labelIsCustom
+                                    ? /* v8 ignore next */ `${firstExpose.label} ${endpointName}`
+                                    : firstExpose.label,
                             value_template: `{{ value_json["${firstExpose.property}"] }}`,
                             payload_on: firstExpose.value_on,
                             payload_off: firstExpose.value_off,
@@ -1135,7 +1141,7 @@ export class HomeAssistant extends Extension {
                         object_id: endpointName ? `${firstExpose.name}_${endpointName}` : `${firstExpose.name}`,
                         mockProperties: [{property: firstExpose.property, value: null}],
                         discovery_payload: {
-                            name: endpointName ? `${firstExpose.label} ${endpointName}` : firstExpose.label,
+                            name: endpointName && !firstExpose.labelIsCustom ? `${firstExpose.label} ${endpointName}` : firstExpose.label,
                             value_template: `{{ value_json["${firstExpose.property}"] }}`,
                             command_topic: true,
                             command_topic_prefix: endpointName,
@@ -1186,7 +1192,7 @@ export class HomeAssistant extends Extension {
                     object_id: endpointName ? `${firstExpose.name}_${endpointName}` : `${firstExpose.name}`,
                     mockProperties: [{property: firstExpose.property, value: null}],
                     discovery_payload: {
-                        name: endpointName ? `${firstExpose.label} ${endpointName}` : firstExpose.label,
+                        name: endpointName && !firstExpose.labelIsCustom ? `${firstExpose.label} ${endpointName}` : firstExpose.label,
                         value_template: `{{ value_json["${firstExpose.property}"] }}`,
                         enabled_by_default: !allowsSet,
                         ...(firstExpose.unit && {unit_of_measurement: firstExpose.unit}),
@@ -1228,7 +1234,10 @@ export class HomeAssistant extends Extension {
                             object_id: firstExpose.property,
                             mockProperties: [],
                             discovery_payload: {
-                                name: endpointName ? /* v8 ignore next */ `${firstExpose.label} ${endpointName}` : firstExpose.label,
+                                name:
+                                    endpointName && !firstExpose.labelIsCustom
+                                        ? /* v8 ignore next */ `${firstExpose.label} ${endpointName}`
+                                        : firstExpose.label,
                                 state_topic: true,
                                 event_types: this.prepareActionEventTypes(firstExpose.values),
                                 value_template: this.actionValueTemplate,
@@ -1252,7 +1261,10 @@ export class HomeAssistant extends Extension {
                         object_id: firstExpose.property,
                         mockProperties: [{property: firstExpose.property, value: null}],
                         discovery_payload: {
-                            name: endpointName ? /* v8 ignore next */ `${firstExpose.label} ${endpointName}` : firstExpose.label,
+                            name:
+                                endpointName && !firstExpose.labelIsCustom
+                                    ? /* v8 ignore next */ `${firstExpose.label} ${endpointName}`
+                                    : firstExpose.label,
                             state_topic: false,
                             command_topic_prefix: endpointName,
                             command_topic: true,
@@ -1273,7 +1285,7 @@ export class HomeAssistant extends Extension {
                         object_id: firstExpose.property,
                         mockProperties: [{property: firstExpose.property, value: null}],
                         discovery_payload: {
-                            name: endpointName ? `${firstExpose.label} ${endpointName}` : firstExpose.label,
+                            name: endpointName && !firstExpose.labelIsCustom ? `${firstExpose.label} ${endpointName}` : firstExpose.label,
                             value_template: valueTemplate,
                             state_topic: !!(firstExpose.access & ACCESS_STATE),
                             command_topic_prefix: endpointName,
@@ -1295,7 +1307,7 @@ export class HomeAssistant extends Extension {
                         object_id: firstExpose.property,
                         mockProperties: [{property: firstExpose.property, value: null}],
                         discovery_payload: {
-                            name: endpointName ? `${firstExpose.label} ${endpointName}` : firstExpose.label,
+                            name: endpointName && !firstExpose.labelIsCustom ? `${firstExpose.label} ${endpointName}` : firstExpose.label,
                             value_template: valueTemplate,
                             ...(firstExpose.property === "action" ? {entity_category: "diagnostic"} : {}),
                             ...ENUM_DISCOVERY_LOOKUP[firstExpose.name],
@@ -1369,7 +1381,7 @@ export class HomeAssistant extends Extension {
                         object_id: firstExposeTyped.property,
                         mockProperties: [{property: firstExposeTyped.property, value: null}],
                         discovery_payload: {
-                            name: endpointName ? `${firstExposeTyped.label} ${endpointName}` : firstExposeTyped.label,
+                            name: endpointName && !firstExpose.labelIsCustom ? `${firstExposeTyped.label} ${endpointName}` : firstExposeTyped.label,
                             state_topic: firstExposeTyped.access & ACCESS_STATE,
                             value_template: `{{ value_json["${firstExposeTyped.property}"] }}`,
                             command_topic_prefix: endpointName,
@@ -1386,7 +1398,7 @@ export class HomeAssistant extends Extension {
                         object_id: firstExposeTyped.property,
                         mockProperties: [{property: firstExposeTyped.property, value: null}],
                         discovery_payload: {
-                            name: endpointName ? `${firstExposeTyped.label} ${endpointName}` : firstExposeTyped.label,
+                            name: endpointName && !firstExpose.labelIsCustom ? `${firstExposeTyped.label} ${endpointName}` : firstExposeTyped.label,
                             // Truncate text if it's too long
                             // https://github.com/Koenkk/zigbee2mqtt/issues/23199
                             value_template: `{{ value_json["${firstExposeTyped.property}"] | default('',True) | string | truncate(254, True, '', 0) }}`,
@@ -1421,9 +1433,9 @@ export class HomeAssistant extends Extension {
                 delete entry.discovery_payload.entity_category;
             }
 
-            // Let Home Assistant generate entity name when device_class is present.
+            // Let Home Assistant generate entity name when device_class is present and label is not explicitely set.
             // preserve_name allows device_class and explicit name to coexist (e.g. derived sensors).
-            if (entry.discovery_payload.device_class && !NUMERIC_DISCOVERY_LOOKUP[firstExpose.name]?.preserve_name) {
+            if (entry.discovery_payload.device_class && !firstExpose.labelIsCustom && !NUMERIC_DISCOVERY_LOOKUP[firstExpose.name]?.preserve_name) {
                 delete entry.discovery_payload.name;
             }
 
