@@ -9,7 +9,7 @@
                 "enabled": {
                     "type": "boolean",
                     "title": "Enabled",
-                    "description": "Enable Home Assistant integration",
+                    "description": "Enable Home Assistant integration. Also check 'cache_state' and 'output' options under 'advanced'.",
                     "default": false,
                     "requiresRestart": true
                 },
@@ -748,7 +748,7 @@
                 "cache_state": {
                     "type": "boolean",
                     "title": "Cache state",
-                    "description": "MQTT message payload will contain all attributes, not only changed ones. Has to be true when integrating via Home Assistant",
+                    "description": "MQTT message payload will contain all attributes, not only changed ones. Must be true when integrating via Home Assistant",
                     "default": true
                 },
                 "cache_state_persistent": {
@@ -815,7 +815,7 @@
                     "type": "string",
                     "enum": ["attribute_and_json", "attribute", "json"],
                     "title": "MQTT output type",
-                    "description": "Examples when 'state' of a device is published json: topic: 'zigbee2mqtt/my_bulb' payload '{\"state\": \"ON\"}' attribute: topic 'zigbee2mqtt/my_bulb/state' payload 'ON' attribute_and_json: both json and attribute (see above)",
+                    "description": "How the 'state' of a device is published. json: topic 'zigbee2mqtt/my_bulb' payload '{\"state\": \"ON\"}'. attribute: topic 'zigbee2mqtt/my_bulb/state' payload 'ON'. attribute_and_json: both json and attribute (see above). Must be json when integrating via Home Assistant",
                     "default": "json"
                 },
                 "enable_external_js": {
