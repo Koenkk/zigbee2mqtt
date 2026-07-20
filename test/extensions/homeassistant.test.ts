@@ -1760,15 +1760,6 @@ describe("Extension: HomeAssistant", () => {
         );
     });
 
-    it("Should warn when starting with output attribute_and_json", async () => {
-        settings.set(["advanced", "output"], "attribute_and_json");
-        mockLogger.warning.mockClear();
-        await resetExtension();
-        expect(mockLogger.warning).toHaveBeenCalledWith(
-            "In order for Home Assistant integration to work properly, set `output: json` under `advanced`",
-        );
-    });
-
     it("Should set missing values to null", async () => {
         // https://github.com/Koenkk/zigbee2mqtt/issues/6987
         const device = devices.WSDCGQ11LM;

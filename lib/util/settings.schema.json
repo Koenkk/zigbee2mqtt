@@ -815,7 +815,7 @@
                     "type": "string",
                     "enum": ["attribute_and_json", "attribute", "json"],
                     "title": "MQTT output type",
-                    "description": "How the 'state' of a device is published. json: topic 'zigbee2mqtt/my_bulb' payload '{\"state\": \"ON\"}'. attribute: topic 'zigbee2mqtt/my_bulb/state' payload 'ON'. attribute_and_json: both json and attribute (see above). Must be json when integrating via Home Assistant",
+                    "description": "How the 'state' of a device is published. json: topic 'zigbee2mqtt/my_bulb' payload '{\"state\": \"ON\"}'. attribute: topic 'zigbee2mqtt/my_bulb/state' payload 'ON'. attribute_and_json: both json and attribute (see above). Home Assistant needs json",
                     "default": "json"
                 },
                 "enable_external_js": {
