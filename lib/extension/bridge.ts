@@ -271,7 +271,7 @@ export default class Bridge extends Extension {
             logger.info("Successfully changed options");
         }
         await this.publishInfo();
-        return utils.getResponse(message, {restart_required: newRestartRequired});
+        return utils.getResponse(message, {restart_required: this.restartRequired});
     }
 
     @bind async deviceRemove(message: string | KeyValue): Promise<Zigbee2MQTTResponse<"bridge/response/device/remove">> {
