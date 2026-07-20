@@ -501,7 +501,10 @@ export class HomeAssistant extends Extension {
 
     override async start(): Promise<void> {
         if (!settings.get().advanced.cache_state) {
-            logger.warning("In order for Home Assistant integration to work properly set `cache_state: true");
+            logger.warning("In order for Home Assistant integration to work properly, set `cache_state: true` under `advanced`");
+        }
+        if (settings.get().advanced.output !== "json") {
+            logger.warning("In order for Home Assistant integration to work properly, set `output: json` under `advanced`");
         }
 
         this.zigbee2MQTTVersion = (await utils.getZigbee2MQTTVersion(false)).version;
@@ -1507,10 +1510,12 @@ export class HomeAssistant extends Extension {
          * Whenever a device publish an {action: *} we discover an MQTT device trigger sensor
          * and republish it to zigbee2mqtt/my_device/action
          */
-        if (settings.get().advanced.output === "json" && entity.isDevice() && entity.definition && data.message.action) {
+        if (entity.isDevice() && entity.definition && data.message.action) {
             const value = data.message.action.toString();
             await this.publishDeviceTriggerDiscover(entity, "action", value);
-            await this.mqtt.publish(`${data.entity.name}/action`, value, {});
+            if (settings.get().advanced.output === "json") {
+                await this.mqtt.publish(`${data.entity.name}/action`, value, {});
+            }
         }
     }
 
