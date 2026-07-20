@@ -2,7 +2,7 @@ import assert from "node:assert";
 import fs from "node:fs";
 
 import equals from "fast-deep-equal/es6";
-import yaml, {YAMLException} from "js-yaml";
+import {dump, load, YAMLException} from "js-yaml";
 
 export class YAMLFileException extends YAMLException {
     file: string;
@@ -20,7 +20,7 @@ export class YAMLFileException extends YAMLException {
 
 function read(file: string): KeyValue {
     try {
-        const result = yaml.load(fs.readFileSync(file, "utf8"));
+        const result = load(fs.readFileSync(file, "utf8"));
         assert(result instanceof Object, `The content of ${file} is expected to be an object`);
         return result as KeyValue;
     } catch (error) {
@@ -40,7 +40,7 @@ function writeIfChanged(file: string, content: KeyValue): void {
     const before = readIfExists(file);
 
     if (!equals(before, content)) {
-        fs.writeFileSync(file, yaml.dump(content));
+        fs.writeFileSync(file, dump(content));
     }
 }
 

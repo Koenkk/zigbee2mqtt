@@ -78,7 +78,7 @@ abstract class Extension {
     protected state: State;
     protected publishEntityState: PublishEntityState;
     protected eventBus: EventBus;
-    
+
     async start(): Promise<void> {}
     async stop(): Promise<void> {}
 }
@@ -181,7 +181,7 @@ logger.debug("message");
 - Use TypeScript's strict mode features (`noImplicitAny`, `noImplicitThis`)
 
 ### Performance
-- Use `rimrafSync` for synchronous file deletion when appropriate
+- Use `fs.rmSync(path, {recursive: true, force: true})` for synchronous file deletion when appropriate
 - Leverage async/await for I/O operations to avoid blocking
 - Use JSON stable stringify for consistent object serialization: `json-stable-stringify-without-jsonify`
 - Cache computed values when appropriate (see device model patterns)
@@ -217,10 +217,10 @@ describe("ComponentName", () => {
     it("Should do something specific", async () => {
         // Arrange
         const input = {};
-        
+
         // Act
         const result = await someFunction(input);
-        
+
         // Assert
         expect(result).toBe(expected);
     });
@@ -414,7 +414,7 @@ this.eventBus.on('deviceMessage', this.onDeviceMessage, this);
 - Device operations through `zigbee-herdsman` API
 - Event handling through EventBus wrappers
 
-### MQTT Integration  
+### MQTT Integration
 - Connect: `await this.mqtt.connect()`
 - Subscribe: `await this.mqtt.subscribe(topic)`
 - Publish: `await this.mqtt.publish(topic, message, options)`

@@ -109,6 +109,11 @@ export default class Mqtt {
             options.rejectUnauthorized = false;
         }
 
+        if (mqttSettings.server_name) {
+            logger.debug(`MQTT SSL/TLS: SNI server name = ${mqttSettings.server_name}`);
+            options.servername = mqttSettings.server_name;
+        }
+
         this.client = await connectAsync(mqttSettings.server, options);
 
         // https://github.com/Koenkk/zigbee2mqtt/issues/9822

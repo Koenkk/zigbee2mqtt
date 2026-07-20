@@ -33,12 +33,14 @@
                     "type": "boolean",
                     "title": "Home Assistant legacy action sensors",
                     "description": "Home Assistant legacy actions sensor, when enabled a action sensor will be discoverd and an empty `action` will be send after every published action.",
+                    "requiresRestart": true,
                     "default": false
                 },
                 "experimental_event_entities": {
                     "type": "boolean",
                     "title": "Home Assistant experimental event entities",
                     "description": "Home Assistant experimental event entities, when enabled Zigbee2MQTT will add event entities for exposed actions. The events and attributes are currently deemed experimental and subject to change.",
+                    "requiresRestart": true,
                     "default": false
                 }
             },
@@ -187,6 +189,13 @@
                     "requiresRestart": true,
                     "description": "Disable self-signed SSL certificate",
                     "default": true
+                },
+                "server_name": {
+                    "type": "string",
+                    "title": "TLS server name (SNI)",
+                    "requiresRestart": true,
+                    "description": "Override the TLS SNI / hostname used for certificate verification when it differs from the host in 'server' (e.g. connecting to an internal service DNS name while validating a public certificate SAN). Leave unset to use the hostname from 'server'.",
+                    "examples": ["mqtt.example.com"]
                 },
                 "include_device_information": {
                     "type": "boolean",
@@ -855,7 +864,8 @@
                 "retain": {
                     "type": "boolean",
                     "title": "Retain",
-                    "description": "Retain MQTT messages of this device"
+                    "description": "Retain MQTT messages of this device",
+                    "default": false
                 },
                 "disabled": {
                     "type": "boolean",
@@ -960,10 +970,16 @@
                     "type": "string"
                 },
                 "retain": {
-                    "type": "boolean"
+                    "type": "boolean",
+                    "title": "Retain",
+                    "description": "Retain MQTT messages of this group",
+                    "default": false
                 },
                 "optimistic": {
-                    "type": "boolean"
+                    "type": "boolean",
+                    "title": "Optimistic",
+                    "description": "Publish the expected state of group members after set",
+                    "default": true
                 },
                 "qos": {
                     "type": ["number"],

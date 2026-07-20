@@ -16,11 +16,11 @@ jobs:
             release_created: ${{ steps.release.outputs.release_created }}
             version: '${{steps.release.outputs.major}}.${{steps.release.outputs.minor}}.${{steps.release.outputs.patch}}'
         steps:
-            - uses: pnpm/action-setup@v5
+            - uses: pnpm/action-setup@v6
               with:
                   version: 9
 
-            - uses: actions/setup-node@v6
+            - uses: actions/setup-node@v7
               with:
                   node-version: 24
 
@@ -31,18 +31,18 @@ jobs:
                   token: ${{secrets.GH_TOKEN}}
 
             # Checkout repos
-            - uses: actions/checkout@v6
+            - uses: actions/checkout@v7
               with:
                   repository: koenkk/zigbee2mqtt
                   path: ./z2m
-            - uses: actions/checkout@v6
+            - uses: actions/checkout@v7
               with:
                   repository: koenkk/zigbee2mqtt
                   path: ./z2m-master
                   ref: master
 
             - name: Restore cache commit-user-lookup.json
-              uses: actions/cache/restore@v5
+              uses: actions/cache/restore@v6
               with:
                   path: z2m/scripts/commit-user-lookup.json
                   key: commit-user-lookup-dummy
@@ -67,7 +67,7 @@ jobs:
               env:
                   GH_TOKEN: ${{secrets.GH_TOKEN}}
             - name: Save cache commit-user-lookup.json
-              uses: actions/cache/save@v5
+              uses: actions/cache/save@v6
               if: always()
               with:
                   path: z2m/scripts/commit-user-lookup.json

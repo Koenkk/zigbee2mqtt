@@ -6,7 +6,7 @@ declare module "zigbee2mqtt-frontend" {
     export default frontend;
 }
 
-declare module "http" {
+declare module "node:http" {
     interface IncomingMessage {
         originalUrl?: string;
         path?: string;

@@ -12,7 +12,7 @@ let unsolicitedStop = false;
 let watchdogDelays = [2000, 60000, 300000, 900000, 1800000, 3600000];
 
 if (process.env.Z2M_WATCHDOG != null && process.env.Z2M_WATCHDOG !== "default") {
-    if (/^\d+(.\d+)?(,\d+(.\d+)?)*$/.test(process.env.Z2M_WATCHDOG)) {
+    if (/^\d+(\.\d+)?(,\d+(\.\d+)?)*$/.test(process.env.Z2M_WATCHDOG)) {
         watchdogDelays = process.env.Z2M_WATCHDOG.split(",").map((v) => Number.parseFloat(v) * 60000);
     } else {
         console.log(`Invalid watchdog delays (must use number-only CSV format representing minutes, example: 'Z2M_WATCHDOG=1,5,15,30,60'.`);

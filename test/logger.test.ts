@@ -5,20 +5,13 @@ import * as data from "./mocks/data";
 import fs from "node:fs";
 import {platform} from "node:os";
 import path from "node:path";
-import {rimrafSync} from "rimraf";
 import tmp from "tmp";
 import type {MockInstance} from "vitest";
 import Transport from "winston-transport";
 import logger from "../lib/util/logger";
 import * as settings from "../lib/util/settings";
 
-vi.mock("rimraf", async (importOriginal) => {
-    const actual = await importOriginal<typeof import("rimraf")>();
-    return {
-        ...actual,
-        rimrafSync: vi.fn(actual.rimrafSync),
-    };
-});
+const rmSync = (target: string): void => fs.rmSync(target, {recursive: true, force: true});
 
 describe("Logger", () => {
     let consoleWriteSpy: MockInstance;
@@ -56,7 +49,7 @@ describe("Logger", () => {
 
     it("Should cleanup (default setting)", () => {
         for (const d of fs.readdirSync(dir.name)) {
-            rimrafSync(path.join(dir.name, d));
+            rmSync(path.join(dir.name, d));
         }
 
         for (let i = 0; i < 20; i++) {
@@ -70,25 +63,30 @@ describe("Logger", () => {
 
     it("Should handle cleanup error", () => {
         for (const d of fs.readdirSync(dir.name)) {
-            rimrafSync(path.join(dir.name, d));
+            rmSync(path.join(dir.name, d));
         }
 
         for (let i = 0; i < 20; i++) {
             fs.mkdirSync(path.join(dir.name, `log_${i}`));
         }
 
-        vi.mocked(rimrafSync).mockImplementationOnce(() => {
+        const rmSyncSpy = vi.spyOn(fs, "rmSync").mockImplementationOnce(() => {
             throw new Error("EACCES: permission denied");
         });
 
         const errorSpy = vi.spyOn(logger, "error");
-        logger.init();
-        expect(errorSpy).toHaveBeenCalledWith(expect.stringMatching(/Failed to remove old log directory '.*': Error: EACCES: permission denied/));
+
+        try {
+            logger.init();
+            expect(errorSpy).toHaveBeenCalledWith(expect.stringMatching(/Failed to remove old log directory '.*': Error: EACCES: permission denied/));
+        } finally {
+            rmSyncSpy.mockRestore();
+        }
     });
 
     it("Should cleanup (15 folders setting)", () => {
         for (const d of fs.readdirSync(dir.name)) {
-            rimrafSync(path.join(dir.name, d));
+            rmSync(path.join(dir.name, d));
         }
 
         for (let i = 0; i < 20; i++) {
@@ -103,7 +101,7 @@ describe("Logger", () => {
 
     it("Should not cleanup when there is no timestamp set", () => {
         for (const d of fs.readdirSync(dir.name)) {
-            rimrafSync(path.join(dir.name, d));
+            rmSync(path.join(dir.name, d));
         }
 
         for (let i = 30; i < 50; i++) {
