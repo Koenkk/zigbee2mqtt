@@ -471,12 +471,16 @@ export default class Bridge extends Extension {
             }
         }
 
-        const restartRequired = settings.changeEntityOptions(ID, message.options);
-        if (restartRequired) this.restartRequired = true;
+        const newRestartRequired = settings.changeEntityOptions(ID, message.options);
+        if (newRestartRequired) this.restartRequired = true;
         const newOptions = cleanup(entity.options);
         await this.publishInfo();
 
-        logger.info(`Changed config for ${entityType} ${ID}`);
+        if (newRestartRequired) {
+            logger.info(`New config for ${entityType} ${ID} requires restart to take effect`);
+        } else {
+            logger.info(`Successfully changed config for ${entityType} ${ID}`);
+        }
 
         this.eventBus.emitEntityOptionsChanged({from: oldOptions, to: newOptions, entity});
         return utils.getResponse(message, {from: oldOptions, to: newOptions, id: ID, restart_required: this.restartRequired});
