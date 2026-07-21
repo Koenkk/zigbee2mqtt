@@ -243,7 +243,10 @@ export default class Bridge extends Extension {
         }
 
         const newSettings = message.options as Partial<Settings>;
-        this.restartRequired = settings.apply(newSettings);
+        const newRestartRequired = settings.apply(newSettings);
+        if (newRestartRequired) {
+            this.restartRequired = newRestartRequired;
+        }
 
         // Apply some settings on-the-fly.
         if (newSettings.homeassistant) {
@@ -262,7 +265,11 @@ export default class Bridge extends Extension {
             logger.setDebugNamespaceIgnore(settings.get().advanced.log_debug_namespace_ignore);
         }
 
-        logger.info("Successfully changed options");
+        if (newRestartRequired) {
+            logger.info("Changes require restart to take effect");
+        } else {
+            logger.info("Successfully changed options");
+        }
         await this.publishInfo();
         return utils.getResponse(message, {restart_required: this.restartRequired});
     }
@@ -464,12 +471,16 @@ export default class Bridge extends Extension {
             }
         }
 
-        const restartRequired = settings.changeEntityOptions(ID, message.options);
-        if (restartRequired) this.restartRequired = true;
+        const newRestartRequired = settings.changeEntityOptions(ID, message.options);
+        if (newRestartRequired) this.restartRequired = true;
         const newOptions = cleanup(entity.options);
         await this.publishInfo();
 
-        logger.info(`Changed config for ${entityType} ${ID}`);
+        if (newRestartRequired) {
+            logger.info(`New config for ${entityType} ${ID} requires restart to take effect`);
+        } else {
+            logger.info(`Successfully changed config for ${entityType} ${ID}`);
+        }
 
         this.eventBus.emitEntityOptionsChanged({from: oldOptions, to: newOptions, entity});
         return utils.getResponse(message, {from: oldOptions, to: newOptions, id: ID, restart_required: this.restartRequired});

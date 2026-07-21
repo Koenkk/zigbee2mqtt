@@ -4325,6 +4325,58 @@ describe("Extension: Bridge", () => {
         );
     });
 
+    it("Change options consecutively, check restart required", async () => {
+        settings.apply({health: {interval: 10, reset_on_check: false}});
+        mockMQTTPublishAsync.mockClear();
+
+        // Change option that doesn't require restart
+        mockMQTTEvents.message("zigbee2mqtt/bridge/request/options", stringify({options: {health: {reset_on_check: true}}}));
+        await flushPromises();
+
+        expect(settings.get().health.reset_on_check).toBe(true);
+        expect(mockMQTTPublishAsync).toHaveBeenCalledWith(
+            "zigbee2mqtt/bridge/response/options",
+            stringify({data: {restart_required: false}, status: "ok"}),
+            {},
+        );
+        expect(mockMQTTPublishAsync).toHaveBeenCalledWith("zigbee2mqtt/bridge/info", expect.stringContaining('"restart_required":false'), {
+            retain: true,
+        });
+        mockMQTTPublishAsync.mockClear();
+
+        // Change option that requires restart
+        mockMQTTEvents.message("zigbee2mqtt/bridge/request/options", stringify({options: {health: {interval: 11}}}));
+        await flushPromises();
+
+        expect(settings.get().health.interval).toBe(11);
+        expect(mockMQTTPublishAsync).toHaveBeenCalledWith(
+            "zigbee2mqtt/bridge/response/options",
+            stringify({data: {restart_required: true}, status: "ok"}),
+            {},
+        );
+        expect(mockMQTTPublishAsync).toHaveBeenCalledWith("zigbee2mqtt/bridge/info", expect.stringContaining('"restart_required":true'), {
+            retain: true,
+        });
+        mockMQTTPublishAsync.mockClear();
+
+        // Change option that doesn't require restart
+        mockMQTTEvents.message("zigbee2mqtt/bridge/request/options", stringify({options: {health: {reset_on_check: false}}}));
+        await flushPromises();
+
+        expect(settings.get().health.reset_on_check).toBe(false);
+
+        // System still requires restart
+        expect(mockMQTTPublishAsync).toHaveBeenCalledWith(
+            "zigbee2mqtt/bridge/response/options",
+            stringify({data: {restart_required: true}, status: "ok"}),
+            {},
+        );
+        expect(mockMQTTPublishAsync).toHaveBeenCalledWith("zigbee2mqtt/bridge/info", expect.stringContaining('"restart_required":true'), {
+            retain: true,
+        });
+        mockMQTTPublishAsync.mockClear();
+    });
+
     it("Icon link handling", () => {
         const bridge = controller.getExtension("Bridge")! as Bridge;
         expect(bridge).toBeDefined();
