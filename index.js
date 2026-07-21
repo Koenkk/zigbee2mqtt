@@ -1,7 +1,7 @@
 const fs = require("node:fs");
 const path = require("node:path");
 const {exec} = require("node:child_process");
-require("source-map-support").install();
+process.setSourceMapsEnabled(true);
 
 /** @type {import("./dist/controller").Controller | undefined} */
 let controller;
