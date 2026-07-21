@@ -482,7 +482,7 @@ export class HomeAssistant extends Extension {
     ) {
         super(zigbee, mqtt, state, publishEntityState, eventBus, enableDisableExtension, restartCallback, addExtension);
         if (settings.get().advanced.output === "attribute") {
-            throw new Error("Home Assistant integration is not possible with attribute output!");
+            throw new Error("Home Assistant integration requires 'output: json' under 'advanced'");
         }
 
         const haSettings = settings.get().homeassistant;

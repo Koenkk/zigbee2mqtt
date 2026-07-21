@@ -1739,7 +1739,7 @@ describe("Extension: HomeAssistant", () => {
 
         await expect(async () => {
             await controller.start();
-        }).rejects.toThrow("Home Assistant integration is not possible with attribute output!");
+        }).rejects.toThrow("Home Assistant integration requires 'output: json' under 'advanced'");
     });
 
     it("Should throw error when homeassistant.discovery_topic equals the mqtt.base_topic", async () => {
