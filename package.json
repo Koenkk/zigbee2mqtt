@@ -55,7 +55,6 @@
         "mqtt": "^5.15.2",
         "object-assign-deep": "^0.4.0",
         "semver": "^7.8.5",
-        "source-map-support": "^0.5.21",
         "throttleit": "^3.0.0",
         "winston": "^3.19.0",
         "winston-syslog": "^2.7.1",
