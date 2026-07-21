@@ -27,4 +27,4 @@ updates:
         interval: weekly
       target-branch: dev
       commit-message:
-        prefix: fix(ignore)
+        prefix: chore
