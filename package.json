@@ -70,7 +70,6 @@
         "@biomejs/biome": "^2.5.3",
         "@types/finalhandler": "^1.2.3",
         "@types/humanize-duration": "^3.27.4",
-        "@types/js-yaml": "^4.0.9",
         "@types/node": "^26.1.1",
         "@types/object-assign-deep": "^0.4.3",
         "@types/readable-stream": "4.0.24",

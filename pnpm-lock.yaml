@@ -90,9 +90,6 @@ importers:
       '@types/humanize-duration':
         specifier: ^3.27.4
         version: 3.27.4
-      '@types/js-yaml':
-        specifier: ^4.0.9
-        version: 4.0.9
       '@types/node':
         specifier: ^26.1.1
         version: 26.1.1
@@ -542,9 +539,6 @@ packages:
 
   '@types/humanize-duration@3.27.4':
     resolution: {integrity: sha512-yaf7kan2Sq0goxpbcwTQ+8E9RP6HutFBPv74T/IA/ojcHKhuKVlk2YFYyHhWZeLvZPzzLE3aatuQB4h0iqyyUA==}
-
-  '@types/js-yaml@4.0.9':
-    resolution: {integrity: sha512-k4MGaQl5TGo/iipqb2UDG2UwjXziSWkh0uysQelTlJpX1qGlpUZYm8PnO4DxG1qBomtJUdYJ6qR6xdIah10JLg==}
 
   '@types/node@26.1.1':
     resolution: {integrity: sha512-nxAkRSVkN1Y0JC1W8ky/fTfkGsMmcrRsbx+3XoZE+rMOX71kLYTV7fLXpqud1GpbpP5TuffXFqfX7fH2GgZREw==}
@@ -1840,8 +1834,6 @@ snapshots:
   '@types/http-errors@2.0.5': {}
 
   '@types/humanize-duration@3.27.4': {}
-
-  '@types/js-yaml@4.0.9': {}
 
   '@types/node@26.1.1':
     dependencies:
