@@ -381,6 +381,10 @@ const applyHomeAssistantExposeMetadata = (payload: DiscoveryEntry, homeAssistant
         payload.type = homeAssistant.type;
     }
 
+    if (homeAssistant.schema !== undefined) {
+        payload.discovery_payload.schema = homeAssistant.schema;
+    }
+
     if (homeAssistant.entityCategory !== undefined) {
         payload.discovery_payload.entity_category = homeAssistant.entityCategory;
     }
@@ -1427,6 +1431,17 @@ export class HomeAssistant extends Extension {
                 delete entry.discovery_payload.entity_category;
             }
 
+            // Infrared entities or type receiver most not truncate the value.
+            // Infrared entities of type emitter should not have a value template
+            if (entry.type === "infrared") {
+                if (entry.discovery_payload.schema === "receiver") {
+                    entry.discovery_payload.value_template =
+                        "{{ iif(as_timestamp(now()) | int - value_json.learned_ir_timings.timestamp / 1000 < 5, value_json.learned_ir_timings | tojson, None) }}";
+                } else {
+                    delete entry.discovery_payload.value_template;
+                }
+            }
+
             // Let Home Assistant generate entity name when device_class is present.
             // preserve_name allows device_class and explicit name to coexist (e.g. derived sensors).
             if (entry.discovery_payload.device_class && !NUMERIC_DISCOVERY_LOOKUP[firstExpose.name]?.preserve_name) {
@@ -1519,6 +1534,12 @@ export class HomeAssistant extends Extension {
             if (settings.get().advanced.output === "json") {
                 await this.mqtt.publish(`${data.entity.name}/action`, value, {});
             }
+        }
+        /**
+         * Clear the MQTT Infrared receiver learned IR timings to avoid sensting stale messages
+         */
+        if (entity.options.homeassistant && entity.options.homeassistant.type === "infrared" && entity.options.homeassistant.schema === "receiver") {
+            await this.publishEntityState(data.entity, {learned_ir_timings: ""});
         }
     }
 
