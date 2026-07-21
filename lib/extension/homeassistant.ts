@@ -485,6 +485,10 @@ export class HomeAssistant extends Extension {
             throw new Error("Home Assistant integration requires 'output: json' under 'advanced'");
         }
 
+        // TODO (Z2M 3.0.0): Prevent starting without cache_state, instead of warning
+        // if (!settings.get().advanced.cache_state) {
+        //     throw new Error("Home Assistant integration is not possible without caching states! Set `cache_state: true` under `advanced`");
+        // }
         const haSettings = settings.get().homeassistant;
         assert(haSettings.enabled, `Home Assistant extension created with setting 'enabled: false'`);
         this.discoveryTopic = haSettings.discovery_topic;
@@ -500,6 +504,7 @@ export class HomeAssistant extends Extension {
     }
 
     override async start(): Promise<void> {
+        // TODO (Z2M 3.0.0): Prevent starting without cache_state, instead of warning
         if (!settings.get().advanced.cache_state) {
             logger.warning("In order for Home Assistant integration to work properly, set `cache_state: true` under `advanced`");
         }
