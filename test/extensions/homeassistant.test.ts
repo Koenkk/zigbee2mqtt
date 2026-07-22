@@ -19,7 +19,6 @@ import HomeAssistant from "../../lib/extension/homeassistant";
 import type Device from "../../lib/model/device";
 import type Group from "../../lib/model/group";
 import * as settings from "../../lib/util/settings";
-import {eachItem} from "ajv/dist/compile/util";
 
 const mocksClear = [mockMQTTPublishAsync, mockLogger.debug, mockLogger.warning, mockLogger.error];
 
