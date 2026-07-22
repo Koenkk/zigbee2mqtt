@@ -1,9 +1,9 @@
 import fs from "node:fs";
 import path from "node:path";
 import bind from "bind-decorator";
-import stringify from "json-stable-stringify-without-jsonify";
 import JSZip from "jszip";
 import objectAssignDeep from "object-assign-deep";
+import stringify from "safe-stable-stringify";
 import type winston from "winston";
 import Transport from "winston-transport";
 import {Zcl} from "zigbee-herdsman";
@@ -61,7 +61,7 @@ export default class Bridge extends Extension {
         const debugToMQTTFrontend = settings.get().advanced.log_debug_to_mqtt_frontend;
 
         const bridgeLogging = (message: string, level: string, namespace: string): void => {
-            const payload = stringify({message, level, namespace});
+            const payload = stringify({message, level, namespace} as object);
 
             if (payload !== this.lastBridgeLoggingPayload) {
                 this.lastBridgeLoggingPayload = payload;

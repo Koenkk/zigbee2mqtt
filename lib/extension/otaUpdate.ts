@@ -2,7 +2,7 @@ import assert from "node:assert";
 import {existsSync, mkdirSync, rmSync, writeFileSync} from "node:fs";
 import {join} from "node:path";
 import bind from "bind-decorator";
-import stringify from "json-stable-stringify-without-jsonify";
+import stringify from "safe-stable-stringify";
 import {setOtaConfiguration, Zcl} from "zigbee-herdsman";
 import type {OtaDataSettings, OtaSource, OtaUpdateAvailableResult} from "zigbee-herdsman/dist/controller/tstype";
 import Device from "../model/device";

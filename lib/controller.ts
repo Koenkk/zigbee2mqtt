@@ -1,5 +1,5 @@
 import bind from "bind-decorator";
-import stringify from "json-stable-stringify-without-jsonify";
+import stringify from "safe-stable-stringify";
 import {setLogger as zhSetLogger} from "zigbee-herdsman";
 import {setLogger as zhcSetLogger} from "zigbee-herdsman-converters";
 import EventBus from "./eventBus";
@@ -480,7 +480,7 @@ export class Controller {
                 message = typeof subPayload === "string" ? subPayload : stringify(subPayload);
             }
 
-            if (message !== null) {
+            if (message !== null && message !== undefined) {
                 await this.mqtt.publish(`${topicRoot}${key}`, message, options);
             }
         }

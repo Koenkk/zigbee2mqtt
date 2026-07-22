@@ -9,7 +9,7 @@ import {devices, mockController as mockZHController, returnDevices} from "../moc
 
 import fs from "node:fs";
 import path from "node:path";
-import stringify from "json-stable-stringify-without-jsonify";
+import stringify from "safe-stable-stringify";
 import * as zhc from "zigbee-herdsman-converters";
 import {Controller} from "../../lib/controller";
 import ExternalConverters from "../../lib/extension/externalConverters";

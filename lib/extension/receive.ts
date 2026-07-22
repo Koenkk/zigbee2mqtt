@@ -2,7 +2,7 @@ import assert from "node:assert";
 
 import bind from "bind-decorator";
 import debounce from "debounce";
-import stringify from "json-stable-stringify-without-jsonify";
+import stringify from "safe-stable-stringify";
 import throttle from "throttleit";
 
 import * as zhc from "zigbee-herdsman-converters";

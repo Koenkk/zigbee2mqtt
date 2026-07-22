@@ -8,7 +8,7 @@ import {posix} from "node:path";
 import bind from "bind-decorator";
 import expressStaticGzip from "express-static-gzip";
 import finalhandler from "finalhandler";
-import stringify from "json-stable-stringify-without-jsonify";
+import stringify from "safe-stable-stringify";
 import WebSocket from "ws";
 
 import data from "../util/data";
@@ -143,7 +143,7 @@ export class Frontend extends Extension {
 
         if (this.wss) {
             for (const client of this.wss.clients) {
-                client.send(stringify({topic: "bridge/state", payload: {state: "offline"}}));
+                client.send(stringify({topic: "bridge/state", payload: {state: "offline"}} as object));
                 client.terminate();
             }
 
@@ -173,7 +173,7 @@ export class Frontend extends Extension {
             if (!isBinary && data) {
                 const message = data.toString();
                 const {topic, payload} = JSON.parse(message);
-                this.mqtt.onMessage(`${this.mqttBaseTopic}/${topic}`, Buffer.from(stringify(payload)));
+                this.mqtt.onMessage(`${this.mqttBaseTopic}/${topic}`, Buffer.from(stringify(payload as object)));
             }
         });
 
@@ -184,7 +184,7 @@ export class Frontend extends Extension {
                         // Send topic without base_topic
                         topic: topic.substring(this.mqttBaseTopic.length + 1),
                         payload: utils.parseJSON(payload.payload, payload.payload),
-                    }),
+                    } as object),
                 );
             }
         }
@@ -201,7 +201,7 @@ export class Frontend extends Extension {
                 payload.linkquality = device.zh.linkquality;
             }
 
-            ws.send(stringify({topic: device.name, payload}));
+            ws.send(stringify({topic: device.name, payload} as object));
         }
     }
 
@@ -229,7 +229,7 @@ export class Frontend extends Extension {
 
         for (const client of this.wss.clients) {
             if (client.readyState === WebSocket.OPEN) {
-                client.send(stringify({topic, payload}));
+                client.send(stringify({topic, payload} as object));
             }
         }
     }

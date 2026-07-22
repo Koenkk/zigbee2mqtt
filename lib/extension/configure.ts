@@ -1,5 +1,5 @@
 import bind from "bind-decorator";
-import stringify from "json-stable-stringify-without-jsonify";
+import stringify from "safe-stable-stringify";
 import Device from "../model/device";
 import type {Zigbee2MQTTAPI} from "../types/api";
 import logger from "../util/logger";

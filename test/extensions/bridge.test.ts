@@ -12,7 +12,7 @@ import assert from "node:assert";
 import fs from "node:fs";
 import {platform} from "node:os";
 import path from "node:path";
-import stringify from "json-stable-stringify-without-jsonify";
+import stringify from "safe-stable-stringify";
 import type {Mock} from "vitest";
 import {Controller} from "../../lib/controller";
 import Bridge from "../../lib/extension/bridge";

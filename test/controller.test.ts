@@ -17,7 +17,7 @@ import {devices, mockController as mockZHController, events as mockZHEvents, ret
 import fs from "node:fs";
 import os from "node:os";
 import path from "node:path";
-import stringify from "json-stable-stringify-without-jsonify";
+import stringify from "safe-stable-stringify";
 import tmp from "tmp";
 
 import type {Mock, MockInstance} from "vitest";

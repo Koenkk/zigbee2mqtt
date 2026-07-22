@@ -7,7 +7,7 @@ import * as mockSleep from "../mocks/sleep";
 import {flushPromises} from "../mocks/utils";
 import {devices, events as mockZHEvents} from "../mocks/zigbeeHerdsman";
 
-import stringify from "json-stable-stringify-without-jsonify";
+import stringify from "safe-stable-stringify";
 import {Controller} from "../../lib/controller";
 import * as settings from "../../lib/util/settings";
 

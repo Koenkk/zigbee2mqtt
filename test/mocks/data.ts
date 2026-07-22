@@ -1,6 +1,6 @@
 import fs from "node:fs";
 import path from "node:path";
-import stringify from "json-stable-stringify-without-jsonify";
+import stringify from "safe-stable-stringify";
 import tmp from "tmp";
 import {vi} from "vitest";
 import yaml from "../../lib/util/yaml";

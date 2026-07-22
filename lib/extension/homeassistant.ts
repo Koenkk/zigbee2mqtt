@@ -1,6 +1,6 @@
 import assert from "node:assert";
 import bind from "bind-decorator";
-import stringify from "json-stable-stringify-without-jsonify";
+import stringify from "safe-stable-stringify";
 import type * as zhc from "zigbee-herdsman-converters";
 import type {Zh} from "zigbee-herdsman-converters/lib/types";
 import logger from "../util/logger";
@@ -2020,7 +2020,7 @@ export class HomeAssistant extends Extension {
         } else if (data.topic === this.statusTopic && data.message.toLowerCase() === "online") {
             const timer = setTimeout(async () => {
                 // Re-publish bridge state so HA marks all entities as available before receiving cached device states.
-                await this.mqtt.publish("bridge/state", stringify({state: "online"}), {clientOptions: {retain: true, qos: 1}});
+                await this.mqtt.publish("bridge/state", stringify({state: "online"} as object), {clientOptions: {retain: true, qos: 1}});
 
                 // Publish all device states.
                 for (const entity of this.zigbee.devicesAndGroupsIterator(utils.deviceNotCoordinator)) {

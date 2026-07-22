@@ -8,7 +8,7 @@ import {devices, mockController as mockZHController, returnDevices} from "../moc
 
 import fs from "node:fs";
 import path from "node:path";
-import stringify from "json-stable-stringify-without-jsonify";
+import stringify from "safe-stable-stringify";
 import {Controller} from "../../lib/controller";
 import ExternalExtensions from "../../lib/extension/externalExtensions";
 import * as settings from "../../lib/util/settings";

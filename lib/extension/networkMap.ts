@@ -1,5 +1,5 @@
 import bind from "bind-decorator";
-import stringify from "json-stable-stringify-without-jsonify";
+import stringify from "safe-stable-stringify";
 import type {Eui64} from "zigbee-herdsman/dist/zspec/tstypes";
 import type {LQITableEntry, RoutingTableEntry} from "zigbee-herdsman/dist/zspec/zdo/definition/tstypes";
 import type {Zigbee2MQTTAPI, Zigbee2MQTTNetworkMap} from "../types/api";

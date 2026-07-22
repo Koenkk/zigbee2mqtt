@@ -6,7 +6,7 @@ import {events as mockMQTTEvents, mockMQTTPublishAsync} from "../mocks/mqtt";
 import {flushPromises} from "../mocks/utils";
 import {devices, type Endpoint, events as mockZHEvents, type Device as ZhDevice} from "../mocks/zigbeeHerdsman";
 
-import stringify from "json-stable-stringify-without-jsonify";
+import stringify from "safe-stable-stringify";
 import {InterviewState} from "zigbee-herdsman/dist/controller/model/device";
 import {Controller} from "../../lib/controller";
 import Device from "../../lib/model/device";

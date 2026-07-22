@@ -1,5 +1,5 @@
 import {existsSync, mkdirSync} from "node:fs";
-import stringify from "json-stable-stringify-without-jsonify";
+import stringify from "safe-stable-stringify";
 import {bench, describe, vi} from "vitest";
 import {type Controller, Zcl, Zdo, ZSpec} from "zigbee-herdsman";
 import type Adapter from "zigbee-herdsman/dist/adapter/adapter";
