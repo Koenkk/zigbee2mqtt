@@ -372,26 +372,29 @@ const featurePropertyWithoutEndpoint = (feature: zhc.Feature): string => {
     return feature.property;
 };
 
-const applyHomeAssistantExposeMetadata = (payload: KeyValue, homeAssistant: zhc.Expose["homeassistant"]): void => {
-    const metadata = homeAssistant as KeyValue | undefined;
-    if (!metadata) {
+const applyHomeAssistantExposeMetadata = (payload: DiscoveryEntry, homeAssistant: zhc.Expose["homeassistant"]): void => {
+    if (!homeAssistant) {
         return;
     }
 
-    if (typeof metadata.entityCategory === "string") {
-        payload.entity_category = metadata.entityCategory;
+    if (homeAssistant.type !== undefined) {
+        payload.type = homeAssistant.type;
     }
 
-    if (typeof metadata.deviceClass === "string") {
-        payload.device_class = metadata.deviceClass;
+    if (homeAssistant.entityCategory !== undefined) {
+        payload.discovery_payload.entity_category = homeAssistant.entityCategory;
     }
 
-    if (typeof metadata.enabledByDefault === "boolean") {
-        payload.enabled_by_default = metadata.enabledByDefault;
+    if (homeAssistant.deviceClass !== undefined) {
+        payload.discovery_payload.device_class = homeAssistant.deviceClass;
     }
 
-    if (typeof metadata.icon === "string") {
-        payload.icon = metadata.icon;
+    if (homeAssistant.enabledByDefault !== undefined) {
+        payload.discovery_payload.enabled_by_default = homeAssistant.enabledByDefault;
+    }
+
+    if (homeAssistant.icon !== undefined) {
+        payload.discovery_payload.icon = homeAssistant.icon;
     }
 };
 
@@ -1412,7 +1415,7 @@ export class HomeAssistant extends Extension {
         }
 
         for (const entry of discoveryEntries) {
-            applyHomeAssistantExposeMetadata(entry.discovery_payload, firstExpose.homeassistant);
+            applyHomeAssistantExposeMetadata(entry, firstExpose.homeassistant);
 
             // If a sensor has entity category `config`, then change
             // it to `diagnostic`. Sensors have no input, so can't be configured.
