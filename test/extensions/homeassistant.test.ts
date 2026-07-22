@@ -19,6 +19,7 @@ import HomeAssistant from "../../lib/extension/homeassistant";
 import type Device from "../../lib/model/device";
 import type Group from "../../lib/model/group";
 import * as settings from "../../lib/util/settings";
+import {eachItem} from "ajv/dist/compile/util";
 
 const mocksClear = [mockMQTTPublishAsync, mockLogger.debug, mockLogger.warning, mockLogger.error];
 
@@ -1697,6 +1698,56 @@ describe("Extension: HomeAssistant", () => {
             retain: true,
             qos: 1,
         });
+    });
+
+    it("Should discover an infrared emitter entity", () => {
+        const infraredEmitterExpose = new zhc.Text("emitter", zhc.access.SET).withHomeAssistant({type: "infrared", schema: "emitter"});
+        const device = {
+            definition: {},
+            isDevice: (): boolean => true,
+            isGroup: (): boolean => false,
+            endpoint: () => undefined,
+            options: {},
+            exposes: (): zhc.Expose[] => [infraredEmitterExpose],
+            zh: {endpoints: []},
+        } as Device;
+
+        // @ts-expect-error private
+        const configs = extension.getConfigs(device);
+        const infrared = configs.find((c) => c.type === "infrared");
+        expect(infrared).toBeDefined();
+        expect(infrared!.discovery_payload).toMatchObject({
+            name: "Emitter",
+            schema: "emitter",
+            command_topic: true,
+            state_topic: 0,
+        });
+        expect(infrared!.discovery_payload).not.toHaveProperty("value_template");
+    });
+
+    it("Should discover an infrared receiver entity", () => {
+        const infraredReceiverExpose = new zhc.Text("receiver", zhc.access.STATE).withHomeAssistant({type: "infrared", schema: "receiver"});
+        const device = {
+            definition: {},
+            isDevice: (): boolean => true,
+            isGroup: (): boolean => false,
+            endpoint: () => undefined,
+            options: {},
+            exposes: (): zhc.Expose[] => [infraredReceiverExpose],
+            zh: {endpoints: []},
+        } as Device;
+
+        // @ts-expect-error private
+        const configs = extension.getConfigs(device);
+        const infrared = configs.find((c) => c.type === "infrared");
+        expect(infrared).toBeDefined();
+        expect(infrared!.discovery_payload).toMatchObject({
+            name: "Receiver",
+            schema: "receiver",
+            value_template:
+                "{{ iif(as_timestamp(now()) | int - value_json.learned_ir_timings.timestamp / 1000 < 5, value_json.learned_ir_timings | tojson, None) }}",
+        });
+        expect(infrared!.discovery_payload).toHaveProperty("value_template");
     });
 
     it("Should discover devices with custom homeassistant.discovery_topic", async () => {
