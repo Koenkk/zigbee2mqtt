@@ -624,13 +624,39 @@ export default class Bind extends Extension {
 
                     if (!this.pollDebouncers[key]) {
                         this.pollDebouncers[key] = debounce(async () => {
-                            try {
-                                await endpoint.read(poll.read.cluster, readAttrs);
-                            } catch (error) {
-                                // biome-ignore lint/style/noNonNullAssertion: TODO: biome migration: ???
-                                const resolvedDevice = this.zigbee.resolveEntity(device)!;
-                                logger.error(`Failed to poll ${readAttrs} from ${resolvedDevice.name} (${(error as Error).message})`);
+                            // biome-ignore lint/style/noNonNullAssertion: TODO: biome migration: ???
+                            const resolvedDevice = this.zigbee.resolveEntity(device)!;
+                            const maxAttempts = 2;
+                            let lastError: Error | undefined;
+
+                            for (let attempt = 1; attempt <= maxAttempts; attempt++) {
+                                try {
+                                    await endpoint.read(poll.read.cluster, readAttrs);
+                                    return; // Success, exit the retry loop
+                                } catch (error) {
+                                    lastError = error as Error;
+
+                                    // Only retry on timeout errors
+                                    const errorMessage = lastError.message?.toLowerCase() ?? "";
+                                    const isTimeout = errorMessage.includes("timeout");
+
+                                    if (attempt < maxAttempts && isTimeout) {
+                                        // Add jitter: 1000ms + random 0-500ms
+                                        const jitter = Math.random() * 500;
+                                        const delay = 1000 + jitter;
+                                        logger.warning(
+                                            `Failed to poll ${readAttrs} from ${resolvedDevice.name} (attempt ${attempt}/${maxAttempts}, ${lastError.message}), retrying in ${Math.round(delay)}ms`,
+                                        );
+                                        await utils.sleep(delay / 1000);
+                                    } else {
+                                        // Don't retry for non-timeout errors or after max attempts
+                                        break;
+                                    }
+                                }
                             }
+
+                            // biome-ignore lint/style/noNonNullAssertion: lastError is always defined when we reach here
+                            logger.error(`Failed to poll ${readAttrs} from ${resolvedDevice.name} (${lastError!.message})`);
                         }, 1000);
                     }
 
