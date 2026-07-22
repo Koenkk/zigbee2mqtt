@@ -467,7 +467,11 @@ export default class Zigbee {
         return this.resolveGroup(id);
     }
 
-    removeGroupFromLookup(id: number): void {
-        this.groupLookup.delete(id);
+    removeDeviceFromLookup(ieee: string): boolean {
+        return this.deviceLookup.delete(ieee);
+    }
+
+    removeGroupFromLookup(id: number): boolean {
+        return this.groupLookup.delete(id);
     }
 }
