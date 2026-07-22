@@ -1739,7 +1739,7 @@ describe("Extension: HomeAssistant", () => {
 
         await expect(async () => {
             await controller.start();
-        }).rejects.toThrow("Home Assistant integration is not possible with attribute output!");
+        }).rejects.toThrow("Home Assistant integration requires 'output: json' under 'advanced'");
     });
 
     it("Should throw error when homeassistant.discovery_topic equals the mqtt.base_topic", async () => {
@@ -1757,15 +1757,6 @@ describe("Extension: HomeAssistant", () => {
         await resetExtension();
         expect(mockLogger.warning).toHaveBeenCalledWith(
             "In order for Home Assistant integration to work properly, set `cache_state: true` under `advanced`",
-        );
-    });
-
-    it("Should warn when starting with output attribute_and_json", async () => {
-        settings.set(["advanced", "output"], "attribute_and_json");
-        mockLogger.warning.mockClear();
-        await resetExtension();
-        expect(mockLogger.warning).toHaveBeenCalledWith(
-            "In order for Home Assistant integration to work properly, set `output: json` under `advanced`",
         );
     });
 
