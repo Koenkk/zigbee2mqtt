@@ -8,12 +8,13 @@ import {devices, events as mockZHEvents, returnDevices} from "../mocks/zigbeeHer
 
 import assert from "node:assert";
 import stringify from "json-stable-stringify-without-jsonify";
+import type * as zhc from "zigbee-herdsman-converters";
 import {Controller} from "../../lib/controller";
 import Availability from "../../lib/extension/availability";
 import * as settings from "../../lib/util/settings";
 import utils from "../../lib/util/utils";
 
-const mocksClear = [mockMQTTPublishAsync, mockLogger.warning, mockLogger.info];
+const mocksClear = [mockMQTTPublishAsync, mockLogger.warning, mockLogger.info, mockLogger.error];
 
 returnDevices.push(
     devices.bulb_color.ieeeAddr,
@@ -298,7 +299,6 @@ describe("Extension: Availability", () => {
         expect(endpoint.read).toHaveBeenCalledTimes(0);
         await setTimeAndAdvanceTimers(utils.seconds(2));
 
-        expect(endpoint.read).toHaveBeenCalledTimes(1);
         expect(endpoint.read).toHaveBeenCalledWith("genOnOff", ["onOff"]);
 
         endpoint.read.mockClear();
@@ -308,7 +308,250 @@ describe("Extension: Availability", () => {
             throw new Error("");
         });
         await setTimeAndAdvanceTimers(utils.seconds(3));
-        expect(endpoint.read).toHaveBeenCalledTimes(1);
+        expect(endpoint.read).toHaveBeenCalledWith("genOnOff", ["onOff"]);
+    });
+
+    it("Should retrieve missing known config state when a device reconnects", async () => {
+        const device = controller.zigbee.resolveEntity(devices.bulb_color.ieeeAddr);
+        const endpoint = devices.bulb_color.getEndpoint(1);
+        assert(endpoint);
+        endpoint.read.mockClear();
+
+        const definition = device.definition!;
+        const originalToZigbee = definition.toZigbee;
+
+        definition.toZigbee = [
+            {
+                key: ["power_on_behavior"],
+                convertGet: async (entity) => {
+                    await entity.read("genBasic", ["zclVersion"]);
+                },
+            } as zhc.Tz.Converter,
+        ];
+
+        try {
+            controller.state.clear();
+            controller.state.set(device, {});
+
+            await mockZHEvents.deviceAnnounce({device: devices.bulb_color});
+            await flushPromises();
+            await setTimeAndAdvanceTimers(utils.seconds(3));
+
+            expect(endpoint.read).toHaveBeenCalledWith("genBasic", ["zclVersion"]);
+        } finally {
+            definition.toZigbee = originalToZigbee;
+        }
+    });
+
+    it("Should retrieve null known config state when a device reconnects", async () => {
+        const device = controller.zigbee.resolveEntity(devices.bulb_color.ieeeAddr);
+        const endpoint = devices.bulb_color.getEndpoint(1);
+        assert(endpoint);
+        endpoint.read.mockClear();
+
+        const definition = device.definition!;
+        const originalToZigbee = definition.toZigbee;
+
+        definition.toZigbee = [
+            {
+                key: ["power_on_behavior"],
+                convertGet: async (entity) => {
+                    await entity.read("genBasic", ["zclVersion"]);
+                },
+            } as zhc.Tz.Converter,
+        ];
+
+        try {
+            controller.state.set(device, {power_on_behavior: null});
+
+            await mockZHEvents.deviceAnnounce({device: devices.bulb_color});
+            await flushPromises();
+            await setTimeAndAdvanceTimers(utils.seconds(3));
+
+            expect(endpoint.read).toHaveBeenCalledWith("genBasic", ["zclVersion"]);
+        } finally {
+            definition.toZigbee = originalToZigbee;
+        }
+    });
+
+    it("Should not retrieve known config state for devices that are unavailable for reconnect readback", async () => {
+        const device = controller.zigbee.resolveEntity(devices.bulb_color.ieeeAddr);
+        const endpoint = devices.bulb_color.getEndpoint(1);
+        assert(endpoint);
+        endpoint.read.mockClear();
+
+        const definition = device.definition!;
+        const originalDefinition = device.definition;
+        const originalToZigbee = definition.toZigbee;
+
+        definition.toZigbee = [
+            {
+                key: ["power_on_behavior"],
+                convertGet: async (entity) => {
+                    await entity.read("genBasic", ["zclVersion"]);
+                },
+            } as zhc.Tz.Converter,
+        ];
+
+        try {
+            controller.state.set(device, {});
+
+            device.definition = undefined;
+            await mockZHEvents.deviceAnnounce({device: devices.bulb_color});
+            await flushPromises();
+            await setTimeAndAdvanceTimers(utils.seconds(3));
+
+            device.definition = definition;
+            devices.bulb_color.interviewState = "IN_PROGRESS";
+            await mockZHEvents.deviceAnnounce({device: devices.bulb_color});
+            await flushPromises();
+            await setTimeAndAdvanceTimers(utils.seconds(3));
+
+            devices.bulb_color.interviewState = "SUCCESSFUL";
+            settings.set(["devices", devices.bulb_color.ieeeAddr, "disabled"], true);
+            await mockZHEvents.deviceAnnounce({device: devices.bulb_color});
+            await flushPromises();
+            await setTimeAndAdvanceTimers(utils.seconds(3));
+
+            expect(endpoint.read).toHaveBeenCalledTimes(0);
+        } finally {
+            settings.set(["devices", devices.bulb_color.ieeeAddr, "disabled"], false);
+            devices.bulb_color.interviewState = "SUCCESSFUL";
+            device.definition = originalDefinition;
+            definition.toZigbee = originalToZigbee;
+        }
+    });
+
+    it("Should continue when known config state readback fails", async () => {
+        const device = controller.zigbee.resolveEntity(devices.bulb_color.ieeeAddr);
+        const definition = device.definition!;
+        const originalToZigbee = definition.toZigbee;
+
+        definition.toZigbee = [
+            {
+                key: ["power_on_behavior"],
+                convertGet: () => {
+                    throw new Error("read failed");
+                },
+            } as zhc.Tz.Converter,
+        ];
+
+        try {
+            controller.state.set(device, {});
+
+            await mockZHEvents.deviceAnnounce({device: devices.bulb_color});
+            await flushPromises();
+            await setTimeAndAdvanceTimers(utils.seconds(3));
+
+            expect(mockLogger.error).toHaveBeenCalledTimes(1);
+            expect(mockLogger.error).toHaveBeenCalledWith("Failed to read state 'power_on_behavior' of 'bulb_color' after reconnect (read failed)");
+        } finally {
+            definition.toZigbee = originalToZigbee;
+        }
+    });
+
+    it("Should skip known config state when a device reconnects", async () => {
+        const device = controller.zigbee.resolveEntity(devices.bulb_color.ieeeAddr);
+        const endpoint = devices.bulb_color.getEndpoint(1);
+        assert(endpoint);
+        endpoint.read.mockClear();
+
+        const definition = device.definition!;
+        const originalToZigbee = definition.toZigbee;
+
+        definition.toZigbee = [
+            {
+                key: ["power_on_behavior"],
+                convertGet: async (entity, key) => {
+                    await entity.read("genBasic", [key]);
+                },
+            } as zhc.Tz.Converter,
+        ];
+
+        try {
+            controller.state.set(device, {power_on_behavior: "previous"});
+
+            await mockZHEvents.deviceAnnounce({device: devices.bulb_color});
+            await flushPromises();
+            await setTimeAndAdvanceTimers(utils.seconds(3));
+
+            expect(endpoint.read).toHaveBeenCalledTimes(0);
+        } finally {
+            definition.toZigbee = originalToZigbee;
+        }
+    });
+
+    it("Should use a bounded static known-config readback list", async () => {
+        const device = controller.zigbee.resolveEntity(devices.bulb_color.ieeeAddr);
+        const definition = device.definition!;
+        const originalToZigbee = definition.toZigbee;
+        const convertGet = vi.fn();
+
+        definition.toZigbee = [
+            {
+                key: ["power_on_behavior", "child_lock"],
+                convertGet,
+            } as zhc.Tz.Converter,
+        ];
+
+        try {
+            controller.state.clear();
+            controller.state.set(device, {});
+
+            await mockZHEvents.deviceAnnounce({device: devices.bulb_color});
+            await flushPromises();
+            await setTimeAndAdvanceTimers(utils.seconds(3));
+
+            expect(convertGet).toHaveBeenCalledTimes(2);
+            expect(convertGet).toHaveBeenNthCalledWith(1, expect.anything(), "power_on_behavior", expect.anything());
+            expect(convertGet).toHaveBeenNthCalledWith(2, expect.anything(), "child_lock", expect.anything());
+            expect(convertGet).not.toHaveBeenCalledWith(expect.anything(), "led_enable", expect.anything());
+        } finally {
+            definition.toZigbee = originalToZigbee;
+        }
+    });
+
+    it("Should read additional missing config states with their own converter key", async () => {
+        const device = controller.zigbee.resolveEntity(devices.bulb_color.ieeeAddr);
+        const definition = device.definition!;
+        const originalToZigbee = definition.toZigbee;
+        const convertGet = vi.fn();
+
+        definition.toZigbee = [
+            {
+                key: ["switch_type"],
+                convertGet,
+            } as zhc.Tz.Converter,
+            {
+                key: ["display_switch_on_duration"],
+                convertGet,
+            } as zhc.Tz.Converter,
+            {
+                key: ["dimming_range_maximum"],
+                convertGet,
+            } as zhc.Tz.Converter,
+            {
+                key: ["indicator_mode"],
+                convertGet,
+            } as zhc.Tz.Converter,
+        ];
+
+        try {
+            controller.state.clear();
+            controller.state.set(device, {});
+
+            await mockZHEvents.deviceAnnounce({device: devices.bulb_color});
+            await flushPromises();
+            await setTimeAndAdvanceTimers(utils.seconds(5));
+
+            expect(convertGet).toHaveBeenCalledTimes(4);
+            expect(convertGet).toHaveBeenNthCalledWith(1, expect.anything(), "switch_type", expect.anything());
+            expect(convertGet).toHaveBeenNthCalledWith(2, expect.anything(), "display_switch_on_duration", expect.anything());
+            expect(convertGet).toHaveBeenNthCalledWith(3, expect.anything(), "dimming_range_maximum", expect.anything());
+            expect(convertGet).toHaveBeenNthCalledWith(4, expect.anything(), "indicator_mode", expect.anything());
+        } finally {
+            definition.toZigbee = originalToZigbee;
+        }
     });
 
     it("Should republish availability when device is renamed", async () => {
