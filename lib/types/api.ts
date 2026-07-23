@@ -168,7 +168,7 @@ export interface Zigbee2MQTTSettings {
     ota: {
         update_check_interval: number;
         disable_automatic_update_check: boolean;
-        zigbee_ota_override_index_location?: string;
+        zigbee_ota_override_index_location?: string | string[];
         image_block_request_timeout?: number;
         image_block_response_delay?: number;
         default_maximum_data_size?: number;

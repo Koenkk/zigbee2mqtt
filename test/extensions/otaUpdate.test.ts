@@ -8,7 +8,7 @@ import {flushPromises} from "../mocks/utils";
 import {devices, events as mockZHEvents} from "../mocks/zigbeeHerdsman";
 
 import {join} from "node:path";
-import {existsSync, readFileSync, rmSync} from "node:fs";
+import {existsSync, readFileSync, rmSync, writeFileSync} from "node:fs";
 import stringify from "json-stable-stringify-without-jsonify";
 import {Controller} from "../../lib/controller";
 import OTAUpdate from "../../lib/extension/otaUpdate";
@@ -1323,6 +1323,69 @@ describe("Extension: OTAUpdate", () => {
         settings.set(["ota", "zigbee_ota_override_index_location"], "http://my.site/index.json");
         await resetExtension();
         expect(setOtaConfigurationSpy).toHaveBeenCalledWith(data.mockDir, "http://my.site/index.json");
+        setOtaConfigurationSpy.mockClear();
+
+        settings.set(["ota", "zigbee_ota_override_index_location"], undefined);
+    });
+
+    it("merges multiple override index locations into a single index", async () => {
+        const setOtaConfigurationSpy = vi.spyOn(zh, "setOtaConfiguration");
+        const localEntry = {...DEFAULT_AVAILABLE_META, imageType: 100};
+        const remoteEntry = {...DEFAULT_AVAILABLE_META, imageType: 200};
+        writeFileSync(join(data.mockDir, "local.index.json"), stringify([localEntry]));
+        const fetchSpy = vi.fn().mockResolvedValue({ok: true, json: async () => [remoteEntry]});
+        vi.stubGlobal("fetch", fetchSpy);
+
+        settings.set(["ota", "zigbee_ota_override_index_location"], ["local.index.json", "https://my.site/index.json"]);
+        await resetExtension();
+
+        const mergedPath = join(data.mockDir, "ota", "override_index.json");
+        expect(setOtaConfigurationSpy).toHaveBeenCalledWith(data.mockDir, mergedPath);
+        expect(fetchSpy).toHaveBeenCalledWith("https://my.site/index.json");
+        expect(JSON.parse(readFileSync(mergedPath, "utf8"))).toStrictEqual([localEntry, remoteEntry]);
+
+        vi.unstubAllGlobals();
+        settings.set(["ota", "zigbee_ota_override_index_location"], undefined);
+        setOtaConfigurationSpy.mockClear();
+    });
+
+    it("skips override index locations that fail to load but keeps the others", async () => {
+        const setOtaConfigurationSpy = vi.spyOn(zh, "setOtaConfiguration");
+        mockLogger.warning.mockClear();
+        const remoteEntry = {...DEFAULT_AVAILABLE_META, imageType: 200};
+        const fetchSpy = vi
+            .fn()
+            .mockResolvedValueOnce({ok: false, status: 404})
+            .mockResolvedValueOnce({ok: true, json: async () => [remoteEntry]});
+        vi.stubGlobal("fetch", fetchSpy);
+
+        settings.set(["ota", "zigbee_ota_override_index_location"], ["https://bad.site/index.json", "https://good.site/index.json"]);
+        await resetExtension();
+
+        const mergedPath = join(data.mockDir, "ota", "override_index.json");
+        expect(setOtaConfigurationSpy).toHaveBeenCalledWith(data.mockDir, mergedPath);
+        expect(JSON.parse(readFileSync(mergedPath, "utf8"))).toStrictEqual([remoteEntry]);
+        expect(mockLogger.warning).toHaveBeenCalledWith(expect.stringContaining("https://bad.site/index.json"));
+
+        vi.unstubAllGlobals();
+        settings.set(["ota", "zigbee_ota_override_index_location"], undefined);
+        setOtaConfigurationSpy.mockClear();
+    });
+
+    it("ignores override index when all locations fail to load", async () => {
+        const setOtaConfigurationSpy = vi.spyOn(zh, "setOtaConfiguration");
+        mockLogger.error.mockClear();
+        const fetchSpy = vi.fn().mockResolvedValue({ok: false, status: 500});
+        vi.stubGlobal("fetch", fetchSpy);
+
+        settings.set(["ota", "zigbee_ota_override_index_location"], ["https://bad.site/index.json"]);
+        await resetExtension();
+
+        expect(setOtaConfigurationSpy).toHaveBeenCalledWith(data.mockDir, undefined);
+        expect(mockLogger.error).toHaveBeenCalledWith(expect.stringContaining("could be loaded"));
+
+        vi.unstubAllGlobals();
+        settings.set(["ota", "zigbee_ota_override_index_location"], undefined);
         setOtaConfigurationSpy.mockClear();
     });
 
