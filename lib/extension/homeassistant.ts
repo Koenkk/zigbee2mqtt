@@ -1368,6 +1368,53 @@ export class HomeAssistant extends Extension {
                     break;
                 }
 
+                if (firstExposeTyped.type === "composite") {
+                    for (const feature of firstExposeTyped.features) {
+                        const featureName = `${firstExposeTyped.property}_${feature.property}`;
+                        if (isNumericExpose(feature) && feature.access & ACCESS_SET) {
+                            const discoveryEntry: DiscoveryEntry = {
+                                type: "number",
+                                object_id: endpointName ? `${featureName}_${endpointName}` : featureName,
+                                mockProperties: [{property: firstExposeTyped.property, value: {[feature.property]: null}}],
+                                discovery_payload: {
+                                    name: endpointName
+                                        ? `${firstExposeTyped.label} ${feature.label} ${endpointName}`
+                                        : `${firstExposeTyped.label} ${feature.label}`,
+                                    value_template: `{{ value_json.${firstExposeTyped.property}.${feature.property} }}`,
+                                    command_topic: true,
+                                    command_template: `{ "${firstExposeTyped.property}": { "${feature.property}": {{ value }} } }`,
+                                    command_topic_prefix: endpointName,
+                                    ...(feature.unit && {unit_of_measurement: feature.unit}),
+                                    ...(feature.value_step && {step: feature.value_step}),
+                                    ...NUMERIC_DISCOVERY_LOOKUP[feature.name],
+                                },
+                            };
+
+                            if (feature.value_min != null) discoveryEntry.discovery_payload.min = feature.value_min;
+                            if (feature.value_max != null) discoveryEntry.discovery_payload.max = feature.value_max;
+                            discoveryEntries.push(discoveryEntry);
+                        } else if (isEnumExpose(feature) && feature.access & ACCESS_SET) {
+                            discoveryEntries.push({
+                                type: "select",
+                                object_id: endpointName ? `${featureName}_${endpointName}` : featureName,
+                                mockProperties: [{property: firstExposeTyped.property, value: {[feature.property]: null}}],
+                                discovery_payload: {
+                                    name: endpointName
+                                        ? `${firstExposeTyped.label} ${feature.label} ${endpointName}`
+                                        : `${firstExposeTyped.label} ${feature.label}`,
+                                    value_template: `{{ value_json.${firstExposeTyped.property}.${feature.property} }}`,
+                                    state_topic: !!(feature.access & ACCESS_STATE),
+                                    command_topic: true,
+                                    command_template: `{ "${firstExposeTyped.property}": { "${feature.property}": "{{ value }}" } }`,
+                                    command_topic_prefix: endpointName,
+                                    options: feature.values.map((v) => v.toString()),
+                                    ...ENUM_DISCOVERY_LOOKUP[feature.name],
+                                },
+                            });
+                        }
+                    }
+                }
+
                 if (firstExposeTyped.type === "text" && firstExposeTyped.access & ACCESS_SET) {
                     discoveryEntries.push({
                         type: "text",

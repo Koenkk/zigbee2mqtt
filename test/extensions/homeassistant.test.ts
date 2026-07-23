@@ -1367,6 +1367,124 @@ describe("Extension: HomeAssistant", () => {
         expect(payload.mode_command_topic).toStrictEqual("zigbee2mqtt/bosch_radiator/set");
     });
 
+    it("Should expose settable composite features as controls", () => {
+        const expose = {
+            type: "composite",
+            name: "manual_default_settings",
+            property: "manual_default_settings",
+            label: "Manual default settings",
+            access: 7,
+            features: [
+                {
+                    type: "numeric",
+                    name: "irrigation_duration",
+                    property: "irrigation_duration",
+                    label: "Irrigation duration",
+                    access: 7,
+                    value_min: 1,
+                    value_max: 719,
+                    unit: "min",
+                },
+                {
+                    type: "enum",
+                    name: "irrigation_mode",
+                    property: "irrigation_mode",
+                    label: "Irrigation mode",
+                    access: 7,
+                    values: ["duration", "capacity"],
+                },
+            ],
+        };
+        const device = {
+            definition: {},
+            isDevice: (): boolean => true,
+            isGroup: (): boolean => false,
+            endpoint: (): string | undefined => undefined,
+            options: {ID: "0x0000000000000001"},
+            exposes: (): unknown[] => [expose],
+            zh: {endpoints: []},
+        };
+
+        // @ts-expect-error private
+        const configs = extension.getConfigs(device);
+
+        expect(configs).toContainEqual({
+            type: "number",
+            object_id: "manual_default_settings_irrigation_duration",
+            mockProperties: [{property: "manual_default_settings", value: {irrigation_duration: null}}],
+            discovery_payload: {
+                name: "Manual default settings Irrigation duration",
+                value_template: "{{ value_json.manual_default_settings.irrigation_duration }}",
+                command_topic: true,
+                command_template: '{ "manual_default_settings": { "irrigation_duration": {{ value }} } }',
+                unit_of_measurement: "min",
+                min: 1,
+                max: 719,
+            },
+        });
+        expect(configs).toContainEqual({
+            type: "select",
+            object_id: "manual_default_settings_irrigation_mode",
+            mockProperties: [{property: "manual_default_settings", value: {irrigation_mode: null}}],
+            discovery_payload: {
+                name: "Manual default settings Irrigation mode",
+                value_template: "{{ value_json.manual_default_settings.irrigation_mode }}",
+                state_topic: true,
+                command_topic: true,
+                command_template: '{ "manual_default_settings": { "irrigation_mode": "{{ value }}" } }',
+                options: ["duration", "capacity"],
+            },
+        });
+    });
+
+    it("Should include endpoint names for settable composite enum controls", () => {
+        const expose = {
+            type: "composite",
+            name: "manual_default_settings",
+            property: "manual_default_settings_l1",
+            label: "Manual default settings",
+            access: 7,
+            endpoint: "l1",
+            features: [
+                {
+                    type: "enum",
+                    name: "irrigation_mode",
+                    property: "irrigation_mode",
+                    label: "Irrigation mode",
+                    access: 7,
+                    values: ["duration", "capacity"],
+                },
+            ],
+        };
+        const device = {
+            definition: {},
+            isDevice: (): boolean => true,
+            isGroup: (): boolean => false,
+            endpoint: (): string | undefined => undefined,
+            options: {ID: "0x0000000000000001"},
+            exposes: (): unknown[] => [expose],
+            zh: {endpoints: []},
+        };
+
+        // @ts-expect-error private
+        const configs = extension.getConfigs(device);
+
+        expect(configs).toContainEqual({
+            type: "select",
+            object_id: "manual_default_settings_l1_irrigation_mode_l1",
+            mockProperties: [{property: "manual_default_settings_l1", value: {irrigation_mode: null}}],
+            discovery_payload: {
+                name: "Manual default settings Irrigation mode l1",
+                value_template: "{{ value_json.manual_default_settings_l1.irrigation_mode }}",
+                state_topic: true,
+                command_topic: true,
+                command_template: '{ "manual_default_settings_l1": { "irrigation_mode": "{{ value }}" } }',
+                command_topic_prefix: "l1",
+                options: ["duration", "capacity"],
+            },
+        });
+    });
+
     it("does not throw when discovery payload override throws", async () => {
         const bosch = getZ2MEntity(devices["RBSH-TRV0-ZB-EU"]) as Device;
         assert(typeof bosch.definition?.meta?.overrideHaDiscoveryPayload === "function");
