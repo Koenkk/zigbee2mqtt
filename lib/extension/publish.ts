@@ -135,8 +135,19 @@ export default class Publish extends Extension {
         const entityState = this.state.get(re);
         const membersState =
             re instanceof Group
-                ? // biome-ignore lint/style/noNonNullAssertion: TODO: biome migration: might be a bit much assumed here?
-                  Object.fromEntries(re.zh.members.map((e) => [e.deviceIeeeAddress, this.state.get(this.zigbee.resolveEntity(e.deviceIeeeAddress)!)]))
+                ? Object.fromEntries(
+                      re.zh.members.flatMap((e) => {
+                          const member = this.zigbee.resolveEntity(e.deviceIeeeAddress);
+
+                          if (!member) {
+                              // Keep optimistic publish resilient when a group member has been removed or renamed.
+                              logger.warning(`Skipping unresolved group member '${e.deviceIeeeAddress}' while publishing '${re.name}'`);
+                              return [];
+                          }
+
+                          return [[e.deviceIeeeAddress, this.state.get(member)]];
+                      }),
+                  )
                 : undefined;
         const converters = this.getDefinitionConverters(definition);
 
