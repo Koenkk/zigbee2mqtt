@@ -72,6 +72,7 @@ describe("Settings", () => {
                 enabled: true,
             },
             mqtt: {
+                enabled: true,
                 base_topic: "zigbee2mqtt",
                 server: "mqtt://localhost",
             },
@@ -309,6 +310,7 @@ describe("Settings", () => {
         write(configurationFile, contentConfiguration);
 
         const expected = {
+            enabled: true,
             base_topic: "zigbee2mqtt",
             include_device_information: false,
             maximum_packet_size: 1048576,
@@ -357,6 +359,7 @@ describe("Settings", () => {
         write(configurationFile, contentConfiguration);
 
         const expected = {
+            enabled: true,
             base_topic: "zigbee2mqtt",
             include_device_information: false,
             maximum_packet_size: 1048576,
@@ -678,6 +681,7 @@ describe("Settings", () => {
             },
         };
         const expected = {
+            enabled: true,
             base_topic: "zigbee2mqtt",
             include_device_information: false,
             maximum_packet_size: 1048576,
@@ -690,6 +694,13 @@ describe("Settings", () => {
         };
         write(configurationFile, contentConfiguration);
         expect(settings.get().mqtt).toStrictEqual(expected);
+    });
+
+    it("Should disable MQTT when mqtt.enabled is false", () => {
+        write(configurationFile, {
+            mqtt: {enabled: false, server: "mqtt://localhost"},
+        });
+        expect(settings.get().mqtt.enabled).toStrictEqual(false);
     });
 
     it("Should add groups with specific ID", () => {
@@ -825,6 +836,15 @@ describe("Settings", () => {
 
         const error = "MQTT retention requires protocol version 5";
         expect(settings.validate()).toEqual(expect.arrayContaining([error]));
+    });
+
+    it("Should require MQTT when Home Assistant integration is enabled", () => {
+        write(configurationFile, {
+            ...minimalConfig,
+            mqtt: {base_topic: "zigbee2mqtt", enabled: false, server: "localhost"},
+        });
+
+        expect(settings.validate()).toEqual(expect.arrayContaining(["homeassistant.enabled requires mqtt.enabled"]));
     });
 
     it("Should validate if settings do not conform to scheme", () => {

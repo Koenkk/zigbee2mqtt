@@ -354,6 +354,12 @@ describe("Extension: ExternalConverters", () => {
     });
 
     describe("from MQTT", () => {
+        beforeEach(async () => {
+            controller = new Controller(vi.fn(), vi.fn());
+            await controller.start();
+            await flushPromises();
+        });
+
         it("CJS: saves and removes", async () => {
             // Create a dummy 'node_modules' file to test to externalJS.ts recreates the symlink.
             fs.mkdirSync(mockBasePath);

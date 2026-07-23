@@ -12,6 +12,8 @@ frontend:
 
 # MQTT settings
 mqtt:
+    # Enable MQTT connection
+    enabled: true
     # MQTT base topic for zigbee2mqtt MQTT messages
     base_topic: zigbee2mqtt
     # MQTT server URL

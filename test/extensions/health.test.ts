@@ -7,7 +7,9 @@ import {flushPromises} from "../mocks/utils";
 import {devices, events as mockZHEvents, returnDevices} from "../mocks/zigbeeHerdsman";
 
 import {Controller} from "../../lib/controller";
+import EventBus from "../../lib/eventBus";
 import Health from "../../lib/extension/health";
+import MessageBus from "../../lib/messageBus";
 import * as settings from "../../lib/util/settings";
 import {minutes, seconds} from "../../lib/util/utils";
 
@@ -311,5 +313,18 @@ describe("Extension: Health", () => {
             devices: {},
         });
         expect(calls[0][2]).toStrictEqual({retain: true, qos: 1});
+    });
+
+    it("reports the state of the attached MQTT adapter", () => {
+        settings.set(["mqtt", "enabled"], false);
+
+        expect(controller.messageBus.stats).toStrictEqual({connected: true, queued: 0});
+    });
+
+    it("reports disconnected status before the MQTT adapter is attached", () => {
+        const messageBus = new MessageBus(new EventBus());
+
+        expect(messageBus.info).toStrictEqual({server: "", version: undefined});
+        expect(messageBus.stats).toStrictEqual({connected: false, queued: 0});
     });
 });

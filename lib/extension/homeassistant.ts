@@ -472,7 +472,7 @@ export class HomeAssistant extends Extension {
 
     constructor(
         zigbee: Zigbee,
-        mqtt: Mqtt,
+        mqtt: MessageBus,
         state: State,
         publishEntityState: PublishEntityState,
         eventBus: EventBus,

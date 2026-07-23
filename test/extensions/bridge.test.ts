@@ -4,7 +4,7 @@ import {Zdo} from "zigbee-herdsman";
 import * as data from "../mocks/data";
 import {mockJSZipFile, mockJSZipGenerateAsync} from "../mocks/jszip";
 import {mockLogger} from "../mocks/logger";
-import {events as mockMQTTEvents, mockMQTTPublishAsync} from "../mocks/mqtt";
+import {events as mockMQTTEvents, mockMQTTPublishAsync, setMockMQTTConnectionState} from "../mocks/mqtt";
 import {flushPromises} from "../mocks/utils";
 import {CUSTOM_CLUSTERS, devices, groups, mockController as mockZHController, events as mockZHEvents, returnDevices} from "../mocks/zigbeeHerdsman";
 
@@ -77,12 +77,7 @@ describe("Extension: Bridge", () => {
     });
 
     beforeEach(() => {
-        // @ts-expect-error private
-        controller.mqtt.client.reconnecting = false;
-        // @ts-expect-error private
-        controller.mqtt.client.disconnecting = false;
-        // @ts-expect-error private
-        controller.mqtt.client.disconnected = false;
+        setMockMQTTConnectionState("connected");
         data.writeDefaultConfiguration();
         settings.reRead();
         data.writeDefaultState();
@@ -311,6 +306,7 @@ describe("Extension: Bridge", () => {
                         },
                     },
                     mqtt: {
+                        enabled: true,
                         base_topic: "zigbee2mqtt",
                         force_disable_retain: false,
                         include_device_information: false,
@@ -2347,8 +2343,7 @@ describe("Extension: Bridge", () => {
 
     it("Shouldnt log to MQTT when not connected", () => {
         mockLogger.setTransportsEnabled(true);
-        // @ts-expect-error private
-        controller.mqtt.client.reconnecting = true;
+        setMockMQTTConnectionState("reconnecting");
         mockMQTTPublishAsync.mockClear();
         mockLogger.info.mockClear();
         mockLogger.error.mockClear();

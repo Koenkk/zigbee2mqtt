@@ -8,7 +8,7 @@ type TModule = new (...args: ConstructorParameters<typeof Extension>) => Extensi
 export default class ExternalExtensions extends ExternalJSExtension<TModule> {
     constructor(
         zigbee: Zigbee,
-        mqtt: Mqtt,
+        mqtt: MessageBus,
         state: State,
         publishEntityState: PublishEntityState,
         eventBus: EventBus,

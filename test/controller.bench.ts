@@ -13,6 +13,7 @@ import {Foundation} from "zigbee-herdsman/dist/zspec/zcl/definition/foundation";
 import type {RequestToResponseMap} from "zigbee-herdsman/dist/zspec/zdo/definition/tstypes";
 import data from "../lib/util/data";
 import {BENCH_OPTIONS} from "./benchOptions";
+import "./mocks/mqtt";
 
 vi.doMock("zigbee-herdsman", async (importOriginal) => {
     const actual = await importOriginal<typeof import("zigbee-herdsman")>();
@@ -406,30 +407,6 @@ const initController = async () => {
         async () => {},
         async () => {},
     );
-
-    // all dummies, can trigger `controller.mqtt.onMessage(topic, message)` as needed
-    // @ts-expect-error mocking private
-    controller.mqtt.client = {
-        options: {
-            protocolVersion: 5,
-            protocol: "mqtt",
-            host: "localhost",
-            port: 1883,
-        },
-        queue: [],
-        reconnecting: false,
-        disconnecting: false,
-        disconnected: false,
-        endAsync: async () => {},
-        // @ts-expect-error Z2M does not make use of return
-        publishAsync: async () => {},
-    };
-    controller.mqtt.connect = async () => {
-        // @ts-expect-error private
-        await controller.mqtt.onConnect();
-    };
-    controller.mqtt.subscribe = async () => {};
-    controller.mqtt.unsubscribe = async () => {};
 
     // will be in-memory only
     controller.state.start = () => {};

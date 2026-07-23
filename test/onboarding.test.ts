@@ -80,6 +80,7 @@ vi.mock("zigbee2mqtt-windfront", () => ({
 const SETTINGS_MINIMAL_DEFAULTS = {
     version: settings.CURRENT_VERSION,
     mqtt: {
+        enabled: settings.defaults.mqtt!.enabled,
         base_topic: settings.defaults.mqtt!.base_topic,
         server: "mqtt://localhost:1883",
     },
@@ -133,6 +134,7 @@ const SAMPLE_SETTINGS_INIT = {
 const SAMPLE_SETTINGS_SAVE = {
     version: settings.CURRENT_VERSION,
     mqtt: {
+        enabled: true,
         base_topic: "zigbee2mqtt2",
         server: "mqtt://192.168.1.200:1883",
     },
@@ -252,7 +254,11 @@ describe("Onboarding", () => {
         if (expectWriteMinimal) {
             const minimal = process.env.ZIGBEE2MQTT_CONFIG_MQTT_SERVER
                 ? Object.assign({}, SETTINGS_MINIMAL_DEFAULTS, {
-                      mqtt: {server: process.env.ZIGBEE2MQTT_CONFIG_MQTT_SERVER, base_topic: SETTINGS_MINIMAL_DEFAULTS.mqtt.base_topic},
+                      mqtt: {
+                          enabled: SETTINGS_MINIMAL_DEFAULTS.mqtt.enabled,
+                          server: process.env.ZIGBEE2MQTT_CONFIG_MQTT_SERVER,
+                          base_topic: SETTINGS_MINIMAL_DEFAULTS.mqtt.base_topic,
+                      },
                   })
                 : SETTINGS_MINIMAL_DEFAULTS;
 
@@ -978,6 +984,7 @@ describe("Onboarding", () => {
                     port: SETTINGS_MINIMAL_DEFAULTS.frontend.port,
                 },
                 mqtt: {
+                    enabled: SETTINGS_MINIMAL_DEFAULTS.mqtt.enabled,
                     base_topic: SETTINGS_MINIMAL_DEFAULTS.mqtt.base_topic,
                     server: process.env.ZIGBEE2MQTT_CONFIG_MQTT_SERVER,
                     user: "abcd",
@@ -1200,7 +1207,11 @@ describe("Onboarding", () => {
         await expect(p).resolves.toStrictEqual(true);
         expect(data.read()).toStrictEqual(
             Object.assign({}, SAMPLE_SETTINGS_SAVE, {
-                mqtt: {server: process.env.ZIGBEE2MQTT_CONFIG_MQTT_SERVER, base_topic: SAMPLE_SETTINGS_SAVE.mqtt.base_topic},
+                mqtt: {
+                    enabled: SAMPLE_SETTINGS_SAVE.mqtt.enabled,
+                    server: process.env.ZIGBEE2MQTT_CONFIG_MQTT_SERVER,
+                    base_topic: SAMPLE_SETTINGS_SAVE.mqtt.base_topic,
+                },
             }),
         );
     });
@@ -1216,7 +1227,11 @@ describe("Onboarding", () => {
         await expect(p).resolves.toStrictEqual(true);
 
         const expected = Object.assign({}, SETTINGS_MINIMAL_DEFAULTS, {
-            mqtt: {server: process.env.ZIGBEE2MQTT_CONFIG_MQTT_SERVER, base_topic: SETTINGS_MINIMAL_DEFAULTS.mqtt.base_topic},
+            mqtt: {
+                enabled: SETTINGS_MINIMAL_DEFAULTS.mqtt.enabled,
+                server: process.env.ZIGBEE2MQTT_CONFIG_MQTT_SERVER,
+                base_topic: SETTINGS_MINIMAL_DEFAULTS.mqtt.base_topic,
+            },
         });
         // @ts-expect-error mock
         delete expected.onboarding;
