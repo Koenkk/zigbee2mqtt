@@ -59,6 +59,13 @@ const CONFIG_SWITCH_DISCOVERY_LOOKUP: {[s: string]: KeyValue} = {
     window_detection: {entity_category: "config", icon: "mdi:window-open-variant"},
 } as const;
 const SWITCH_DIFFERENT: ReadonlyArray<string> = Object.keys(CONFIG_SWITCH_DISCOVERY_LOOKUP);
+const hasCompositeExpose = (exposes: zhc.Expose[] | undefined, predicate: (expose: zhc.Expose) => boolean): boolean => {
+    return (
+        exposes?.some(
+            (expose) => predicate(expose) || (expose.type === "composite" && hasCompositeExpose((expose as zhc.Composite).features, predicate)),
+        ) ?? false
+    );
+};
 const BINARY_DISCOVERY_LOOKUP: {[s: string]: KeyValue} = {
     activity_led_indicator: {icon: "mdi:led-on"},
     area1Occupancy: {device_class: "occupancy"},
@@ -853,11 +860,10 @@ export class HomeAssistant extends Extension {
                 }
 
                 const localTemperature = (firstExpose as zhc.Climate).features.filter(isNumericExpose).find((f) => f.name === "local_temperature");
-                const temperatureSensor = allExposes?.filter(isNumericExpose).find((e) => e.name === "temperature" && e.access & ACCESS_STATE);
-                const localTemperatureSensor = allExposes
-                    ?.filter(isNumericExpose)
-                    .find((e) => e.name === "local_temperature" && e.access & ACCESS_STATE);
-                if (localTemperature && !temperatureSensor && !localTemperatureSensor) {
+                const hasLocalTemperatureSensor = hasCompositeExpose(allExposes, (expose) => {
+                    return isNumericExpose(expose) && !!(expose.access & ACCESS_STATE) && expose.name === "local_temperature";
+                });
+                if (localTemperature && !hasLocalTemperatureSensor) {
                     const discoveryEntry: DiscoveryEntry = {
                         type: "sensor",
                         object_id: endpointName ? `${localTemperature.name}_${endpointName}` : `${localTemperature.name}`,

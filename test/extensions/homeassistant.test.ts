@@ -1448,7 +1448,7 @@ describe("Extension: HomeAssistant", () => {
     });
 
     it("Should discover Bosch BTH-RM230Z with a current_humidity attribute", () => {
-        const payload = {
+        const expected = {
             action_template:
                 "{% set values = {None:None,'idle':'idle','heat':'heating','cool':'cooling','fan_only':'fan'} %}{{ values[value_json[\"running_state\"]] }}",
             action_topic: "zigbee2mqtt/bosch_rm230z",
@@ -1489,10 +1489,10 @@ describe("Extension: HomeAssistant", () => {
             unique_id: "0x18fc2600000d7ae3_climate_zigbee2mqtt",
         };
 
-        expect(mockMQTTPublishAsync).toHaveBeenCalledWith("homeassistant/climate/0x18fc2600000d7ae3/climate/config", stringify(payload), {
-            qos: 1,
-            retain: true,
-        });
+        const call = mockMQTTPublishAsync.mock.calls.find((c) => c[0] === "homeassistant/climate/0x18fc2600000d7ae3/climate/config");
+        expect(call).toBeDefined();
+        expect(JSON.parse(call![1] as string)).toMatchObject(expected);
+        expect(call![2]).toMatchObject({qos: 1, retain: true});
     });
 
     it("Should discover seperate temperature sensor for thermostat", () => {
@@ -1552,6 +1552,132 @@ describe("Extension: HomeAssistant", () => {
         });
         expect(climate!.discovery_payload).not.toHaveProperty("temperature_low_command_topic");
         expect(climate!.discovery_payload).not.toHaveProperty("temperature_high_command_topic");
+    });
+
+    it("Should still expose thermostat current temperature when a cable sensor exposure exists", async () => {
+        const bosch = devices.BTH_RM230Z;
+        const definition = await zhc.findByDevice(bosch);
+        assert(definition);
+        const shim = {
+            definition,
+            isDevice: (): boolean => true,
+            isGroup: (): boolean => false,
+            endpoint: (): undefined => undefined,
+            options: {},
+            exposes: (): unknown[] => (typeof definition.exposes === "function" ? definition.exposes(bosch, {}) : definition.exposes),
+            zh: {endpoints: []},
+        };
+        // @ts-expect-error private
+        const configs = extension.getConfigs(shim);
+
+        expect(configs.find((config) => config.type === "climate")?.discovery_payload).toMatchObject({
+            current_temperature_template: '{{ value_json["local_temperature"] }}',
+        });
+        expect(configs.find((config) => config.object_id === "local_temperature")?.discovery_payload).toMatchObject({
+            device_class: "temperature",
+            state_class: "measurement",
+            value_template: '{{ value_json["local_temperature"] }}',
+        });
+    });
+
+    it("Should still expose thermostat current temperature when a composite sensor is unrelated", () => {
+        const bosch = getZ2MEntity(devices["RBSH-TRV0-ZB-EU"]) as Device;
+        assert(bosch.definition);
+        const originalExposes = bosch.definition.exposes;
+
+        bosch.definition.exposes = [
+            {
+                type: "climate",
+                features: [
+                    {
+                        type: "numeric",
+                        name: "occupied_heating_setpoint",
+                        property: "occupied_heating_setpoint",
+                        label: "Occupied heating setpoint",
+                        access: 3,
+                        unit: "°C",
+                        value_min: 5,
+                        value_max: 30,
+                        value_step: 0.5,
+                    },
+                    {
+                        type: "numeric",
+                        name: "local_temperature",
+                        property: "local_temperature",
+                        label: "Temperature",
+                        access: 1,
+                        unit: "°C",
+                    },
+                    {
+                        type: "enum",
+                        name: "system_mode",
+                        property: "system_mode",
+                        label: "System mode",
+                        access: 3,
+                        values: ["off", "heat", "auto"],
+                    },
+                ],
+            },
+            {
+                type: "composite",
+                name: "cable_sensor",
+                property: "cable_sensor",
+                label: "Cable sensor",
+                access: 1,
+                features: [
+                    {
+                        type: "numeric",
+                        name: "humidity",
+                        property: "humidity",
+                        label: "Humidity",
+                        access: 1,
+                        unit: "%",
+                    },
+                ],
+            },
+        ] as zhc.Expose[];
+
+        try {
+            // @ts-expect-error private
+            const configs = extension.getConfigs(bosch);
+
+            expect(configs.find((config) => config.type === "climate")?.discovery_payload).toMatchObject({
+                current_temperature_template: '{{ value_json["local_temperature"] }}',
+                temperature_command_topic: "occupied_heating_setpoint",
+            });
+            expect(configs.find((config) => config.object_id === "local_temperature")).toMatchObject({
+                type: "sensor",
+            });
+        } finally {
+            bosch.definition.exposes = originalExposes;
+        }
+    });
+
+    it("Should still expose thermostat current temperature when composite discovery has no allExposes list", () => {
+        const climateExpose = new zhc.Climate()
+            .withSetpoint("occupied_heating_setpoint", 5, 30, 0.5)
+            .withLocalTemperature()
+            .withSystemMode(["off", "heat", "auto"]);
+        const device = {
+            definition: {},
+            isDevice: (): boolean => true,
+            isGroup: (): boolean => false,
+            endpoint: () => undefined,
+            options: {},
+            exposes: (): zhc.Expose[] => [climateExpose],
+            zh: {endpoints: []},
+        } as Device;
+
+        // @ts-expect-error private
+        const configs = extension.exposeToConfig([climateExpose], device, undefined);
+
+        expect(configs.find((config) => config.type === "climate")?.discovery_payload).toMatchObject({
+            current_temperature_template: '{{ value_json["local_temperature"] }}',
+            temperature_command_topic: "occupied_heating_setpoint",
+        });
+        expect(configs.find((config) => config.object_id === "local_temperature")).toMatchObject({
+            type: "sensor",
+        });
     });
 
     it("Should discover devices with cover_position", () => {
