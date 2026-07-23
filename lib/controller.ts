@@ -480,7 +480,7 @@ export class Controller {
                 message = typeof subPayload === "string" ? subPayload : stringify(subPayload);
             }
 
-            if (message !== null && message !== undefined) {
+            if (message != null) {
                 await this.mqtt.publish(`${topicRoot}${key}`, message, options);
             }
         }
