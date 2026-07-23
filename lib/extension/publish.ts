@@ -13,7 +13,7 @@ import Extension from "./extension";
 let topicGetSetRegex: RegExp;
 // Used by `publish.test.ts` to reload regex when changing `mqtt.base_topic`.
 export const loadTopicGetSetRegex = (): void => {
-    topicGetSetRegex = new RegExp(`^${settings.get().mqtt.base_topic}/(?!bridge)(.+?)/(get|set)(?:/(.+))?$`);
+    topicGetSetRegex = new RegExp(`^${settings.get().mqtt.base_topic}/(?!bridge)(.+?)/(request/)?(get|set)(?:/(.+))?$`);
 };
 
 const STATE_VALUES: ReadonlyArray<string> = ["on", "off", "toggle", "open", "close", "stop", "lock", "unlock"];
@@ -24,6 +24,7 @@ interface ParsedTopic {
     endpoint: string | undefined;
     attribute: string;
     type: "get" | "set";
+    isRequest: boolean;
 }
 
 export default class Publish extends Extension {
@@ -50,11 +51,13 @@ export default class Publish extends Extension {
         }
 
         const deviceNameAndEndpoint = match[1];
-        const attribute = match[3];
+        const isRequest = match[2] !== undefined;
+        const type = match[3] as "get" | "set";
+        const attribute = match[4];
 
         // Now parse the device/group name, and endpoint name
         const entity = this.zigbee.resolveEntityAndEndpoint(deviceNameAndEndpoint);
-        return {ID: entity.ID, endpoint: entity.endpointID, type: match[2] as "get" | "set", attribute: attribute};
+        return {ID: entity.ID, endpoint: entity.endpointID, type, attribute, isRequest};
     }
 
     parseMessage(parsedTopic: ParsedTopic, data: eventdata.MQTTMessage): KeyValue | undefined {
@@ -130,6 +133,22 @@ export default class Publish extends Extension {
             return;
         }
 
+        // Extract and strip z2m_transaction before forwarding to converters
+        const z2mTransaction = parsedTopic.isRequest ? message.z2m_transaction : undefined;
+        if (message.z2m_transaction !== undefined) {
+            delete message.z2m_transaction;
+        }
+
+        // Ping: /request/ topic with empty payload after stripping z2m_transaction
+        if (parsedTopic.isRequest && Object.keys(message).length === 0) {
+            const response: KeyValue = {data: {}, status: "ok"};
+            if (z2mTransaction !== undefined) response.z2m_transaction = z2mTransaction;
+            await this.mqtt.publish(`${re.name}/response/${parsedTopic.type}`, stringify(response), {
+                clientOptions: {qos: /* v8 ignore next */ data.qos ?? 0, retain: false},
+            });
+            return;
+        }
+
         const device = re instanceof Device ? re.zh : undefined;
         const entitySettings = re.options;
         const entityState = this.state.get(re);
@@ -173,8 +192,14 @@ export default class Publish extends Extension {
         const endpointNames = re instanceof Device ? re.getEndpointNames() : [];
         const propertyEndpointRegex = new RegExp(`^(.*?)_(${endpointNames.join("|")})$`);
         let scenesChanged = false;
+        const responseData: KeyValue = {};
+        const supersededKeys: string[] = [];
+        const failedKeys: string[] = [];
 
+        // Future: send responses per attribute as each settles, rather than waiting for all.
+        // Currently, multi-attribute requests to sleepy devices block sequentially per attribute.
         for (const entry of entries) {
+            const originalKey = entry[0];
             let key = entry[0];
             const value = entry[1];
             let endpointName = parsedTopic.endpoint;
@@ -280,6 +305,14 @@ export default class Publish extends Extension {
                 logger.error(message);
                 // biome-ignore lint/style/noNonNullAssertion: always Error
                 logger.debug((error as Error).stack!);
+                if (parsedTopic.isRequest) {
+                    ((error as Error).message?.includes("Request superseded") ? supersededKeys : failedKeys).push(originalKey);
+                }
+            }
+
+            // Track result for response (set echoes requested value; get returns status only)
+            if (parsedTopic.isRequest && parsedTopic.type === "set" && !failedKeys.includes(originalKey) && !supersededKeys.includes(originalKey)) {
+                responseData[originalKey] = value;
             }
 
             usedConverters[endpointOrGroupID].push(converter);
@@ -287,6 +320,18 @@ export default class Publish extends Extension {
             if (!scenesChanged && converter.key) {
                 scenesChanged = converter.key.some((k) => SCENE_CONVERTER_KEYS.includes(k));
             }
+        }
+
+        if (parsedTopic.isRequest) {
+            const errorParts: string[] = [];
+            if (supersededKeys.length > 0) errorParts.push(`superseded:${supersededKeys.join(",")}`);
+            if (failedKeys.length > 0) errorParts.push(`failed:${failedKeys.join(",")}`);
+            const response: KeyValue =
+                errorParts.length > 0 ? {data: responseData, status: "error", error: errorParts.join("|")} : {data: responseData, status: "ok"};
+            if (z2mTransaction !== undefined) response.z2m_transaction = z2mTransaction;
+            await this.mqtt.publish(`${re.name}/response/${parsedTopic.type}`, stringify(response), {
+                clientOptions: {qos: /* v8 ignore next */ data.qos ?? 0, retain: false},
+            });
         }
 
         for (const [ID, payload] of Object.entries(toPublish)) {
