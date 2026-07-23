@@ -3,10 +3,10 @@ import type {Cluster as ZHCluster, FrameControl as ZHFrameControl} from "zigbee-
 
 import type TypeEventBus from "../eventBus";
 import type TypeExtension from "../extension/extension";
+import type TypeMessageBus from "../messageBus";
+import type {MqttPublishOptions} from "../messageBus";
 import type TypeDevice from "../model/device";
 import type TypeGroup from "../model/group";
-import type TypeMqtt from "../mqtt";
-import type {MqttPublishOptions} from "../mqtt";
 import type TypeState from "../state";
 import type TypeZigbee from "../zigbee";
 import type {Zigbee2MQTTDeviceOptions, Zigbee2MQTTGroupOptions, Zigbee2MQTTSettings} from "./api";
@@ -14,7 +14,7 @@ import type {Zigbee2MQTTDeviceOptions, Zigbee2MQTTGroupOptions, Zigbee2MQTTSetti
 declare global {
     // Define some class types as global
     type EventBus = TypeEventBus;
-    type Mqtt = TypeMqtt;
+    type MessageBus = TypeMessageBus;
     type Zigbee = TypeZigbee;
     type Group = TypeGroup;
     type Device = TypeDevice;

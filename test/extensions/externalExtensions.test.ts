@@ -227,6 +227,12 @@ describe("Extension: ExternalExtensions", () => {
     });
 
     describe("from MQTT", () => {
+        beforeEach(async () => {
+            controller = new Controller(vi.fn(), vi.fn());
+            await controller.start();
+            await flushPromises();
+        });
+
         it("CJS: saves and removes", async () => {
             const extensionName = "foo.js";
             const extensionCode = getFileCode("cjs", "exampleExtension.js");

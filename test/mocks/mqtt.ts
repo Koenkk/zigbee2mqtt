@@ -9,7 +9,9 @@ export const mockMQTTEndAsync = vi.fn(async (): Promise<void> => {});
 export const mockMQTTSubscribeAsync = vi.fn(async (_topicObject: string): Promise<void> => {});
 export const mockMQTTUnsubscribeAsync = vi.fn(async (_topic: string): Promise<void> => {});
 
-export const mockMQTTConnectAsync = vi.fn(() => ({
+export type MockMQTTConnectionState = "connected" | "reconnecting" | "disconnecting" | "disconnected";
+
+const mockMQTTClient = {
     reconnecting: false,
     disconnecting: false,
     disconnected: false,
@@ -32,7 +34,15 @@ export const mockMQTTConnectAsync = vi.fn(() => ({
         port: 1883,
     },
     queue: [],
-}));
+};
+
+export const mockMQTTConnectAsync = vi.fn(() => mockMQTTClient);
+
+export const setMockMQTTConnectionState = (state: MockMQTTConnectionState): void => {
+    mockMQTTClient.reconnecting = state === "reconnecting";
+    mockMQTTClient.disconnecting = state === "disconnecting";
+    mockMQTTClient.disconnected = state === "disconnected";
+};
 
 vi.mock("mqtt", () => ({
     connectAsync: mockMQTTConnectAsync,

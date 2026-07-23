@@ -23,7 +23,7 @@ export default abstract class ExternalJSExtension<M> extends Extension {
 
     constructor(
         zigbee: Zigbee,
-        mqtt: Mqtt,
+        mqtt: MessageBus,
         state: State,
         publishEntityState: PublishEntityState,
         eventBus: EventBus,

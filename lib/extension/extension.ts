@@ -1,6 +1,7 @@
 abstract class Extension {
     protected zigbee: Zigbee;
-    protected mqtt: Mqtt;
+    // Technical debt: this is a local MessageBus, retained as `mqtt` for extension API compatibility.
+    protected mqtt: MessageBus;
     protected state: State;
     protected publishEntityState: PublishEntityState;
     protected eventBus: EventBus;
@@ -12,7 +13,7 @@ abstract class Extension {
      * Besides initializing variables, the constructor should do nothing!
      *
      * @param {Zigbee} zigbee Zigbee controller
-     * @param {Mqtt} mqtt MQTT controller
+     * @param {MessageBus} mqtt MQTT controller
      * @param {State} state State controller
      * @param {Function} publishEntityState Method to publish device state to MQTT.
      * @param {EventBus} eventBus The event bus
@@ -22,7 +23,7 @@ abstract class Extension {
      */
     constructor(
         zigbee: Zigbee,
-        mqtt: Mqtt,
+        mqtt: MessageBus,
         state: State,
         publishEntityState: PublishEntityState,
         eventBus: EventBus,

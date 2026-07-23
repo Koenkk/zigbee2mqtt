@@ -119,6 +119,13 @@
             "type": "object",
             "title": "MQTT",
             "properties": {
+                "enabled": {
+                    "type": "boolean",
+                    "title": "Enabled",
+                    "description": "Enable MQTT connection. When false, the application runs without connecting to any MQTT broker.",
+                    "default": true,
+                    "requiresRestart": true
+                },
                 "base_topic": {
                     "type": "string",
                     "title": "Base topic",
@@ -132,6 +139,7 @@
                     "title": "MQTT server",
                     "requiresRestart": true,
                     "description": "MQTT server URL (use mqtts:// for SSL/TLS connection)",
+                    "default": "mqtt://localhost",
                     "examples": ["mqtt://localhost:1883"]
                 },
                 "keepalive": {
@@ -228,7 +236,7 @@
                     "maximum": 268435456
                 }
             },
-            "required": ["server"]
+            "required": []
         },
         "serial": {
             "type": "object",

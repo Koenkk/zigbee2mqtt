@@ -9,6 +9,7 @@ import {
     mockMQTTPublishAsync,
     mockMQTTSubscribeAsync,
     mockMQTTUnsubscribeAsync,
+    setMockMQTTConnectionState,
 } from "./mocks/mqtt";
 import {flushPromises} from "./mocks/utils";
 import type {Device as ZhDevice} from "./mocks/zigbeeHerdsman";
@@ -24,6 +25,7 @@ import type {Mock, MockInstance} from "vitest";
 import {Controller as ZHController} from "zigbee-herdsman";
 import {Controller} from "../lib/controller";
 import type Device from "../lib/model/device";
+import MqttClient from "../lib/mqttClient";
 import * as settings from "../lib/util/settings";
 import Frontend from "../lib/extension/frontend";
 
@@ -267,20 +269,17 @@ describe("Controller", () => {
         await controller.start();
         await flushPromises();
         mockLogger.error.mockClear();
-        // @ts-expect-error private
-        controller.mqtt.client.reconnecting = true;
+        setMockMQTTConnectionState("reconnecting");
         vi.advanceTimersByTime(11 * 1000);
         expect(mockLogger.error).toHaveBeenCalledWith("Not connected to MQTT server!");
-        // @ts-expect-error private
-        controller.mqtt.client.reconnecting = false;
+        setMockMQTTConnectionState("connected");
     });
 
     it("Dont publish to mqtt when client is unavailable", async () => {
         await controller.start();
         await flushPromises();
         mockLogger.error.mockClear();
-        // @ts-expect-error private
-        controller.mqtt.client.reconnecting = true;
+        setMockMQTTConnectionState("reconnecting");
         const device = getZ2MDevice("bulb");
         await controller.publishEntityState(device, {
             state: "ON",
@@ -295,18 +294,17 @@ describe("Controller", () => {
         expect(mockLogger.error).toHaveBeenCalledWith(
             'Cannot send message: topic: \'zigbee2mqtt/bulb\', payload: \'{"brightness":50,"color":{"b":10,"g":50,"r":100},"color_temp":370,"dummy":{"1":"yes","2":"no"},"linkquality":99,"state":"ON"}',
         );
-        // @ts-expect-error private
-        controller.mqtt.client.reconnecting = false;
+        setMockMQTTConnectionState("connected");
     });
 
     it("Should not allow publishing wildcard characters in topic", async () => {
         await controller.start();
         await flushPromises();
         mockMQTTPublishAsync.mockClear();
-        await controller.mqtt.publish("z2m/#/status", "empty");
+        await controller.messageBus.publish("z2m/#/status", "empty");
         expect(mockMQTTPublishAsync).toHaveBeenCalledTimes(0);
         expect(mockLogger.error).toHaveBeenCalledWith(`Topic 'z2m/#/status' includes wildcard characters, skipping publish.`);
-        await controller.mqtt.publish("z2m/+/status", "empty");
+        await controller.messageBus.publish("z2m/+/status", "empty");
         expect(mockMQTTPublishAsync).toHaveBeenCalledTimes(0);
         expect(mockLogger.error).toHaveBeenCalledWith(`Topic 'z2m/+/status' includes wildcard characters, skipping publish.`);
     });
@@ -383,6 +381,29 @@ describe("Controller", () => {
         expect(settings.get().onboarding).toStrictEqual(true);
     });
 
+    it("Start controller with MQTT disabled should be successful", async () => {
+        settings.set(["mqtt", "enabled"], false);
+        settings.set(["frontend", "enabled"], true);
+        await controller.start();
+        await flushPromises();
+        await controller.stop();
+        expect(mockZHController.stop).toHaveBeenCalledTimes(1);
+        expect(mockExit).toHaveBeenCalledTimes(1);
+        expect(mockExit).toHaveBeenCalledWith(0, false);
+    });
+
+    it("Start controller with only the local message bus should be successful", async () => {
+        settings.set(["mqtt", "enabled"], false);
+        settings.set(["frontend", "enabled"], false);
+        expect(controller.mqtt).toBe(controller.messageBus);
+        await controller.start();
+        await flushPromises();
+        await controller.stop();
+        expect(mockZHController.stop).toHaveBeenCalledTimes(1);
+        expect(mockExit).toHaveBeenCalledTimes(1);
+        expect(mockExit).toHaveBeenCalledWith(0, false);
+    });
+
     it("Start controller and stop with restart", async () => {
         await controller.start();
         await controller.stop(true);
@@ -433,13 +454,13 @@ describe("Controller", () => {
         beforeEach(() => {
             stateStartSpy = vi.spyOn(controller.state, "start");
             zigbeeStartSpy = vi.spyOn(controller.zigbee, "start");
-            mqttConnectSpy = vi.spyOn(controller.mqtt, "connect");
+            mqttConnectSpy = vi.spyOn(MqttClient.prototype, "connect");
             const [firstExt] = controller.extensions;
             extensionStartSpy = vi.spyOn(firstExt, "start");
             publishEntityStateSpy = vi.spyOn(controller, "publishEntityState");
             extensionStopSpy = vi.spyOn(firstExt, "stop");
-            mqttDisconnectSpy = vi.spyOn(controller.mqtt, "disconnect");
-            mqttPublishSpy = vi.spyOn(controller.mqtt, "publish");
+            mqttDisconnectSpy = vi.spyOn(MqttClient.prototype, "disconnect");
+            mqttPublishSpy = vi.spyOn(controller.messageBus, "publish");
         });
 
         afterEach(() => {
@@ -706,15 +727,13 @@ describe("Controller", () => {
         mockLogger.info.mockClear();
 
         mockMQTTEvents.error(new Error("ECONNRESET"));
-        // @ts-expect-error private
-        controller.mqtt.client.reconnecting = true;
+        setMockMQTTConnectionState("reconnecting");
         expect(mockLogger.error).toHaveBeenCalledWith("MQTT error: ECONNRESET");
 
         await vi.advanceTimersByTimeAsync(11000);
         expect(mockLogger.error).toHaveBeenCalledWith("Not connected to MQTT server!");
 
-        // @ts-expect-error private
-        controller.mqtt.client.reconnecting = false;
+        setMockMQTTConnectionState("connected");
         await mockMQTTEvents.connect();
         expect(mockLogger.info).toHaveBeenCalledWith("Connected to MQTT server");
     });
@@ -730,15 +749,13 @@ describe("Controller", () => {
             reasonCode: 149,
             properties: {reasonString: "Maximum packet size was exceeded"},
         });
-        // @ts-expect-error private
-        controller.mqtt.client.disconnecting = true;
+        setMockMQTTConnectionState("disconnecting");
         expect(mockLogger.error).toHaveBeenCalledWith("MQTT disconnect: reason 149 (Maximum packet size was exceeded)");
 
         await vi.advanceTimersByTimeAsync(11000);
         expect(mockLogger.error).toHaveBeenCalledWith("Not connected to MQTT server!");
 
-        // @ts-expect-error private
-        controller.mqtt.client.disconnecting = false;
+        setMockMQTTConnectionState("connected");
         await mockMQTTEvents.connect();
         expect(mockLogger.info).toHaveBeenCalledWith("Connected to MQTT server");
     });
@@ -775,7 +792,7 @@ describe("Controller", () => {
         await mockMQTTEvents.message("zigbee2mqtt/skip-this-topic", "skipped");
         expect(spyEventbusEmitMQTTMessage).toHaveBeenCalledWith({topic: "zigbee2mqtt/skip-this-topic", message: "skipped"});
         mockLogger.debug.mockClear();
-        await controller.mqtt.publish("skip-this-topic", "", {});
+        await controller.messageBus.publish("skip-this-topic", "", {});
         await mockMQTTEvents.message("zigbee2mqtt/skip-this-topic", "skipped");
         expect(mockLogger.debug).toHaveBeenCalledTimes(0);
     });
@@ -1307,7 +1324,7 @@ describe("Controller", () => {
         await controller.start();
         await flushPromises();
 
-        const retainedMessages = Object.keys(controller.mqtt.retainedMessages).length;
+        const retainedMessages = Object.keys(controller.messageBus.retainedMessages).length;
 
         mockMQTTPublishAsync.mockClear();
         await vi.advanceTimersByTimeAsync(2500); // before any startup configure triggers
@@ -1328,10 +1345,10 @@ describe("Controller", () => {
 
     it("Should prevent any message being published with retain flag when force_disable_retain is set", async () => {
         settings.set(["mqtt", "force_disable_retain"], true);
-        await controller.mqtt.connect();
+        await controller.start();
         mockMQTTPublishAsync.mockClear();
         // @ts-expect-error private
-        await controller.mqtt.publish("fo", "bar", {retain: true});
+        await controller.messageBus.publish("fo", "bar", {retain: true});
         await flushPromises();
         expect(mockMQTTPublishAsync).toHaveBeenCalledTimes(1);
         expect(mockMQTTPublishAsync).toHaveBeenCalledWith("zigbee2mqtt/fo", "bar", {retain: false});

@@ -45,7 +45,9 @@ export const defaults = {
         base_url: "/",
     },
     mqtt: {
+        enabled: true,
         base_topic: "zigbee2mqtt",
+        server: "mqtt://localhost",
         include_device_information: false,
         force_disable_retain: false,
         // 1MB = roughly 3.5KB per device * 300 devices for `/bridge/devices`
@@ -158,6 +160,7 @@ export function writeMinimalDefaults(): void {
     const minimal = {
         version: CURRENT_VERSION,
         mqtt: {
+            enabled: true,
             base_topic: defaults.mqtt.base_topic,
             server: "mqtt://localhost:1883",
         },
@@ -309,6 +312,10 @@ export function validate(): string[] {
                 errors.push("MQTT retention requires protocol version 5");
             }
         }
+    }
+
+    if (settingsWithDefaults.homeassistant.enabled && !settingsWithDefaults.mqtt.enabled) {
+        errors.push("homeassistant.enabled requires mqtt.enabled");
     }
 
     return errors;

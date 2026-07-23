@@ -10,7 +10,7 @@ type TModule = ExternalDefinitionWithExtend | ExternalDefinitionWithExtend[];
 export default class ExternalConverters extends ExternalJSExtension<TModule> {
     constructor(
         zigbee: Zigbee,
-        mqtt: Mqtt,
+        mqtt: MessageBus,
         state: State,
         publishEntityState: PublishEntityState,
         eventBus: EventBus,

@@ -120,6 +120,7 @@ export interface Zigbee2MQTTSettings {
         passive: {timeout: number};
     };
     mqtt: {
+        enabled: boolean;
         base_topic: string;
         include_device_information: boolean;
         force_disable_retain: boolean;
