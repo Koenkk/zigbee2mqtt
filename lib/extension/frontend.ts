@@ -8,12 +8,11 @@ import {posix} from "node:path";
 import bind from "bind-decorator";
 import expressStaticGzip from "express-static-gzip";
 import finalhandler from "finalhandler";
-import stringify from "json-stable-stringify-without-jsonify";
 import WebSocket from "ws";
-
 import data from "../util/data";
 import logger from "../util/logger";
 import * as settings from "../util/settings";
+import {stringify} from "../util/stringify";
 import utils from "../util/utils";
 import Extension from "./extension";
 

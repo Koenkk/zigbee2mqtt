@@ -7,7 +7,7 @@ import {flushPromises} from "../mocks/utils";
 import {devices, events as mockZHEvents, returnDevices} from "../mocks/zigbeeHerdsman";
 
 import assert from "node:assert";
-import stringify from "json-stable-stringify-without-jsonify";
+import {stringify} from "../../lib/util/stringify";
 import {Controller} from "../../lib/controller";
 import Availability from "../../lib/extension/availability";
 import * as settings from "../../lib/util/settings";

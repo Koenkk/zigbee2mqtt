@@ -1,6 +1,5 @@
 import {randomInt} from "node:crypto";
 import bind from "bind-decorator";
-import stringify from "json-stable-stringify-without-jsonify";
 import type {Events as ZHEvents} from "zigbee-herdsman";
 import {Controller} from "zigbee-herdsman";
 import type {StartResult} from "zigbee-herdsman/dist/adapter/tstype";
@@ -9,6 +8,7 @@ import Group from "./model/group";
 import data from "./util/data";
 import logger from "./util/logger";
 import * as settings from "./util/settings";
+import {stringify} from "./util/stringify";
 import utils from "./util/utils";
 
 const entityIDRegex = /^(.+?)(?:\/([^/]+))?$/;
@@ -61,7 +61,7 @@ export default class Zigbee {
 
         logger.debug(
             () =>
-                `Using zigbee-herdsman with settings: '${stringify(JSON.stringify(herdsmanSettings).replaceAll(JSON.stringify(herdsmanSettings.network.networkKey), '"HIDDEN"'))}'`,
+                `Using zigbee-herdsman with settings: '${stringify(herdsmanSettings).replaceAll(stringify(herdsmanSettings.network.networkKey), '"HIDDEN"')}'`,
         );
 
         let startResult: StartResult;
