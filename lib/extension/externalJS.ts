@@ -13,6 +13,7 @@ import Extension from "./extension";
 
 const SUPPORTED_OPERATIONS = ["save", "remove"];
 const TMP_PREFIX = ".tmp-ed42d4f2-";
+const ALLOWED_EXTENSIONS = new Set([".js", ".cjs", ".mjs"]);
 
 export default abstract class ExternalJSExtension<M> extends Extension {
     protected folderName: string;
@@ -89,11 +90,17 @@ export default abstract class ExternalJSExtension<M> extends Extension {
     }
 
     private getFilePath(name: string, mkBasePath = false): string {
+        const target = utils.resolveSafeChildPath(this.basePath, name);
+
+        if (!ALLOWED_EXTENSIONS.has(path.extname(name).toLowerCase())) {
+            throw new Error(`Invalid file name '${name}'`);
+        }
+
         if (mkBasePath && !fs.existsSync(this.basePath)) {
             fs.mkdirSync(this.basePath, {recursive: true});
         }
 
-        return path.join(this.basePath, name);
+        return target;
     }
 
     protected getFileCode(name: string): string {
