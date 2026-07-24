@@ -664,20 +664,25 @@ export default class Bridge extends Extension {
         entityType: T,
         message: string | KeyValue,
     ): Promise<Zigbee2MQTTResponse<T extends "device" ? "bridge/response/device/remove" : "bridge/response/group/remove">> {
-        const ID = typeof message === "object" ? message.id : message.trim();
+        const messageIsObject = typeof message === "object";
+        const ID = messageIsObject ? message.id : message.trim();
         const entity = this.getEntity(entityType, ID);
         // note: entity.name is dynamically retrieved, will change once device is removed (friendly => ieee)
         const friendlyName = entity.name;
         let block = false;
         let force = false;
+        let clearCache = false;
         let blockForceLog = "";
 
-        if (entityType === "device" && typeof message === "object") {
-            block = !!message.block;
-            force = !!message.force;
-            blockForceLog = ` (block: ${block}, force: ${force})`;
-        } else if (entityType === "group" && typeof message === "object") {
-            force = !!message.force;
+        if (entityType === "device" && messageIsObject) {
+            const payload = message as Zigbee2MQTTAPI["bridge/request/device/remove"];
+            block = !!payload.block;
+            force = !!payload.force;
+            clearCache = !!payload.clear_cache;
+            blockForceLog = ` (block: ${block}, force: ${force}, clear cache: ${clearCache})`;
+        } else if (entityType === "group" && messageIsObject) {
+            const payload = message as Zigbee2MQTTAPI["bridge/request/group/remove"];
+            force = !!payload.force;
             blockForceLog = ` (force: ${force})`;
         }
 
@@ -690,9 +695,13 @@ export default class Bridge extends Extension {
                 }
 
                 if (force) {
-                    entity.zh.removeFromDatabase();
+                    entity.zh.removeFromDatabase(clearCache);
                 } else {
-                    await entity.zh.removeFromNetwork();
+                    await entity.zh.removeFromNetwork(clearCache);
+                }
+
+                if (clearCache) {
+                    this.zigbee.removeDeviceFromLookup(entity.ID);
                 }
 
                 settings.removeDevice(entity.ID as string);
@@ -717,18 +726,17 @@ export default class Bridge extends Extension {
 
             logger.info(`Successfully removed ${entityType} '${friendlyName}'${blockForceLog}`);
 
+            await this.publishGroups();
+
             if (entity instanceof Device) {
-                await this.publishGroups();
                 await this.publishDevices();
                 // Refresh Cluster definition
                 await this.publishDefinitions();
 
-                const responseData: Zigbee2MQTTAPI["bridge/response/device/remove"] = {id: ID, block, force};
+                const responseData: Zigbee2MQTTAPI["bridge/response/device/remove"] = {id: ID, block, force, clear_cache: clearCache};
 
                 return utils.getResponse(message, responseData);
             }
-
-            await this.publishGroups();
 
             const responseData: Zigbee2MQTTAPI["bridge/response/group/remove"] = {id: ID, force};
 
