@@ -183,7 +183,7 @@ logger.debug("message");
 ### Performance
 - Use `fs.rmSync(path, {recursive: true, force: true})` for synchronous file deletion when appropriate
 - Leverage async/await for I/O operations to avoid blocking
-- Use JSON stable stringify for consistent object serialization: `json-stable-stringify-without-jsonify`
+- Use JSON stable stringify util for consistent object serialization
 - Cache computed values when appropriate (see device model patterns)
 - Use getter methods for computed properties that should be cached
 
