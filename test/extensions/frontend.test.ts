@@ -7,7 +7,7 @@ import {type EventHandler, flushPromises} from "../mocks/utils";
 import {devices, events as mockZHEvents} from "../mocks/zigbeeHerdsman";
 
 import path from "node:path";
-import stringify from "json-stable-stringify-without-jsonify";
+import {stringify} from "../../lib/util/stringify";
 import type {Mock} from "vitest";
 import ws from "ws";
 import {Controller} from "../../lib/controller";
