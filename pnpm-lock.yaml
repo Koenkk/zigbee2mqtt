@@ -35,9 +35,6 @@ importers:
       js-yaml:
         specifier: ^5.2.1
         version: 5.2.1
-      json-stable-stringify-without-jsonify:
-        specifier: ^1.0.1
-        version: 1.0.1
       jszip:
         specifier: ^3.10.1
         version: 3.10.1
@@ -1046,9 +1043,6 @@ packages:
 
   json-schema-traverse@1.0.0:
     resolution: {integrity: sha512-NM8/P9n3XjXhIZn1lLhkFaACTOURQXjWhV4BA/RnOv8xvgqtqpAX9IO4mRQxSx1Rlo4tqzeqb0sOlruaOy3dug==}
-
-  json-stable-stringify-without-jsonify@1.0.1:
-    resolution: {integrity: sha512-Bdboy+l7tA3OGW6FjyFHWkP5LuByj1Tk33Ljyq0axyzdk9//JSi2u3fP1QSmd1KNwq6VOKYGlAu87CisVir6Pw==}
 
   jszip@3.10.1:
     resolution: {integrity: sha512-xXDvecyTpGLrqFrvkrUSoxxfJI5AH7U8zxxtVclpsUtMCq4JQ290LY8AW5c7Ggnr/Y/oK+bQMbqK2qmtk3pN4g==}
@@ -2297,8 +2291,6 @@ snapshots:
       argparse: 2.0.1
 
   json-schema-traverse@1.0.0: {}
-
-  json-stable-stringify-without-jsonify@1.0.1: {}
 
   jszip@3.10.1:
     dependencies:

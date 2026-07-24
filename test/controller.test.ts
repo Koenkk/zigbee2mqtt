@@ -17,9 +17,9 @@ import {devices, mockController as mockZHController, events as mockZHEvents, ret
 import fs from "node:fs";
 import os from "node:os";
 import path from "node:path";
-import stringify from "json-stable-stringify-without-jsonify";
 import tmp from "tmp";
 
+import {stringify} from "../lib/util/stringify";
 import type {Mock, MockInstance} from "vitest";
 import {Controller as ZHController} from "zigbee-herdsman";
 import {Controller} from "../lib/controller";

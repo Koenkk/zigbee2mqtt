@@ -1,5 +1,4 @@
 import {existsSync, mkdirSync} from "node:fs";
-import stringify from "json-stable-stringify-without-jsonify";
 import {bench, describe, vi} from "vitest";
 import {type Controller, Zcl, Zdo, ZSpec} from "zigbee-herdsman";
 import type Adapter from "zigbee-herdsman/dist/adapter/adapter";
@@ -12,6 +11,7 @@ import type {DeviceType} from "zigbee-herdsman/dist/controller/tstype";
 import {Foundation} from "zigbee-herdsman/dist/zspec/zcl/definition/foundation";
 import type {RequestToResponseMap} from "zigbee-herdsman/dist/zspec/zdo/definition/tstypes";
 import data from "../lib/util/data";
+import {stringify} from "../lib/util/stringify";
 import {BENCH_OPTIONS} from "./benchOptions";
 
 vi.doMock("zigbee-herdsman", async (importOriginal) => {
@@ -257,7 +257,7 @@ const adapter = {
                 switch (zclFrame.command.ID) {
                     case Foundation.read.ID: {
                         for (const attr of zclFrame.payload) {
-                            const attribute = zclFrame.cluster.getAttribute(attr.attrId);
+                            const attribute = Zcl.Utils.getClusterAttribute(zclFrame.cluster, attr.attrId, undefined);
 
                             if (attribute && attribute.type !== Zcl.DataType.NO_DATA && attribute.type < Zcl.DataType.OCTET_STR) {
                                 payload.push({
@@ -421,7 +421,6 @@ const initController = async () => {
         disconnecting: false,
         disconnected: false,
         endAsync: async () => {},
-        // @ts-expect-error Z2M does not make use of return
         publishAsync: async () => {},
     };
     controller.mqtt.connect = async () => {
