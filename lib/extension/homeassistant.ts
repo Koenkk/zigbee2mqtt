@@ -195,6 +195,7 @@ const NUMERIC_DISCOVERY_LOOKUP: {[s: string]: KeyValue} = {
     fading_time: {entity_category: "config", icon: "mdi:timer"},
     formaldehyd: {state_class: "measurement"},
     flow: {device_class: "volume_flow_rate", state_class: "measurement"},
+    frequency: {device_class: "frequency", state_class: "measurement"},
     gas: {device_class: "gas", state_class: "total_increasing", icon: "mdi:meter-gas"},
     gas_density: {icon: "mdi:google-circles-communities", state_class: "measurement"},
     gust_speed: {device_class: "wind_speed", icon: "mdi:weather-windy-variant", preserve_name: true, state_class: "measurement"},
@@ -372,6 +373,17 @@ const featurePropertyWithoutEndpoint = (feature: zhc.Feature): string => {
     return feature.property;
 };
 
+const cleanName = (name: string): string => {
+    const cleanedName = name.replace(/^(?:analog_in_|analog_out_)/, "");
+
+    // // seems not to be needed
+    // if (endpoint && cleanedName.endsWith(`_${endpoint}`)) {
+    //    cleanedName = cleanedName.slice(0, -endpoint.length - 1);
+    //}
+
+    return cleanedName;
+};
+
 const applyHomeAssistantExposeMetadata = (payload: KeyValue, homeAssistant: zhc.Expose["homeassistant"]): void => {
     const metadata = homeAssistant as KeyValue | undefined;
     if (!metadata) {
@@ -392,6 +404,10 @@ const applyHomeAssistantExposeMetadata = (payload: KeyValue, homeAssistant: zhc.
 
     if (typeof metadata.icon === "string") {
         payload.icon = metadata.icon;
+    }
+
+    if (typeof metadata.name === "string") {
+        payload.name = metadata.name;
     }
 };
 
@@ -1147,7 +1163,7 @@ export class HomeAssistant extends Extension {
                             command_topic_postfix: firstExpose.property,
                             ...(firstExpose.unit && {unit_of_measurement: firstExpose.unit}),
                             ...(firstExpose.value_step && {step: firstExpose.value_step}),
-                            ...NUMERIC_DISCOVERY_LOOKUP[firstExpose.name],
+                            ...NUMERIC_DISCOVERY_LOOKUP[cleanName(firstExpose.name)],
                         },
                     };
 
@@ -1179,7 +1195,7 @@ export class HomeAssistant extends Extension {
                     Object.assign(extraAttrs, {device_class: "power", state_class: "measurement"});
                 }
 
-                let key = firstExpose.name;
+                let key = cleanName(firstExpose.name);
 
                 // Home Assistant uses a different voc device_class for µg/m³ versus ppb or ppm.
                 if (firstExpose.name === "voc" && firstExpose.unit && ["ppb", "ppm"].includes(firstExpose.unit)) {
@@ -1428,7 +1444,11 @@ export class HomeAssistant extends Extension {
 
             // Let Home Assistant generate entity name when device_class is present.
             // preserve_name allows device_class and explicit name to coexist (e.g. derived sensors).
-            if (entry.discovery_payload.device_class && !NUMERIC_DISCOVERY_LOOKUP[firstExpose.name]?.preserve_name) {
+            if (
+                entry.discovery_payload.device_class &&
+                !NUMERIC_DISCOVERY_LOOKUP[firstExpose.name]?.preserve_name &&
+                !firstExpose.homeassistant?.name
+            ) {
                 delete entry.discovery_payload.name;
             }
 

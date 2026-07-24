@@ -39,6 +39,7 @@ const CLUSTERS = {
     msRelativeHumidity: Zcl.Clusters.msRelativeHumidity.ID,
     msSoilMoisture: Zcl.Clusters.msSoilMoisture.ID,
     msCO2: Zcl.Clusters.msCO2.ID,
+    genAnalogInput: Zcl.Clusters.genAnalogInput.ID,
 };
 
 export const CUSTOM_CLUSTERS = {
@@ -636,7 +637,9 @@ export const devices = {
         "0x0017880104e45518",
         6536,
         0,
-        [new Endpoint(1, [0], [0, 3, 4, 6, 8, 5], "0x0017880104e45518")],
+        [new Endpoint(1, [0, 12], [0, 3, 4, 6, 8, 5], "0x0017880104e45518", [],{
+            genAnalogInput: {description: "my_sensor_name", applicationType: 0}
+        })],
         InterviewState.Successful,
         "Battery",
         "notSupportedModelID",

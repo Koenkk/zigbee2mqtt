@@ -1026,6 +1026,16 @@ describe("Extension: Bridge", () => {
                         description: "Automatically generated definition",
                         exposes: [
                             {
+                                access: 5,
+                                description: "Analog Input my_sensor_name on endpoint 1",
+                                label: "my_sensor_name",
+                                name: "analog_in_temperature",
+                                property: "analog_in_temperature",
+                                type: "numeric",
+                                unit: "°C",
+                                homeassistant: {name: "my_sensor_name"},
+                            },
+                            {
                                 access: 1,
                                 category: "diagnostic",
                                 description: "Triggered action (e.g. a button click)",
@@ -1099,7 +1109,7 @@ describe("Extension: Bridge", () => {
                     endpoints: {
                         "1": {
                             bindings: [],
-                            clusters: {input: ["genBasic"], output: ["genBasic", "genOnOff", "genLevelCtrl", "genScenes"]},
+                            clusters: {input: ["genBasic", "genAnalogInput"], output: ["genBasic", "genOnOff", "genLevelCtrl", "genScenes"]},
                             configured_reportings: [],
                             scenes: [],
                         },
@@ -2719,6 +2729,16 @@ describe("Extension: Bridge", () => {
                         source: "generated",
                         description: "Automatically generated definition",
                         exposes: [
+                            {
+                                access: 5,
+                                description: "Analog Input my_sensor_name on endpoint 1",
+                                label: "my_sensor_name",
+                                name: "analog_in_temperature",
+                                property: "analog_in_temperature",
+                                type: "numeric",
+                                unit: "°C",
+                                homeassistant: {name: "my_sensor_name"},
+                            },
                             {
                                 access: 1,
                                 category: "diagnostic",
