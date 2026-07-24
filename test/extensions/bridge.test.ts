@@ -2973,6 +2973,7 @@ describe("Extension: Bridge", () => {
 
     it("Should allow to remove device by string", async () => {
         const device = devices.bulb;
+        const removeSpy = vi.spyOn(controller.zigbee, "removeDeviceFromLookup");
         mockMQTTPublishAsync.mockClear();
         mockMQTTEvents.message("zigbee2mqtt/bridge/request/device/remove", "bulb");
         await flushPromises();
@@ -2981,11 +2982,12 @@ describe("Extension: Bridge", () => {
         expect(device.removeFromNetwork).toHaveBeenCalledTimes(1);
         expect(device.removeFromDatabase).not.toHaveBeenCalled();
         expect(settings.getDevice("bulb")).toBeUndefined();
+        expect(removeSpy).not.toHaveBeenCalled();
         expect(mockMQTTPublishAsync).toHaveBeenCalledWith("zigbee2mqtt/bulb", "", {retain: true});
         expect(mockMQTTPublishAsync).toHaveBeenCalledWith("zigbee2mqtt/bridge/devices", expect.any(String), expect.any(Object));
         expect(mockMQTTPublishAsync).toHaveBeenCalledWith(
             "zigbee2mqtt/bridge/response/device/remove",
-            stringify({data: {id: "bulb", block: false, force: false}, status: "ok"}),
+            stringify({data: {id: "bulb", block: false, force: false, clear_cache: false}, status: "ok"}),
             {},
         );
         expect(settings.get().blocklist).toStrictEqual([]);
@@ -2995,50 +2997,74 @@ describe("Extension: Bridge", () => {
 
     it("Should allow to remove device by object ID", async () => {
         const device = devices.bulb;
+        const removeSpy = vi.spyOn(controller.zigbee, "removeDeviceFromLookup");
         mockMQTTPublishAsync.mockClear();
         mockMQTTEvents.message("zigbee2mqtt/bridge/request/device/remove", stringify({id: "bulb"}));
         await flushPromises();
         expect(device.removeFromNetwork).toHaveBeenCalledTimes(1);
         expect(device.removeFromDatabase).not.toHaveBeenCalled();
         expect(settings.getDevice("bulb")).toBeUndefined();
+        expect(removeSpy).not.toHaveBeenCalled();
         expect(mockMQTTPublishAsync).toHaveBeenCalledWith("zigbee2mqtt/bridge/devices", expect.any(String), expect.any(Object));
         expect(mockMQTTPublishAsync).toHaveBeenCalledWith(
             "zigbee2mqtt/bridge/response/device/remove",
-            stringify({data: {id: "bulb", block: false, force: false}, status: "ok"}),
+            stringify({data: {id: "bulb", block: false, force: false, clear_cache: false}, status: "ok"}),
             {},
         );
     });
 
     it("Should allow to force remove device", async () => {
         const device = devices.bulb;
+        const removeSpy = vi.spyOn(controller.zigbee, "removeDeviceFromLookup");
         mockMQTTPublishAsync.mockClear();
         mockMQTTEvents.message("zigbee2mqtt/bridge/request/device/remove", stringify({id: "bulb", force: true}));
         await flushPromises();
         expect(device.removeFromDatabase).toHaveBeenCalledTimes(1);
         expect(device.removeFromNetwork).not.toHaveBeenCalled();
         expect(settings.getDevice("bulb")).toBeUndefined();
+        expect(removeSpy).not.toHaveBeenCalled();
         expect(mockMQTTPublishAsync).toHaveBeenCalledWith("zigbee2mqtt/bridge/devices", expect.any(String), expect.any(Object));
         expect(mockMQTTPublishAsync).toHaveBeenCalledWith(
             "zigbee2mqtt/bridge/response/device/remove",
-            stringify({data: {id: "bulb", block: false, force: true}, status: "ok"}),
+            stringify({data: {id: "bulb", block: false, force: true, clear_cache: false}, status: "ok"}),
             {},
         );
     });
 
     it("Should allow to block device", async () => {
         const device = devices.bulb;
+        const removeSpy = vi.spyOn(controller.zigbee, "removeDeviceFromLookup");
         mockMQTTPublishAsync.mockClear();
         mockMQTTEvents.message("zigbee2mqtt/bridge/request/device/remove", stringify({id: "bulb", block: true, force: true}));
         await flushPromises();
         expect(device.removeFromDatabase).toHaveBeenCalledTimes(1);
         expect(settings.getDevice("bulb")).toBeUndefined();
+        expect(removeSpy).not.toHaveBeenCalled();
         expect(mockMQTTPublishAsync).toHaveBeenCalledWith("zigbee2mqtt/bridge/devices", expect.any(String), expect.any(Object));
         expect(mockMQTTPublishAsync).toHaveBeenCalledWith(
             "zigbee2mqtt/bridge/response/device/remove",
-            stringify({data: {id: "bulb", block: true, force: true}, status: "ok"}),
+            stringify({data: {id: "bulb", block: true, force: true, clear_cache: false}, status: "ok"}),
             {},
         );
         expect(settings.get().blocklist).toStrictEqual(["0x000b57fffec6a5b2"]);
+    });
+
+    it("Should allow to clear cache when removing device", async () => {
+        const device = devices.bulb;
+        const removeSpy = vi.spyOn(controller.zigbee, "removeDeviceFromLookup");
+        mockMQTTPublishAsync.mockClear();
+        mockMQTTEvents.message("zigbee2mqtt/bridge/request/device/remove", stringify({id: "bulb", clear_cache: true}));
+        await flushPromises();
+        expect(device.removeFromNetwork).toHaveBeenCalledTimes(1);
+        expect(device.removeFromDatabase).not.toHaveBeenCalled();
+        expect(settings.getDevice("bulb")).toBeUndefined();
+        expect(removeSpy).toHaveNthReturnedWith(1, true);
+        expect(mockMQTTPublishAsync).toHaveBeenCalledWith("zigbee2mqtt/bridge/devices", expect.any(String), expect.any(Object));
+        expect(mockMQTTPublishAsync).toHaveBeenCalledWith(
+            "zigbee2mqtt/bridge/response/device/remove",
+            stringify({data: {id: "bulb", block: false, force: false, clear_cache: true}, status: "ok"}),
+            {},
+        );
     });
 
     it("Should allow to remove group", async () => {
@@ -3105,7 +3131,11 @@ describe("Extension: Bridge", () => {
         await flushPromises();
         expect(mockMQTTPublishAsync).toHaveBeenCalledWith(
             "zigbee2mqtt/bridge/response/device/remove",
-            stringify({data: {}, status: "error", error: "Failed to remove device 'bulb' (block: false, force: false) (Error: device timeout)"}),
+            stringify({
+                data: {},
+                status: "error",
+                error: "Failed to remove device 'bulb' (block: false, force: false, clear cache: false) (Error: device timeout)",
+            }),
             {},
         );
     });
