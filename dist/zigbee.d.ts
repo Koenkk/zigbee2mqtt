@@ -51,6 +51,7 @@ export default class Zigbee {
     createGroup(id: number): Group;
     deviceByNetworkAddress(networkAddress: number): Device | undefined;
     groupByID(id: number): Group | undefined;
-    removeGroupFromLookup(id: number): void;
+    removeDeviceFromLookup(ieee: string): boolean;
+    removeGroupFromLookup(id: number): boolean;
 }
 //# sourceMappingURL=zigbee.d.ts.map

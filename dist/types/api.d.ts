@@ -580,11 +580,13 @@ export interface Zigbee2MQTTAPI {
         id: string;
         block?: boolean;
         force?: boolean;
+        clear_cache?: boolean;
     };
     "bridge/response/device/remove": {
         id: string;
         block: boolean;
         force: boolean;
+        clear_cache: boolean;
     };
     "bridge/request/device/ota_update/check": {
         id: string;
