@@ -372,26 +372,33 @@ const featurePropertyWithoutEndpoint = (feature: zhc.Feature): string => {
     return feature.property;
 };
 
-const applyHomeAssistantExposeMetadata = (payload: KeyValue, homeAssistant: zhc.Expose["homeassistant"]): void => {
-    const metadata = homeAssistant as KeyValue | undefined;
-    if (!metadata) {
+const applyHomeAssistantExposeMetadata = (payload: DiscoveryEntry, homeAssistant: zhc.Expose["homeassistant"]): void => {
+    if (!homeAssistant) {
         return;
     }
 
-    if (typeof metadata.entityCategory === "string") {
-        payload.entity_category = metadata.entityCategory;
+    if (homeAssistant.type !== undefined) {
+        payload.type = homeAssistant.type;
     }
 
-    if (typeof metadata.deviceClass === "string") {
-        payload.device_class = metadata.deviceClass;
+    if (homeAssistant.schema !== undefined) {
+        payload.discovery_payload.schema = homeAssistant.schema;
     }
 
-    if (typeof metadata.enabledByDefault === "boolean") {
-        payload.enabled_by_default = metadata.enabledByDefault;
+    if (homeAssistant.entityCategory !== undefined) {
+        payload.discovery_payload.entity_category = homeAssistant.entityCategory;
     }
 
-    if (typeof metadata.icon === "string") {
-        payload.icon = metadata.icon;
+    if (homeAssistant.deviceClass !== undefined) {
+        payload.discovery_payload.device_class = homeAssistant.deviceClass;
+    }
+
+    if (homeAssistant.enabledByDefault !== undefined) {
+        payload.discovery_payload.enabled_by_default = homeAssistant.enabledByDefault;
+    }
+
+    if (homeAssistant.icon !== undefined) {
+        payload.discovery_payload.icon = homeAssistant.icon;
     }
 };
 
@@ -1412,7 +1419,7 @@ export class HomeAssistant extends Extension {
         }
 
         for (const entry of discoveryEntries) {
-            applyHomeAssistantExposeMetadata(entry.discovery_payload, firstExpose.homeassistant);
+            applyHomeAssistantExposeMetadata(entry, firstExpose.homeassistant);
 
             // If a sensor has entity category `config`, then change
             // it to `diagnostic`. Sensors have no input, so can't be configured.
@@ -1424,6 +1431,17 @@ export class HomeAssistant extends Extension {
             // Event entities cannot have an entity_category set.
             if (entry.type === "event" && entry.discovery_payload.entity_category) {
                 delete entry.discovery_payload.entity_category;
+            }
+
+            // Infrared entities or type receiver most not truncate the value.
+            // Infrared entities of type emitter should not have a value template
+            if (entry.type === "infrared") {
+                if (entry.discovery_payload.schema === "receiver") {
+                    entry.discovery_payload.value_template =
+                        "{{ iif(as_timestamp(now()) | int - value_json.learned_ir_timings.timestamp / 1000 < 5, value_json.learned_ir_timings | tojson, None) }}";
+                } else {
+                    delete entry.discovery_payload.value_template;
+                }
             }
 
             // Let Home Assistant generate entity name when device_class is present.
@@ -1518,6 +1536,12 @@ export class HomeAssistant extends Extension {
             if (settings.get().advanced.output === "json") {
                 await this.mqtt.publish(`${data.entity.name}/action`, value, {});
             }
+        }
+        /**
+         * Clear the MQTT Infrared receiver learned IR timings to avoid sensting stale messages
+         */
+        if (entity.options.homeassistant && entity.options.homeassistant.type === "infrared" && entity.options.homeassistant.schema === "receiver") {
+            await this.publishEntityState(data.entity, {learned_ir_timings: ""});
         }
     }
 
