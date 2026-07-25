@@ -141,7 +141,7 @@ const NUMERIC_DISCOVERY_LOOKUP: {[s: string]: KeyValue} = {
     alarm_temperature_min: {device_class: "temperature", entity_category: "config", icon: "mdi:thermometer-low"},
     angle: {icon: "angle-acute"},
     angle_axis: {icon: "angle-acute"},
-    apparent_temperature: {device_class: "temperature", icon: "mdi:thermometer-lines", preserve_name: true, state_class: "measurement"},
+    apparent_temperature: {device_class: "temperature", icon: "mdi:thermometer-lines", state_class: "measurement"},
     aqi: {device_class: "aqi", state_class: "measurement"},
     auto_relock_time: {entity_category: "config", icon: "mdi:timer"},
     away_preset_days: {entity_category: "config", icon: "mdi:timer"},
@@ -183,7 +183,7 @@ const NUMERIC_DISCOVERY_LOOKUP: {[s: string]: KeyValue} = {
         entity_category: "diagnostic",
         state_class: "measurement",
     },
-    dew_point: {device_class: "temperature", icon: "mdi:thermometer-water", preserve_name: true, state_class: "measurement"},
+    dew_point: {device_class: "temperature", icon: "mdi:thermometer-water", state_class: "measurement"},
     distance: {device_class: "distance", state_class: "measurement"},
     duration: {entity_category: "config", icon: "mdi:timer"},
     eco2: {device_class: "volatile_organic_compounds_parts", state_class: "measurement"},
@@ -198,10 +198,10 @@ const NUMERIC_DISCOVERY_LOOKUP: {[s: string]: KeyValue} = {
     frequency: {device_class: "frequency", state_class: "measurement"},
     gas: {device_class: "gas", state_class: "total_increasing", icon: "mdi:meter-gas"},
     gas_density: {icon: "mdi:google-circles-communities", state_class: "measurement"},
-    gust_speed: {device_class: "wind_speed", icon: "mdi:weather-windy-variant", preserve_name: true, state_class: "measurement"},
+    gust_speed: {device_class: "wind_speed", icon: "mdi:weather-windy-variant", state_class: "measurement"},
     hcho: {icon: "mdi:air-filter", state_class: "measurement"},
     heat_stress: {icon: "mdi:weather-sunny-alert", state_class: "measurement"},
-    humidex: {device_class: "temperature", icon: "mdi:thermometer-alert", preserve_name: true, state_class: "measurement"},
+    humidex: {device_class: "temperature", icon: "mdi:thermometer-alert", state_class: "measurement"},
     humidity: {device_class: "humidity", state_class: "measurement"},
     humidity_calibration: {entity_category: "config", icon: "mdi:wrench-clock"},
     humidity_max: {entity_category: "config", icon: "mdi:water-percent"},
@@ -301,7 +301,7 @@ const NUMERIC_DISCOVERY_LOOKUP: {[s: string]: KeyValue} = {
         device_class: "water",
         state_class: "total_increasing",
     },
-    wind_chill: {device_class: "temperature", icon: "mdi:snowflake-thermometer", preserve_name: true, state_class: "measurement"},
+    wind_chill: {device_class: "temperature", icon: "mdi:snowflake-thermometer", state_class: "measurement"},
     wind_direction: {icon: "mdi:compass-outline", state_class: "measurement"},
     wind_speed: {device_class: "wind_speed", icon: "mdi:weather-windy", state_class: "measurement"},
     x: {icon: "mdi:axis-x-arrow", state_class: "measurement"},
@@ -404,10 +404,6 @@ const applyHomeAssistantExposeMetadata = (payload: KeyValue, homeAssistant: zhc.
 
     if (typeof metadata.icon === "string") {
         payload.icon = metadata.icon;
-    }
-
-    if (typeof metadata.name === "string") {
-        payload.name = metadata.name;
     }
 };
 
@@ -1443,11 +1439,10 @@ export class HomeAssistant extends Extension {
             }
 
             // Let Home Assistant generate entity name when device_class is present.
-            // preserve_name allows device_class and explicit name to coexist (e.g. derived sensors).
+            // preserveName allows device_class and explicit name to coexist (e.g. derived sensors).
             if (
                 entry.discovery_payload.device_class &&
-                !NUMERIC_DISCOVERY_LOOKUP[firstExpose.name]?.preserve_name &&
-                !firstExpose.homeassistant?.name
+                !firstExpose.homeassistant?.preserveName
             ) {
                 delete entry.discovery_payload.name;
             }

@@ -1033,7 +1033,7 @@ describe("Extension: Bridge", () => {
                                 property: "analog_in_temperature",
                                 type: "numeric",
                                 unit: "°C",
-                                homeassistant: {name: "my_sensor_name"},
+                                homeassistant: {preserveName: true},
                             },
                             {
                                 access: 1,
@@ -2737,7 +2737,7 @@ describe("Extension: Bridge", () => {
                                 property: "analog_in_temperature",
                                 type: "numeric",
                                 unit: "°C",
-                                homeassistant: {name: "my_sensor_name"},
+                                homeassistant: {preserveName: true},
                             },
                             {
                                 access: 1,
