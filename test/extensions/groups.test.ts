@@ -6,7 +6,7 @@ import {events as mockMQTTEvents, mockMQTTPublishAsync} from "../mocks/mqtt";
 import {flushPromises} from "../mocks/utils";
 import {devices, groups, events as mockZHEvents, resetGroupMembers, returnDevices} from "../mocks/zigbeeHerdsman";
 
-import stringify from "json-stable-stringify-without-jsonify";
+import {stringify} from "../../lib/util/stringify";
 import * as zhcGlobalStore from "zigbee-herdsman-converters/lib/store";
 import {Controller} from "../../lib/controller";
 import * as settings from "../../lib/util/settings";

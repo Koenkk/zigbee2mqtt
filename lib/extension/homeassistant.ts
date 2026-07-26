@@ -1,10 +1,10 @@
 import assert from "node:assert";
 import bind from "bind-decorator";
-import stringify from "json-stable-stringify-without-jsonify";
 import type * as zhc from "zigbee-herdsman-converters";
 import type {Zh} from "zigbee-herdsman-converters/lib/types";
 import logger from "../util/logger";
 import * as settings from "../util/settings";
+import {stringify} from "../util/stringify";
 import utils, {assertBinaryExpose, assertEnumExpose, assertNumericExpose, isBinaryExpose, isEnumExpose, isNumericExpose} from "../util/utils";
 import Extension from "./extension";
 

@@ -1,7 +1,6 @@
 import assert from "node:assert";
 import bind from "bind-decorator";
 import debounce from "debounce";
-import stringify from "json-stable-stringify-without-jsonify";
 import {Zcl} from "zigbee-herdsman";
 import type {TClusterAttributeKeys} from "zigbee-herdsman/dist/zspec/zcl/definition/clusters-types";
 import type {ClusterName} from "zigbee-herdsman/dist/zspec/zcl/definition/tstype";
@@ -10,6 +9,7 @@ import Group from "../model/group";
 import type {Zigbee2MQTTAPI, Zigbee2MQTTResponseEndpoints} from "../types/api";
 import logger from "../util/logger";
 import * as settings from "../util/settings";
+import {stringify} from "../util/stringify";
 import utils, {DEFAULT_BIND_GROUP_ID} from "../util/utils";
 import Extension from "./extension";
 

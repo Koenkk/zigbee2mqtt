@@ -5,7 +5,7 @@ settings:
   excludeLinksFromLockfile: false
 
 overrides:
-  zigbee-herdsman: 10.6.3
+  zigbee-herdsman: 10.7.0
 
 importers:
 
@@ -35,9 +35,6 @@ importers:
       js-yaml:
         specifier: ^5.2.1
         version: 5.2.1
-      json-stable-stringify-without-jsonify:
-        specifier: ^1.0.1
-        version: 1.0.1
       jszip:
         specifier: ^3.10.1
         version: 3.10.1
@@ -66,11 +63,11 @@ importers:
         specifier: ^8.21.1
         version: 8.21.1
       zigbee-herdsman:
-        specifier: 10.6.3
-        version: 10.6.3
+        specifier: 10.7.0
+        version: 10.7.0
       zigbee-herdsman-converters:
-        specifier: 26.85.0
-        version: 26.85.0
+        specifier: 26.87.0
+        version: 26.87.0
       zigbee2mqtt-frontend:
         specifier: 0.9.21
         version: 0.9.21
@@ -1047,9 +1044,6 @@ packages:
   json-schema-traverse@1.0.0:
     resolution: {integrity: sha512-NM8/P9n3XjXhIZn1lLhkFaACTOURQXjWhV4BA/RnOv8xvgqtqpAX9IO4mRQxSx1Rlo4tqzeqb0sOlruaOy3dug==}
 
-  json-stable-stringify-without-jsonify@1.0.1:
-    resolution: {integrity: sha512-Bdboy+l7tA3OGW6FjyFHWkP5LuByj1Tk33Ljyq0axyzdk9//JSi2u3fP1QSmd1KNwq6VOKYGlAu87CisVir6Pw==}
-
   jszip@3.10.1:
     resolution: {integrity: sha512-xXDvecyTpGLrqFrvkrUSoxxfJI5AH7U8zxxtVclpsUtMCq4JQ290LY8AW5c7Ggnr/Y/oK+bQMbqK2qmtk3pN4g==}
 
@@ -1523,12 +1517,12 @@ packages:
       utf-8-validate:
         optional: true
 
-  zigbee-herdsman-converters@26.85.0:
-    resolution: {integrity: sha512-pqPq5ftbRSS/sxS6sM0Ax3zl/Z/NbDYspQriUSaQemIs4PEfa6Pqwz4F0tCi/kCg2XQNjV5fdfuqrZiiTJuCRQ==}
+  zigbee-herdsman-converters@26.87.0:
+    resolution: {integrity: sha512-6VMSfFzclR0bue3QVMtYrjS4dpadutz3WA5tLXwup4acZ5clsFm2znvJQ67/FGj+coKpXS7mhCIK8ud8RqiGcA==}
     engines: {node: '>=20.15.0'}
 
-  zigbee-herdsman@10.6.3:
-    resolution: {integrity: sha512-LSscRq7Q71J8naavNimH6twhcOMNn4lI+mar5AURvH4nnlDBtrrNy36t05TiMs6ZA4PkiYnpGeaSEU6ZMlus/w==}
+  zigbee-herdsman@10.7.0:
+    resolution: {integrity: sha512-eKp9Y2/+RJ+SxVttud1gkSvm5u5Vl5Uk6uWjmcZRVEdaMpcoJduNHQHSapXFtTqmYVgpsnydIhva7k5xAePZFg==}
 
   zigbee-on-host@0.2.4:
     resolution: {integrity: sha512-NIG6CWp+Yfn7PjqEIRvenHqpwT1U7rSkyimnFOUIFpnmxQOJKrmcwWDfn6WjbU/YIYYWSQPlj+g13icu1xwlyg==}
@@ -2298,8 +2292,6 @@ snapshots:
 
   json-schema-traverse@1.0.0: {}
 
-  json-stable-stringify-without-jsonify@1.0.1: {}
-
   jszip@3.10.1:
     dependencies:
       lie: 3.3.0
@@ -2840,15 +2832,15 @@ snapshots:
 
   ws@8.21.1: {}
 
-  zigbee-herdsman-converters@26.85.0:
+  zigbee-herdsman-converters@26.87.0:
     dependencies:
       iconv-lite: 0.7.3
       semver: 7.8.5
-      zigbee-herdsman: 10.6.3
+      zigbee-herdsman: 10.7.0
     transitivePeerDependencies:
       - supports-color
 
-  zigbee-herdsman@10.6.3:
+  zigbee-herdsman@10.7.0:
     dependencies:
       '@date-fns/tz': 1.5.0
       '@serialport/bindings-cpp': 13.0.1
