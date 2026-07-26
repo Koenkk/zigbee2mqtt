@@ -401,14 +401,6 @@ const applyHomeAssistantExposeMetadata = (payload: DiscoveryEntry, homeAssistant
     if (homeAssistant.icon !== undefined) {
         payload.discovery_payload.icon = homeAssistant.icon;
     }
-
-    if (homeAssistant.valueTemplate !== undefined) {
-        if (homeAssistant.valueTemplate === null) {
-            delete payload.discovery_payload.value_template;
-        } else {
-            payload.discovery_payload.value_template = homeAssistant.valueTemplate;
-        }
-    }
 };
 
 /**
