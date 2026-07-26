@@ -40,6 +40,9 @@ const CLUSTERS = {
     msSoilMoisture: Zcl.Clusters.msSoilMoisture.ID,
     msCO2: Zcl.Clusters.msCO2.ID,
     genAnalogInput: Zcl.Clusters.genAnalogInput.ID,
+    genAnalogOutput: Zcl.Clusters.genAnalogOutput.ID,
+    genBinaryInput: Zcl.Clusters.genBinaryInput.ID,
+    genBinaryOutput: Zcl.Clusters.genBinaryOutput.ID,
 };
 
 export const CUSTOM_CLUSTERS = {
@@ -626,7 +629,7 @@ export const devices = {
                 {target: groups.group_1, cluster: {ID: 6, name: "genOnOff"}},
                 {target: groups.group_1, cluster: {ID: 6, name: "genLevelCtrl"}},
             ]),
-            new Endpoint(2, [0, 1, 3, 15, 64512], [25, 6], "0x0017880104e45517"),
+            new Endpoint(2, [0, 1, 3, 64512], [25, 6], "0x0017880104e45517"),
         ],
         InterviewState.Successful,
         "Battery",
@@ -637,9 +640,17 @@ export const devices = {
         "0x0017880104e45518",
         6536,
         0,
-        [new Endpoint(1, [0, 12], [0, 3, 4, 6, 8, 5], "0x0017880104e45518", [],{
-            genAnalogInput: {description: "my_sensor_name", applicationType: 0}
-        })],
+        [
+            new Endpoint(1, [0, 12], [0, 3, 4, 6, 8, 5], "0x0017880104e45518", [], {
+                genAnalogInput: {description: "my_sensor_name", applicationType: 0},
+            }),
+            new Endpoint(2, [0, 12, 13, 15, 16], [], "0x0017880104e45518", [], {
+                genAnalogInput: {description: "my_sensor2_name", applicationType: 0},
+                genAnalogOutput: {description: "my_number_name"},
+                genBinaryInput: {description: "my_binary_name"},
+                genBinaryOutput: {description: "my_switch_name"},
+            }),
+        ],
         InterviewState.Successful,
         "Battery",
         "notSupportedModelID",
@@ -930,7 +941,7 @@ export const devices = {
         33901,
         4476,
         [
-            new Endpoint(1, [0, 4, 3, 5, 10, 258, 13, 19, 6, 1, 1030, 8, 768, 1027, 1029, 1026], [0, 3, 4, 6, 8, 5], "0x90fd9ffffe4b64ax", [], {
+            new Endpoint(1, [0, 4, 3, 5, 10, 258, 19, 6, 1, 1030, 8, 768, 1027, 1029, 1026], [0, 3, 4, 6, 8, 5], "0x90fd9ffffe4b64ax", [], {
                 lightingColorCtrl: {colorCapabilities: 254},
             }),
         ],
@@ -944,7 +955,7 @@ export const devices = {
         33901,
         4476,
         [
-            new Endpoint(1, [0, 4, 3, 5, 10, 258, 13, 19, 6, 1, 1030, 8, 768, 1027, 1029, 1026], [0, 3, 4, 6, 8, 5], "0x90fd9ffffe4b64aa", [], {
+            new Endpoint(1, [0, 4, 3, 5, 10, 258, 19, 6, 1, 1030, 8, 768, 1027, 1029, 1026], [0, 3, 4, 6, 8, 5], "0x90fd9ffffe4b64aa", [], {
                 seMetering: {multiplier: 1, divisor: 10000},
             }),
         ],
@@ -960,7 +971,7 @@ export const devices = {
         33901,
         4476,
         [
-            new Endpoint(1, [0, 4, 3, 5, 10, 258, 13, 19, 6, 1, 1030, 8, 768, 1027, 1029, 1026], [0, 3, 4, 6, 8, 5], "0x90fd9ffffe4b64aa", [], {
+            new Endpoint(1, [0, 4, 3, 5, 10, 258, 19, 6, 1, 1030, 8, 768, 1027, 1029, 1026], [0, 3, 4, 6, 8, 5], "0x90fd9ffffe4b64aa", [], {
                 seMetering: {multiplier: 1, divisor: 10000},
             }),
         ],
@@ -975,7 +986,7 @@ export const devices = {
         "0x90fd9ffffe4b64ac",
         33901,
         4476,
-        [new Endpoint(1, [0, 4, 3, 5, 10, 258, 13, 19, 6, 1, 1030, 8, 768, 1027, 1029, 1026], [0, 3, 4, 6, 8, 5], "0x90fd9ffffe4b64aa", [], {})],
+        [new Endpoint(1, [0, 4, 3, 5, 10, 258, 19, 6, 1, 1030, 8, 768, 1027, 1029, 1026], [0, 3, 4, 6, 8, 5], "0x90fd9ffffe4b64aa", [], {})],
         InterviewState.Successful,
         "Mains (single phase)",
         "qnazj70",

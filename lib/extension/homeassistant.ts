@@ -1106,7 +1106,10 @@ export class HomeAssistant extends Extension {
                         mockProperties: [{property: firstExpose.property, value: null}],
                         object_id: endpointName ? `switch_${firstExpose.name}_${endpointName}` : `switch_${firstExpose.name}`,
                         discovery_payload: {
-                            name: endpointName ? /* v8 ignore next */ `${firstExpose.label} ${endpointName}` : firstExpose.label,
+                            name:
+                                endpointName && !firstExpose.homeassistant?.preserveName
+                                    ? /* v8 ignore next */ `${firstExpose.label} ${endpointName}`
+                                    : firstExpose.label,
                             value_template:
                                 typeof firstExpose.value_on === "boolean"
                                     ? `{% if value_json["${firstExpose.property}"] %}true{% else %}false{% endif %}`
@@ -1127,7 +1130,10 @@ export class HomeAssistant extends Extension {
                         object_id: endpointName ? `${firstExpose.name}_${endpointName}` : `${firstExpose.name}`,
                         mockProperties: [{property: firstExpose.property, value: null}],
                         discovery_payload: {
-                            name: endpointName ? /* v8 ignore next */ `${firstExpose.label} ${endpointName}` : firstExpose.label,
+                            name:
+                                endpointName && !firstExpose.homeassistant?.preserveName
+                                    ? /* v8 ignore next */ `${firstExpose.label} ${endpointName}`
+                                    : firstExpose.label,
                             value_template: `{{ value_json["${firstExpose.property}"] }}`,
                             payload_on: firstExpose.value_on,
                             payload_off: firstExpose.value_off,
@@ -1152,7 +1158,8 @@ export class HomeAssistant extends Extension {
                         object_id: endpointName ? `${firstExpose.name}_${endpointName}` : `${firstExpose.name}`,
                         mockProperties: [{property: firstExpose.property, value: null}],
                         discovery_payload: {
-                            name: endpointName ? `${firstExpose.label} ${endpointName}` : firstExpose.label,
+                            name:
+                                endpointName && !firstExpose.homeassistant?.preserveName ? `${firstExpose.label} ${endpointName}` : firstExpose.label,
                             value_template: `{{ value_json["${firstExpose.property}"] }}`,
                             command_topic: true,
                             command_topic_prefix: endpointName,
@@ -1203,7 +1210,7 @@ export class HomeAssistant extends Extension {
                     object_id: endpointName ? `${firstExpose.name}_${endpointName}` : `${firstExpose.name}`,
                     mockProperties: [{property: firstExpose.property, value: null}],
                     discovery_payload: {
-                        name: endpointName ? `${firstExpose.label} ${endpointName}` : firstExpose.label,
+                        name: endpointName && !firstExpose.homeassistant?.preserveName ? `${firstExpose.label} ${endpointName}` : firstExpose.label,
                         value_template: `{{ value_json["${firstExpose.property}"] }}`,
                         enabled_by_default: !allowsSet,
                         ...(firstExpose.unit && {unit_of_measurement: firstExpose.unit}),
@@ -1440,10 +1447,7 @@ export class HomeAssistant extends Extension {
 
             // Let Home Assistant generate entity name when device_class is present.
             // preserveName allows device_class and explicit name to coexist (e.g. derived sensors).
-            if (
-                entry.discovery_payload.device_class &&
-                !firstExpose.homeassistant?.preserveName
-            ) {
+            if (entry.discovery_payload.device_class && !firstExpose.homeassistant?.preserveName) {
                 delete entry.discovery_payload.name;
             }
 
