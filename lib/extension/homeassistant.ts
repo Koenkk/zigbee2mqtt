@@ -1426,7 +1426,7 @@ export class HomeAssistant extends Extension {
         }
 
         for (const entry of discoveryEntries) {
-            applyHomeAssistantExposeMetadata(entry, (firstExpose.homeassistant as HomeAssistantExt));
+            applyHomeAssistantExposeMetadata(entry, firstExpose.homeassistant as HomeAssistantExt);
 
             // If a sensor has entity category `config`, then change
             // it to `diagnostic`. Sensors have no input, so can't be configured.
