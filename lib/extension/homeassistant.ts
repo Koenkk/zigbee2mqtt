@@ -404,8 +404,9 @@ const applyHomeAssistantExposeMetadata = (payload: DiscoveryEntry, homeAssistant
     if (homeAssistant.valueTemplate !== undefined) {
         if (homeAssistant.valueTemplate === null) {
             delete payload.discovery_payload.value_template;
-        } else { 
+        } else {
             payload.discovery_payload.value_template = homeAssistant.valueTemplate;
+        }
     }
 };
 
