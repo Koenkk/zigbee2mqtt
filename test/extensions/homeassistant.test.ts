@@ -1700,7 +1700,11 @@ describe("Extension: HomeAssistant", () => {
     });
 
     it("Should discover an infrared emitter entity", () => {
-        const infraredEmitterExpose = new zhc.Text("emitter", zhc.access.SET).withHomeAssistant({type: "infrared", schema: "emitter"});
+        const infraredEmitterExpose = new zhc.Text("emitter", zhc.access.SET).withHomeAssistant({
+            type: "infrared",
+            schema: "emitter",
+            valueTemplate: null,
+        });
         const device = {
             definition: {},
             isDevice: (): boolean => true,
@@ -1721,10 +1725,15 @@ describe("Extension: HomeAssistant", () => {
             command_topic: true,
             state_topic: 0,
         });
+        expect(infrared!.discovery_payload).not.toHaveProperty("value_template");
     });
 
     it("Should discover an infrared receiver entity", () => {
-        const infraredReceiverExpose = new zhc.Text("receiver", zhc.access.STATE).withHomeAssistant({type: "infrared", schema: "receiver"});
+        const infraredReceiverExpose = new zhc.Text("receiver", zhc.access.STATE).withHomeAssistant({
+            type: "infrared",
+            schema: "receiver",
+            valueTemplate: "{{ json_value.emitter }}",
+        });
         const device = {
             definition: {},
             isDevice: (): boolean => true,
@@ -1742,7 +1751,6 @@ describe("Extension: HomeAssistant", () => {
         expect(infrared!.discovery_payload).toMatchObject({
             name: "Receiver",
             schema: "receiver",
-            value_template: expect.stringMatching(/^\{\{[\s\S]*\}\}$/),
         });
         expect(infrared!.discovery_payload).toHaveProperty("value_template");
     });
