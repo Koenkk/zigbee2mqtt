@@ -1742,7 +1742,7 @@ describe("Extension: HomeAssistant", () => {
         expect(infrared!.discovery_payload).toMatchObject({
             name: "Receiver",
             schema: "receiver",
-            value_template: expect.any,
+            value_template: expect.stringMatching(/^\{\{[\s\S]*\}\}$/),
         });
         expect(infrared!.discovery_payload).toHaveProperty("value_template");
     });
