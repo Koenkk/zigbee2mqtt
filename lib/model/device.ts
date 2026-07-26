@@ -18,6 +18,7 @@ export default class Device {
     public zh: zh.Device;
     public definition?: zhc.Definition;
     private _definitionModelID?: string;
+    private _isResolving?: boolean;
 
     get ieeeAddr(): string {
         return this.zh.ieeeAddr;
@@ -64,9 +65,11 @@ export default class Device {
     }
 
     async resolveDefinition(ignoreCache = false): Promise<void> {
-        if (this.interviewed && (!this.definition || this._definitionModelID !== this.zh.modelID || ignoreCache)) {
+        if (this.interviewed && !this._isResolving && (!this.definition || this._definitionModelID !== this.zh.modelID || ignoreCache)) {
+            this._isResolving = true;
             this.definition = await zhc.findByDevice(this.zh, true);
             this._definitionModelID = this.zh.modelID;
+            this._isResolving = false;
         }
     }
 
