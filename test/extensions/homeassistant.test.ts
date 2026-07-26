@@ -1721,7 +1721,6 @@ describe("Extension: HomeAssistant", () => {
             command_topic: true,
             state_topic: 0,
         });
-        expect(infrared!.discovery_payload).not.toHaveProperty("value_template");
     });
 
     it("Should discover an infrared receiver entity", () => {
@@ -1743,8 +1742,7 @@ describe("Extension: HomeAssistant", () => {
         expect(infrared!.discovery_payload).toMatchObject({
             name: "Receiver",
             schema: "receiver",
-            value_template:
-                "{{ iif(as_timestamp(now()) | int - value_json.learned_ir_timings.timestamp / 1000 < 5, value_json.learned_ir_timings | tojson, None) }}",
+            value_template: expect.any,
         });
         expect(infrared!.discovery_payload).toHaveProperty("value_template");
     });

@@ -372,7 +372,8 @@ const featurePropertyWithoutEndpoint = (feature: zhc.Feature): string => {
     return feature.property;
 };
 
-const applyHomeAssistantExposeMetadata = (payload: DiscoveryEntry, homeAssistant: zhc.Expose["homeassistant"]): void => {
+type HomeAssistantExt = zhc.Expose["homeassistant"] & {valueTemplate?: string | null};
+const applyHomeAssistantExposeMetadata = (payload: DiscoveryEntry, homeAssistant: HomeAssistantExt): void => {
     if (!homeAssistant) {
         return;
     }
@@ -1425,7 +1426,7 @@ export class HomeAssistant extends Extension {
         }
 
         for (const entry of discoveryEntries) {
-            applyHomeAssistantExposeMetadata(entry, firstExpose.homeassistant);
+            applyHomeAssistantExposeMetadata(entry, (firstExpose.homeassistant as HomeAssistantExt));
 
             // If a sensor has entity category `config`, then change
             // it to `diagnostic`. Sensors have no input, so can't be configured.
