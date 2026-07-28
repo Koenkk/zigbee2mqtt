@@ -10,8 +10,10 @@ jobs:
         runs-on: ubuntu-latest
         steps:
             - name: Fail PR to master
+              env:
+                  PR_TITLE: ${{ github.event.pull_request.title }}
               run: |
-                  if [[ "${{ github.event.pull_request.title }}" == "chore(dev): release"* ]]; then
+                  if [[ "$PR_TITLE" == "chore(dev): release"* ]]; then
                     echo "PR title starts with 'chore(dev): release', allowing PR"
                   else
                     echo "Pull requests to the master branch are not allowed, target dev branch"
