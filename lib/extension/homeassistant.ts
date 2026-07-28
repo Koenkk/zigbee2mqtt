@@ -373,11 +373,7 @@ const featurePropertyWithoutEndpoint = (feature: zhc.Feature): string => {
     return feature.property;
 };
 
-const cleanName = (name: string): string => {
-    const cleanedName = name.replace(/^(?:analog_in_|analog_out_)/, "");
-
-    return cleanedName;
-};
+const cleanName = (name: string): string => name.replace(/^(?:analog_in_|analog_out_)/, "");
 
 const applyHomeAssistantExposeMetadata = (payload: DiscoveryEntry, homeAssistant: zhc.Expose["homeassistant"]): void => {
     if (!homeAssistant) {
