@@ -5,7 +5,7 @@ import * as data from "./mocks/data";
 import {readFileSync, rmSync, writeFileSync} from "node:fs";
 import {join} from "node:path";
 import type {IncomingMessage, OutgoingHttpHeader, OutgoingHttpHeaders, RequestListener, Server, ServerResponse} from "node:http";
-import JSZip from "jszip";
+import {zipSync} from "fflate";
 import type {findAllDevices} from "zigbee-herdsman/dist/adapter/adapterDiscovery";
 import type {OnboardFailureData, OnboardInitData, OnboardSubmitResponse} from "../lib/types/api";
 import {onboard} from "../lib/util/onboarding";
@@ -540,205 +540,132 @@ describe("Onboarding", () => {
         await responsePromise;
     };
 
-    const createZipRestore = (): Awaited<ReturnType<typeof JSZip.loadAsync>> => {
-        return {
-            files: {
-                "configuration.yaml": {
-                    name: "configuration.yaml",
-                    dir: false,
-                    // @ts-expect-error minimal mock
-                    async: async () => await Promise.resolve(Buffer.from(JSON.stringify(SAMPLE_SETTINGS_SAVE))),
-                },
-                // @ts-expect-error minimal mock
-                "nested/": {
-                    name: "nested/",
-                    dir: true,
-                },
-                "nested/notes.txt": {
-                    name: "nested/notes.txt",
-                    dir: false,
-                    // @ts-expect-error minimal mock
-                    async: async () => await Promise.resolve(Buffer.from("zip-restore")),
-                },
-            },
-        };
-    };
+    const createZipPayload = (files: Parameters<typeof zipSync>[0]): string => Buffer.from(zipSync(files)).toString("base64");
+
+    const createZipRestore = (): string =>
+        createZipPayload({
+            "configuration.yaml": Buffer.from(JSON.stringify(SAMPLE_SETTINGS_SAVE)),
+            nested: {"notes.txt": Buffer.from("zip-restore")},
+        });
 
     it("extracts uploaded ZIP files into the data path", async () => {
         data.removeConfiguration();
-        const loadAsyncSpy = vi.spyOn(JSZip, "loadAsync").mockResolvedValue(createZipRestore());
 
-        try {
-            let p;
-            const submitData = await new Promise<OnboardSubmitResponse>((resolve, reject) => {
-                mockHttpOnListen.mockImplementationOnce(async () => {
-                    try {
-                        resolve(await submitZipPayload(Buffer.from("zip").toString("base64"), false, false));
-                    } catch (error) {
-                        reject(error);
-                    }
-                });
-
-                p = onboard();
+        let p;
+        const submitData = await new Promise<OnboardSubmitResponse>((resolve, reject) => {
+            mockHttpOnListen.mockImplementationOnce(async () => {
+                try {
+                    resolve(await submitZipPayload(createZipRestore(), false, false));
+                } catch (error) {
+                    reject(error);
+                }
             });
 
-            await expect(p).resolves.toStrictEqual(true);
-            expect(data.read()).toStrictEqual(SAMPLE_SETTINGS_SAVE);
-            expect(readFileSync(join(data.mockDir, "nested", "notes.txt"), "utf8")).toStrictEqual("zip-restore");
-            expect(loadAsyncSpy).toHaveBeenCalledTimes(1);
-            expect(submitData).toStrictEqual({success: true, frontendUrl: null});
-        } finally {
-            loadAsyncSpy.mockRestore();
-        }
+            p = onboard();
+        });
+
+        await expect(p).resolves.toStrictEqual(true);
+        expect(data.read()).toStrictEqual(SAMPLE_SETTINGS_SAVE);
+        expect(readFileSync(join(data.mockDir, "nested", "notes.txt"), "utf8")).toStrictEqual("zip-restore");
+        expect(submitData).toStrictEqual({success: true, frontendUrl: null});
     });
 
     it("rejects non-zip upload payloads", async () => {
         data.removeConfiguration();
-        const loadAsyncSpy = vi
-            .spyOn(JSZip, "loadAsync")
-            .mockRejectedValueOnce(new Error("Can't find end of central directory : is this a zip file ?"))
-            .mockResolvedValueOnce(createZipRestore());
 
-        try {
-            let p;
-            const [firstSubmitData, secondSubmitData] = await new Promise<[OnboardSubmitResponse, OnboardSubmitResponse]>((resolve, reject) => {
-                mockHttpOnListen.mockImplementationOnce(async () => {
-                    try {
-                        const failedSubmit = await submitZipPayload(Buffer.from("ignored").toString("base64"), true, false);
-                        const successfulSubmit = await submitZipPayload(Buffer.from("zip").toString("base64"), false, false);
+        let p;
+        const [firstSubmitData, secondSubmitData] = await new Promise<[OnboardSubmitResponse, OnboardSubmitResponse]>((resolve, reject) => {
+            mockHttpOnListen.mockImplementationOnce(async () => {
+                try {
+                    const failedSubmit = await submitZipPayload(Buffer.from("not-a-zip-file").toString("base64"), true, false);
+                    const successfulSubmit = await submitZipPayload(createZipRestore(), false, false);
 
-                        resolve([failedSubmit, successfulSubmit]);
-                    } catch (error) {
-                        reject(error);
-                    }
-                });
-
-                p = onboard();
+                    resolve([failedSubmit, successfulSubmit]);
+                } catch (error) {
+                    reject(error);
+                }
             });
 
-            await expect(p).resolves.toStrictEqual(true);
-            expect(loadAsyncSpy).toHaveBeenCalledTimes(2);
-            expect(data.read()).toStrictEqual(SAMPLE_SETTINGS_SAVE);
-            expect(readFileSync(join(data.mockDir, "nested", "notes.txt"), "utf8")).toStrictEqual("zip-restore");
-            expect(firstSubmitData).toStrictEqual({success: false, error: expect.stringContaining("is this a zip file")});
-            expect(secondSubmitData).toStrictEqual({success: true, frontendUrl: null});
-        } finally {
-            loadAsyncSpy.mockRestore();
-        }
+            p = onboard();
+        });
+
+        await expect(p).resolves.toStrictEqual(true);
+        expect(data.read()).toStrictEqual(SAMPLE_SETTINGS_SAVE);
+        expect(readFileSync(join(data.mockDir, "nested", "notes.txt"), "utf8")).toStrictEqual("zip-restore");
+        expect(firstSubmitData).toStrictEqual({success: false, error: expect.stringContaining("invalid zip data")});
+        expect(secondSubmitData).toStrictEqual({success: true, frontendUrl: null});
     });
 
     it("rejects ZIP upload payloads with invalid entry paths", async () => {
         data.removeConfiguration();
-        const loadAsyncSpy = vi
-            .spyOn(JSZip, "loadAsync")
-            .mockResolvedValueOnce({
-                files: {
-                    "/dragons.txt": {
-                        name: "/dragons.txt",
-                        dir: false,
-                        // @ts-expect-error minimal mock
-                        async: async () => await Promise.resolve(Buffer.from("dragons")),
-                    },
-                },
-            })
-            .mockResolvedValueOnce(createZipRestore());
 
-        try {
-            let p;
-            const [firstSubmitData, secondSubmitData] = await new Promise<[OnboardSubmitResponse, OnboardSubmitResponse]>((resolve, reject) => {
-                mockHttpOnListen.mockImplementationOnce(async () => {
-                    try {
-                        const failedSubmit = await submitZipPayload(Buffer.from("zip-invalid-path").toString("base64"), true, false);
-                        const successfulSubmit = await submitZipPayload(Buffer.from("zip").toString("base64"), false, false);
+        let p;
+        const [firstSubmitData, secondSubmitData] = await new Promise<[OnboardSubmitResponse, OnboardSubmitResponse]>((resolve, reject) => {
+            mockHttpOnListen.mockImplementationOnce(async () => {
+                try {
+                    const failedSubmit = await submitZipPayload(createZipPayload({"/dragons.txt": Buffer.from("dragons")}), true, false);
+                    const successfulSubmit = await submitZipPayload(createZipRestore(), false, false);
 
-                        resolve([failedSubmit, successfulSubmit]);
-                    } catch (error) {
-                        reject(error);
-                    }
-                });
-
-                p = onboard();
+                    resolve([failedSubmit, successfulSubmit]);
+                } catch (error) {
+                    reject(error);
+                }
             });
 
-            await expect(p).resolves.toStrictEqual(true);
-            expect(firstSubmitData).toStrictEqual({success: false, error: expect.stringContaining("Invalid ZIP entry path")});
-            expect(secondSubmitData).toStrictEqual({success: true, frontendUrl: null});
-            expect(loadAsyncSpy).toHaveBeenCalledTimes(2);
-        } finally {
-            loadAsyncSpy.mockRestore();
-        }
+            p = onboard();
+        });
+
+        await expect(p).resolves.toStrictEqual(true);
+        expect(firstSubmitData).toStrictEqual({success: false, error: expect.stringContaining("Invalid ZIP entry path")});
+        expect(secondSubmitData).toStrictEqual({success: true, frontendUrl: null});
     });
 
     it("rejects ZIP upload payloads with unsafe relative entry paths", async () => {
         data.removeConfiguration();
-        const loadAsyncSpy = vi
-            .spyOn(JSZip, "loadAsync")
-            .mockResolvedValueOnce({
-                files: {
-                    "../dragons.txt": {
-                        name: "../dragons.txt",
-                        dir: false,
-                        // @ts-expect-error minimal mock
-                        async: async () => await Promise.resolve(Buffer.from("dragons")),
-                    },
-                },
-            })
-            .mockResolvedValueOnce(createZipRestore());
 
-        try {
-            let p;
-            const [firstSubmitData, secondSubmitData] = await new Promise<[OnboardSubmitResponse, OnboardSubmitResponse]>((resolve, reject) => {
-                mockHttpOnListen.mockImplementationOnce(async () => {
-                    try {
-                        const failedSubmit = await submitZipPayload(Buffer.from("zip-unsafe-path").toString("base64"), true, false);
-                        const successfulSubmit = await submitZipPayload(Buffer.from("zip").toString("base64"), false, false);
+        let p;
+        const [firstSubmitData, secondSubmitData] = await new Promise<[OnboardSubmitResponse, OnboardSubmitResponse]>((resolve, reject) => {
+            mockHttpOnListen.mockImplementationOnce(async () => {
+                try {
+                    const failedSubmit = await submitZipPayload(createZipPayload({"../dragons.txt": Buffer.from("dragons")}), true, false);
+                    const successfulSubmit = await submitZipPayload(createZipRestore(), false, false);
 
-                        resolve([failedSubmit, successfulSubmit]);
-                    } catch (error) {
-                        reject(error);
-                    }
-                });
-
-                p = onboard();
+                    resolve([failedSubmit, successfulSubmit]);
+                } catch (error) {
+                    reject(error);
+                }
             });
 
-            await expect(p).resolves.toStrictEqual(true);
-            expect(firstSubmitData).toStrictEqual({success: false, error: expect.stringContaining("Unsafe ZIP entry path")});
-            expect(secondSubmitData).toStrictEqual({success: true, frontendUrl: null});
-            expect(loadAsyncSpy).toHaveBeenCalledTimes(2);
-        } finally {
-            loadAsyncSpy.mockRestore();
-        }
+            p = onboard();
+        });
+
+        await expect(p).resolves.toStrictEqual(true);
+        expect(firstSubmitData).toStrictEqual({success: false, error: expect.stringContaining("Unsafe ZIP entry path")});
+        expect(secondSubmitData).toStrictEqual({success: true, frontendUrl: null});
     });
 
     it("handles empty ZIP upload payloads", async () => {
         data.removeConfiguration();
-        const loadAsyncSpy = vi.spyOn(JSZip, "loadAsync").mockResolvedValue(createZipRestore());
 
-        try {
-            let p;
-            const [firstSubmitData, secondSubmitData] = await new Promise<[OnboardSubmitResponse, OnboardSubmitResponse]>((resolve, reject) => {
-                mockHttpOnListen.mockImplementationOnce(async () => {
-                    try {
-                        const failedSubmit = await submitZipPayload("", true, false);
-                        const successfulSubmit = await submitZipPayload(Buffer.from("zip").toString("base64"), false, false);
+        let p;
+        const [firstSubmitData, secondSubmitData] = await new Promise<[OnboardSubmitResponse, OnboardSubmitResponse]>((resolve, reject) => {
+            mockHttpOnListen.mockImplementationOnce(async () => {
+                try {
+                    const failedSubmit = await submitZipPayload("", true, false);
+                    const successfulSubmit = await submitZipPayload(createZipRestore(), false, false);
 
-                        resolve([failedSubmit, successfulSubmit]);
-                    } catch (error) {
-                        reject(error);
-                    }
-                });
-
-                p = onboard();
+                    resolve([failedSubmit, successfulSubmit]);
+                } catch (error) {
+                    reject(error);
+                }
             });
 
-            await expect(p).resolves.toStrictEqual(true);
-            expect(firstSubmitData).toStrictEqual({success: false, error: "Invalid ZIP payload: missing content"});
-            expect(secondSubmitData).toStrictEqual({success: true, frontendUrl: null});
-            expect(loadAsyncSpy).toHaveBeenCalledTimes(1);
-        } finally {
-            loadAsyncSpy.mockRestore();
-        }
+            p = onboard();
+        });
+
+        await expect(p).resolves.toStrictEqual(true);
+        expect(firstSubmitData).toStrictEqual({success: false, error: "Invalid ZIP payload: missing content"});
+        expect(secondSubmitData).toStrictEqual({success: true, frontendUrl: null});
     });
 
     it("handles request stream errors for submit endpoint", async () => {
@@ -767,32 +694,26 @@ describe("Onboarding", () => {
 
     it("handles request stream errors for submit-zip endpoint", async () => {
         data.removeConfiguration();
-        const loadAsyncSpy = vi.spyOn(JSZip, "loadAsync").mockResolvedValue(createZipRestore());
 
-        try {
-            let p;
-            const [firstSubmitData, secondSubmitData] = await new Promise<[OnboardSubmitResponse, OnboardSubmitResponse]>((resolve, reject) => {
-                mockHttpOnListen.mockImplementationOnce(async () => {
-                    try {
-                        const failedSubmit = await submitZipPayload("", true, true);
-                        const successfulSubmit = await submitZipPayload(Buffer.from("zip").toString("base64"), false, false);
+        let p;
+        const [firstSubmitData, secondSubmitData] = await new Promise<[OnboardSubmitResponse, OnboardSubmitResponse]>((resolve, reject) => {
+            mockHttpOnListen.mockImplementationOnce(async () => {
+                try {
+                    const failedSubmit = await submitZipPayload("", true, true);
+                    const successfulSubmit = await submitZipPayload(createZipRestore(), false, false);
 
-                        resolve([failedSubmit, successfulSubmit]);
-                    } catch (error) {
-                        reject(error);
-                    }
-                });
-
-                p = onboard();
+                    resolve([failedSubmit, successfulSubmit]);
+                } catch (error) {
+                    reject(error);
+                }
             });
 
-            await expect(p).resolves.toStrictEqual(true);
-            expect(firstSubmitData).toStrictEqual({success: false, error: "request error submit-zip"});
-            expect(secondSubmitData).toStrictEqual({success: true, frontendUrl: null});
-            expect(loadAsyncSpy).toHaveBeenCalledTimes(1);
-        } finally {
-            loadAsyncSpy.mockRestore();
-        }
+            p = onboard();
+        });
+
+        await expect(p).resolves.toStrictEqual(true);
+        expect(firstSubmitData).toStrictEqual({success: false, error: "request error submit-zip"});
+        expect(secondSubmitData).toStrictEqual({success: true, frontendUrl: null});
     });
 
     it("passes unknown onboarding routes to static file server", async () => {
