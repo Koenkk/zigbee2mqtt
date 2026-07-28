@@ -1,8 +1,8 @@
 import path from "node:path";
 import type {ValidateFunction} from "ajv";
 import Ajv from "ajv";
-import objectAssignDeep from "object-assign-deep";
 import data from "./data";
+import {objectAssignDeep, objectAssignDeepNoMutate} from "./objectAssignDeep";
 import schemaJson from "./settings.schema.json";
 import utils from "./utils";
 import yaml from "./yaml";
@@ -368,8 +368,7 @@ function read(): Partial<Settings> {
             s[type] = {};
             for (const file of files) {
                 const content = yaml.readIfExists(data.joinPath(file));
-                // @ts-expect-error noMutate not typed properly
-                s[type] = objectAssignDeep.noMutate(s[type], content);
+                s[type] = objectAssignDeepNoMutate(s[type], content);
             }
         }
     };
@@ -480,8 +479,7 @@ export function set(path: string[], value: string | number | boolean | KeyValue)
 
 export function apply(settings: Record<string, unknown>, throwOnError = true): boolean {
     getPersistedSettings(); // Ensure _settings is initialized.
-    // @ts-expect-error noMutate not typed properly
-    const newSettings = objectAssignDeep.noMutate(_settings, settings);
+    const newSettings = objectAssignDeepNoMutate(_settings, settings);
 
     utils.removeNullPropertiesFromObject(newSettings, NULLABLE_SETTINGS);
 
