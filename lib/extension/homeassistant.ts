@@ -376,11 +376,6 @@ const featurePropertyWithoutEndpoint = (feature: zhc.Feature): string => {
 const cleanName = (name: string): string => {
     const cleanedName = name.replace(/^(?:analog_in_|analog_out_)/, "");
 
-    // // seems not to be needed
-    // if (endpoint && cleanedName.endsWith(`_${endpoint}`)) {
-    //    cleanedName = cleanedName.slice(0, -endpoint.length - 1);
-    //}
-
     return cleanedName;
 };
 
