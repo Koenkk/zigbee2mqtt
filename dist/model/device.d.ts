@@ -2,6 +2,7 @@ import type { OtaExtraMetas } from "zigbee-herdsman/dist/controller/tstype";
 import type { CustomClusters } from "zigbee-herdsman/dist/zspec/zcl/definition/tstype";
 import * as zhc from "zigbee-herdsman-converters";
 export default class Device {
+    #private;
     zh: zh.Device;
     definition?: zhc.Definition;
     private _definitionModelID?;
