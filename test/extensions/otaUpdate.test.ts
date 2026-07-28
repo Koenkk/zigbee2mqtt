@@ -9,7 +9,7 @@ import {devices, events as mockZHEvents} from "../mocks/zigbeeHerdsman";
 
 import {join} from "node:path";
 import {existsSync, readFileSync, rmSync} from "node:fs";
-import stringify from "json-stable-stringify-without-jsonify";
+import {stringify} from "../../lib/util/stringify";
 import {Controller} from "../../lib/controller";
 import OTAUpdate from "../../lib/extension/otaUpdate";
 import * as settings from "../../lib/util/settings";

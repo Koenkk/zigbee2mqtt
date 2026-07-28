@@ -2,6 +2,7 @@ import {exec} from "node:child_process";
 import fs from "node:fs";
 import path from "node:path";
 import {describe, expect, it, vi} from "vitest";
+import {stringify} from "../lib/util/stringify";
 import utils, {assertString} from "../lib/util/utils";
 
 // keep the implementations, just spy
@@ -154,5 +155,38 @@ describe("Utils", () => {
                 abc: {},
             },
         });
+    });
+
+    it("stable stringify", () => {
+        expect(
+            stringify({
+                a: "a",
+                b: 2,
+                3: "c",
+                d: Buffer.from([1, 2]),
+                e: new Int16Array([0xfffd, 0xff11]),
+                beef: 0xfacen,
+                zed: new BigUint64Array([1n, 0xffffffffn]),
+                ris: [1, undefined, "b", 0xfeefn, Number.NaN, undefined],
+                ls: undefined,
+            }),
+        ).toStrictEqual(
+            `{"3":"c","a":"a","b":2,"beef":"64206","d":{"data":[1,2],"type":"Buffer"},"e":{"0":-3,"1":-239},"ris":[1,null,"b","65263",null,null],"zed":{"0":"1","1":"4294967295"}}`,
+        );
+        // @ts-expect-error intentional to reach code for coverage
+        expect(stringify(undefined)).toStrictEqual("null");
+
+        const circularObj: Record<string, unknown> = {a: 1, b: undefined};
+        circularObj.b = circularObj;
+
+        expect(stringify(circularObj)).toStrictEqual(`{"a":1,"b":"[Circular]"}`);
+
+        const toJSONIsString = {a: 1, toJSON: () => `{"a":1}`};
+
+        expect(stringify(toJSONIsString)).toStrictEqual(`"{\\"a\\":1}"`);
+
+        const toJSONIsNull = {a: 1, toJSON: () => null};
+
+        expect(stringify(toJSONIsNull)).toStrictEqual("null");
     });
 });

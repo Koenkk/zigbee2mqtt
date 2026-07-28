@@ -1,8 +1,8 @@
 import fs from "node:fs";
 import path from "node:path";
-import stringify from "json-stable-stringify-without-jsonify";
 import tmp from "tmp";
 import {vi} from "vitest";
+import {stringify} from "../../lib/util/stringify";
 import yaml from "../../lib/util/yaml";
 
 export const mockDir: string = tmp.dirSync().name;

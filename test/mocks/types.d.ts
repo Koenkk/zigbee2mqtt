@@ -1,7 +1,3 @@
-declare module "json-stable-stringify-without-jsonify" {
-    export default function (obj: unknown): string;
-}
-
 declare module "tmp" {
     export function dirSync(): {
         name: string;

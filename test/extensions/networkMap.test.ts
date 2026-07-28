@@ -10,7 +10,7 @@ import {devices, events as mockZHEvents, returnDevices} from "../mocks/zigbeeHer
 
 import fs from "node:fs";
 import path from "node:path";
-import stringify from "json-stable-stringify-without-jsonify";
+import {stringify} from "../../lib/util/stringify";
 import {Controller} from "../../lib/controller";
 import * as settings from "../../lib/util/settings";
 
