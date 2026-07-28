@@ -13,7 +13,12 @@ import ws from "ws";
 import {Controller} from "../../lib/controller";
 import * as settings from "../../lib/util/settings";
 
-let mockHTTPOnRequest: (request: {url: string}, response: number) => void;
+const mockRedirectResponse = {
+    writeHead: vi.fn<(statusCode: number, headers: Record<string, string>) => void>(),
+    end: vi.fn<() => void>(),
+};
+
+let mockHTTPOnRequest: (request: {url: string}, response: number | typeof mockRedirectResponse) => void;
 const mockHTTPEvents: Record<string, EventHandler> = {};
 const mockHTTP = {
     listen: vi.fn(),
@@ -64,7 +69,7 @@ const frontendPath = "frontend-path";
 const deviceIconsPath = path.join(data.mockDir, "device_icons");
 let mockNodeStatic: {[s: string]: Mock} = {};
 
-const mockFinalHandler = vi.fn();
+const mockSendNotFound = vi.fn();
 
 vi.mock("node:http", () => ({
     createServer: vi.fn().mockImplementation((onRequest) => {
@@ -79,11 +84,12 @@ vi.mock("node:https", () => ({
     Agent: vi.fn(),
 }));
 
-vi.mock("express-static-gzip", () => ({
-    default: vi.fn().mockImplementation((path: string) => {
+vi.mock("../../lib/util/staticFileServer", () => ({
+    createStaticFileServer: vi.fn().mockImplementation((path: string) => {
         mockNodeStatic[path] = vi.fn();
         return mockNodeStatic[path];
     }),
+    sendNotFound: vi.fn().mockImplementation((...args: unknown[]) => mockSendNotFound(...args)),
 }));
 
 vi.mock("zigbee2mqtt-windfront", () => ({
@@ -101,12 +107,6 @@ vi.mock("ws", () => ({
     },
 }));
 
-vi.mock("finalhandler", () => ({
-    default: vi.fn().mockImplementation(() => {
-        return mockFinalHandler;
-    }),
-}));
-
 const mocksClear = [
     mockHTTP.close,
     mockHTTP.listen,
@@ -118,7 +118,9 @@ const mocksClear = [
     mockWS.emit,
     mockWSClient.send,
     mockWSClient.terminate,
-    mockFinalHandler,
+    mockSendNotFound,
+    mockRedirectResponse.writeHead,
+    mockRedirectResponse.end,
     mockMQTTPublishAsync,
     mockLogger.error,
 ];
@@ -340,11 +342,7 @@ describe("Extension: Frontend", () => {
         mockHTTPOnRequest({url: "/file.txt"}, 2);
         expect(mockNodeStatic[deviceIconsPath]).toHaveBeenCalledTimes(0);
         expect(mockNodeStatic[frontendPath]).toHaveBeenCalledTimes(1);
-        expect(mockNodeStatic[frontendPath]).toHaveBeenCalledWith(
-            {originalUrl: "/file.txt", path: "/file.txt", url: "/file.txt"},
-            2,
-            expect.any(Function),
-        );
+        expect(mockNodeStatic[frontendPath]).toHaveBeenCalledWith({url: "/file.txt"}, 2);
     });
 
     it("Should serve device icons", async () => {
@@ -354,11 +352,7 @@ describe("Extension: Frontend", () => {
         mockHTTPOnRequest({url: "/device_icons/my_device.png"}, 2);
         expect(mockNodeStatic[frontendPath]).toHaveBeenCalledTimes(0);
         expect(mockNodeStatic[deviceIconsPath]).toHaveBeenCalledTimes(1);
-        expect(mockNodeStatic[deviceIconsPath]).toHaveBeenCalledWith(
-            {originalUrl: "/device_icons/my_device.png", path: "/my_device.png", url: "/my_device.png"},
-            2,
-            expect.any(Function),
-        );
+        expect(mockNodeStatic[deviceIconsPath]).toHaveBeenCalledWith({url: "/my_device.png"}, 2);
     });
 
     it("Static server", async () => {
@@ -402,34 +396,33 @@ describe("Extension: Frontend", () => {
 
         expect(ws.Server).toHaveBeenCalledWith({noServer: true, path: "/z2m/api"});
 
-        mockHTTPOnRequest({url: "/z2m"}, 2);
+        // the base url without trailing slash points at a directory, redirect so relative asset paths resolve against it
+        mockHTTPOnRequest({url: "/z2m"}, mockRedirectResponse);
+        expect(mockNodeStatic[frontendPath]).not.toHaveBeenCalled();
+        expect(mockRedirectResponse.writeHead).toHaveBeenCalledWith(301, {Location: "/z2m/"});
+        expect(mockRedirectResponse.end).toHaveBeenCalledTimes(1);
+        expect(mockSendNotFound).not.toHaveBeenCalled();
+
+        mockHTTPOnRequest({url: "/z2m/"}, 2);
         expect(mockNodeStatic[frontendPath]).toHaveBeenCalledTimes(1);
-        expect(mockNodeStatic[frontendPath]).toHaveBeenCalledWith({originalUrl: "/z2m", path: "/", url: "/"}, 2, expect.any(Function));
-        expect(mockFinalHandler).not.toHaveBeenCalledWith();
+        expect(mockNodeStatic[frontendPath]).toHaveBeenCalledWith({url: "/"}, 2);
+        expect(mockSendNotFound).not.toHaveBeenCalledWith();
 
         mockNodeStatic[frontendPath].mockReset();
-        expect(mockFinalHandler).not.toHaveBeenCalledWith();
+        expect(mockSendNotFound).not.toHaveBeenCalledWith();
         mockHTTPOnRequest({url: "/z2m/file.txt"}, 2);
         expect(mockNodeStatic[frontendPath]).toHaveBeenCalledTimes(1);
-        expect(mockNodeStatic[frontendPath]).toHaveBeenCalledWith(
-            {originalUrl: "/z2m/file.txt", path: "/file.txt", url: "/file.txt"},
-            2,
-            expect.any(Function),
-        );
-        expect(mockFinalHandler).not.toHaveBeenCalledWith();
+        expect(mockNodeStatic[frontendPath]).toHaveBeenCalledWith({url: "/file.txt"}, 2);
+        expect(mockSendNotFound).not.toHaveBeenCalledWith();
 
         mockNodeStatic[frontendPath].mockReset();
         mockHTTPOnRequest({url: "/z/file.txt"}, 2);
         expect(mockNodeStatic[frontendPath]).not.toHaveBeenCalled();
-        expect(mockFinalHandler).toHaveBeenCalled();
+        expect(mockSendNotFound).toHaveBeenCalled();
 
         mockHTTPOnRequest({url: "/z2m/device_icons/my-device.png"}, 2);
         expect(mockNodeStatic[deviceIconsPath]).toHaveBeenCalledTimes(1);
-        expect(mockNodeStatic[deviceIconsPath]).toHaveBeenCalledWith(
-            {originalUrl: "/z2m/device_icons/my-device.png", path: "/my-device.png", url: "/my-device.png"},
-            2,
-            expect.any(Function),
-        );
+        expect(mockNodeStatic[deviceIconsPath]).toHaveBeenCalledWith({url: "/my-device.png"}, 2);
     });
 
     it("Works with non-default complex base url", async () => {
@@ -440,30 +433,28 @@ describe("Extension: Frontend", () => {
 
         expect(ws.Server).toHaveBeenCalledWith({noServer: true, path: "/z2m-more++/c0mplex.url/api"});
 
-        mockHTTPOnRequest({url: "/z2m-more++/c0mplex.url"}, 2);
+        mockHTTPOnRequest({url: "/z2m-more++/c0mplex.url"}, mockRedirectResponse);
+        expect(mockNodeStatic[frontendPath]).not.toHaveBeenCalled();
+        expect(mockRedirectResponse.writeHead).toHaveBeenCalledWith(301, {Location: "/z2m-more++/c0mplex.url/"});
+        expect(mockRedirectResponse.end).toHaveBeenCalledTimes(1);
+        expect(mockSendNotFound).not.toHaveBeenCalled();
+
+        mockHTTPOnRequest({url: "/z2m-more++/c0mplex.url/"}, 2);
         expect(mockNodeStatic[frontendPath]).toHaveBeenCalledTimes(1);
-        expect(mockNodeStatic[frontendPath]).toHaveBeenCalledWith(
-            {originalUrl: "/z2m-more++/c0mplex.url", path: "/", url: "/"},
-            2,
-            expect.any(Function),
-        );
-        expect(mockFinalHandler).not.toHaveBeenCalledWith();
+        expect(mockNodeStatic[frontendPath]).toHaveBeenCalledWith({url: "/"}, 2);
+        expect(mockSendNotFound).not.toHaveBeenCalledWith();
 
         mockNodeStatic[frontendPath].mockReset();
-        expect(mockFinalHandler).not.toHaveBeenCalledWith();
+        expect(mockSendNotFound).not.toHaveBeenCalledWith();
         mockHTTPOnRequest({url: "/z2m-more++/c0mplex.url/file.txt"}, 2);
         expect(mockNodeStatic[frontendPath]).toHaveBeenCalledTimes(1);
-        expect(mockNodeStatic[frontendPath]).toHaveBeenCalledWith(
-            {originalUrl: "/z2m-more++/c0mplex.url/file.txt", path: "/file.txt", url: "/file.txt"},
-            2,
-            expect.any(Function),
-        );
-        expect(mockFinalHandler).not.toHaveBeenCalledWith();
+        expect(mockNodeStatic[frontendPath]).toHaveBeenCalledWith({url: "/file.txt"}, 2);
+        expect(mockSendNotFound).not.toHaveBeenCalledWith();
 
         mockNodeStatic[frontendPath].mockReset();
         mockHTTPOnRequest({url: "/z/file.txt"}, 2);
         expect(mockNodeStatic[frontendPath]).not.toHaveBeenCalled();
-        expect(mockFinalHandler).toHaveBeenCalled();
+        expect(mockSendNotFound).toHaveBeenCalled();
     });
 
     it("prevents mismatching setting/extension state", async () => {
