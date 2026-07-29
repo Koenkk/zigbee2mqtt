@@ -141,6 +141,7 @@ export default class Bridge extends Extension {
             await this.mqtt.publish("bridge/event", stringify(payload));
         });
         this.eventBus.onDeviceLeave(this, async (data) => {
+            await this.publishGroups();
             await this.publishDevices();
             await this.publishDefinitions();
 

@@ -2806,7 +2806,7 @@ describe("Extension: Bridge", () => {
         mockMQTTPublishAsync.mockClear();
         await mockZHEvents.deviceLeave({ieeeAddr: devices.bulb.ieeeAddr});
         await flushPromises();
-        expect(mockMQTTPublishAsync).toHaveBeenCalledTimes(3);
+        expect(mockMQTTPublishAsync).toHaveBeenCalledTimes(4);
         expect(mockMQTTPublishAsync).toHaveBeenCalledWith(
             "zigbee2mqtt/bridge/event",
             stringify({type: "device_leave", data: {ieee_address: "0x000b57fffec6a5b2", friendly_name: "bulb"}}),
@@ -2819,6 +2819,7 @@ describe("Extension: Bridge", () => {
             expect.any(String),
             {retain: true},
         );
+        expect(mockMQTTPublishAsync).toHaveBeenCalledWith("zigbee2mqtt/bridge/groups", expect.any(String), {retain: true});
     });
 
     it("Should allow permit join on all", async () => {
