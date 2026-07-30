@@ -1,95 +1,69 @@
-// Deep merge helper, replacing the unmaintained `object-assign-deep` package while keeping its exact semantics:
-// - only plain-ish values are recursed into: anything that is `typeof === "object"`, not `null` and not an array;
-//   this means `Date`/`RegExp`/`Map`/class instances are treated as objects and end up as plain objects holding
-//   their own enumerable properties (so an empty object for most of them),
-// - arrays are always replaced (never concatenated) and cloned element by element,
-// - `null` and `undefined` values overwrite whatever is already present,
-// - all references are broken, including those of nested objects/arrays,
-// - later sources always win.
-// The only intentional deviation is that keys able to tamper with the prototype chain are never copied, see `UNSAFE_KEYS`.
+/** Anything mergeable: a plain-ish object, explicitly not an array or another iterable. */
+export type UnknownRecord = Record<string | number, unknown> & {[Symbol.iterator]?: never};
 
-type AnyRecord = Record<string, unknown>;
-
-/** Keys that would allow tampering with the prototype chain, never copied since settings/state come from user input. */
-const UNSAFE_KEYS: ReadonlySet<string> = new Set(["__proto__", "constructor", "prototype"]);
-
-/** Everything `typeof === "object"` that is neither `null` nor an array is merged/cloned property by property. */
-function isMergeable(value: unknown): value is AnyRecord {
-    return typeof value === "object" && value !== null && !Array.isArray(value);
-}
-
-function cloneValue(value: unknown): unknown {
-    if (isMergeable(value)) {
-        return cloneObject(value);
-    }
-
-    if (Array.isArray(value)) {
-        return cloneArray(value);
-    }
-
-    return value;
+function isUnknownRecord(value: unknown): value is UnknownRecord {
+    return value != null && typeof value === "object" && !Array.isArray(value);
 }
 
 function cloneArray(input: readonly unknown[]): unknown[] {
-    return input.map((value) => cloneValue(value));
-}
+    const len = input.length;
+    const output: unknown[] = new Array(len);
 
-function cloneObject(input: AnyRecord): AnyRecord {
-    const output: AnyRecord = {};
-
-    for (const key of Object.keys(input)) {
-        if (UNSAFE_KEYS.has(key)) {
-            continue;
-        }
-
-        output[key] = cloneValue(input[key]);
+    for (let i = 0; i < len; i++) {
+        const val = input[i];
+        output[i] = isUnknownRecord(val) ? cloneObject(val) : Array.isArray(val) ? cloneArray(val) : val;
     }
 
     return output;
 }
 
-function deepMerge(target: AnyRecord, sources: readonly unknown[]): AnyRecord {
-    for (const source of sources) {
-        if (!source) {
-            continue;
-        }
+function cloneObject(input: UnknownRecord): UnknownRecord {
+    const output: UnknownRecord = {};
 
-        for (const key of Object.keys(source as AnyRecord)) {
-            if (UNSAFE_KEYS.has(key)) {
+    for (const key of Object.keys(input)) {
+        if (key !== "__proto__" && key !== "constructor" && key !== "prototype") {
+            const val = input[key];
+            output[key] = isUnknownRecord(val) ? cloneObject(val) : Array.isArray(val) ? cloneArray(val) : val;
+        }
+    }
+
+    return output;
+}
+
+/**
+ * Merge all sources into `target` recursively.
+ *
+ * Key behavior:
+ * - built-in types like `Date`, `Map`, etc. get erased down to `{}`
+ * - getters are executed (possible side-effects)
+ * - ignore properties `__proto__`, `constructor` & `prototype`
+ * - assumes no infinite circular possible (unhandled for perf)
+ *
+ * Pass empty object `{}` as `target` to return a new object without modifying any existing objects.
+ */
+export function objectAssignDeep<T extends UnknownRecord, S extends readonly UnknownRecord[]>(
+    target: T,
+    ...sources: S
+): T & UnionToIntersection<S[number]> {
+    for (const source of sources) {
+        for (const key of Object.keys(source)) {
+            if (key === "__proto__" || key === "constructor" || key === "prototype") {
                 continue;
             }
 
-            const value = (source as AnyRecord)[key];
+            const value = source[key];
 
-            if (isMergeable(value)) {
+            if (isUnknownRecord(value)) {
                 const existing = target[key];
 
-                // an existing non-object value (including `null`) is discarded, but never merged into
-                target[key] = existing === undefined ? cloneObject(value) : deepMerge({}, [isMergeable(existing) ? existing : {}, value]);
+                (target as UnknownRecord)[key] = isUnknownRecord(existing) ? objectAssignDeep({}, existing, value) : cloneObject(value);
             } else if (Array.isArray(value)) {
-                target[key] = cloneArray(value);
+                (target as UnknownRecord)[key] = cloneArray(value);
             } else {
-                target[key] = value;
+                (target as UnknownRecord)[key] = value;
             }
         }
     }
 
-    return target;
-}
-
-/**
- * Merge all sources into `target`, breaking all references, including those of nested objects and arrays.
- * Unlike `Object.assign()` only `target` itself is mutated, its nested objects are replaced by fresh clones.
- */
-export function objectAssignDeep<T extends object, U>(target: T, source: U): T & U;
-export function objectAssignDeep<T extends object, U, V>(target: T, source1: U, source2: V): T & U & V;
-export function objectAssignDeep(target: object | undefined, ...sources: readonly unknown[]): object {
-    return deepMerge((target || {}) as AnyRecord, sources);
-}
-
-/** Same as {@link objectAssignDeep} except nothing is mutated, an entirely new object is returned. */
-export function objectAssignDeepNoMutate<T, U>(source1: T, source2: U): T & U;
-export function objectAssignDeepNoMutate<T, U, V>(source1: T, source2: U, source3: V): T & U & V;
-export function objectAssignDeepNoMutate(...sources: readonly unknown[]): object {
-    return deepMerge({}, sources);
+    return target as T & UnionToIntersection<S[number]>;
 }

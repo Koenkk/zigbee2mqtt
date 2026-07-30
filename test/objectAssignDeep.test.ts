@@ -1,5 +1,5 @@
 import {describe, expect, it} from "vitest";
-import {objectAssignDeep, objectAssignDeepNoMutate} from "../lib/util/objectAssignDeep";
+import {objectAssignDeep} from "../lib/util/objectAssignDeep";
 
 /** Creates an object with a real own `__proto__`/`constructor`/`prototype` property, like a parsed YAML/JSON payload can. */
 const parse = (json: string): Record<string, unknown> => JSON.parse(json);
@@ -11,17 +11,6 @@ describe("objectAssignDeep", () => {
 
         expect(result).toBe(target);
         expect(result).toStrictEqual({a: 1, b: 2});
-    });
-
-    it("Returns a new object when the target is falsy", () => {
-        const result = objectAssignDeep(undefined as unknown as object, {a: 1});
-
-        expect(result).toStrictEqual({a: 1});
-    });
-
-    it("Ignores falsy sources", () => {
-        expect(objectAssignDeep({a: 1}, undefined, null)).toStrictEqual({a: 1});
-        expect(objectAssignDeepNoMutate(null, {a: 1})).toStrictEqual({a: 1});
     });
 
     it("Applies sources in order, later ones win", () => {
@@ -156,13 +145,11 @@ describe("objectAssignDeep", () => {
         expect(result).toStrictEqual({nested: {safe: 1, other: 2}});
         expect(Object.getPrototypeOf(result.nested)).toBe(Object.prototype);
     });
-});
 
-describe("objectAssignDeepNoMutate", () => {
-    it("Returns a new object and mutates none of the sources", () => {
+    it("Leaves every source untouched when given an empty target", () => {
         const first = {a: {b: 1}};
         const second = {a: {c: 2}};
-        const result = objectAssignDeepNoMutate(first, second);
+        const result = objectAssignDeep({}, first, second);
 
         expect(result).toStrictEqual({a: {b: 1, c: 2}});
         expect(result).not.toBe(first);
@@ -170,16 +157,5 @@ describe("objectAssignDeepNoMutate", () => {
         expect(result.a).not.toBe(first.a);
         expect(first).toStrictEqual({a: {b: 1}});
         expect(second).toStrictEqual({a: {c: 2}});
-    });
-
-    it("Applies sources in order, later ones win", () => {
-        expect(objectAssignDeepNoMutate({a: 1, list: [1]}, {a: 2, list: [2]}, {b: 3})).toStrictEqual({a: 2, list: [2], b: 3});
-    });
-
-    it("Never copies keys that could tamper with the prototype chain", () => {
-        const result = objectAssignDeepNoMutate({safe: 1}, parse('{"__proto__": {"polluted": "yes"}}'));
-
-        expect(result).toStrictEqual({safe: 1});
-        expect(Object.getPrototypeOf(result)).toBe(Object.prototype);
     });
 });

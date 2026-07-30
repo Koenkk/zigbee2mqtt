@@ -2,7 +2,7 @@ import path from "node:path";
 import type {ValidateFunction} from "ajv";
 import Ajv from "ajv";
 import data from "./data";
-import {objectAssignDeep, objectAssignDeepNoMutate} from "./objectAssignDeep";
+import {objectAssignDeep} from "./objectAssignDeep";
 import schemaJson from "./settings.schema.json";
 import utils from "./utils";
 import yaml from "./yaml";
@@ -231,7 +231,10 @@ export function write(): void {
     const writeDevicesOrGroups = (type: "devices" | "groups"): void => {
         if (typeof actual[type] === "string" || (Array.isArray(actual[type]) && actual[type].length > 0)) {
             const fileToWrite = Array.isArray(actual[type]) ? actual[type][0] : actual[type];
-            const content = objectAssignDeep({}, settings[type]);
+            // `readDevicesOrGroups()` already set this to an object whenever the config points at separate files, but the
+            // persisted settings are `Partial`, so the fallback is only here to satisfy the type
+            /* v8 ignore next */
+            const content = objectAssignDeep({}, settings[type] ?? {});
 
             // If an array, only write to first file and only devices which are not in the other files.
             if (Array.isArray(actual[type])) {
@@ -368,7 +371,7 @@ function read(): Partial<Settings> {
             s[type] = {};
             for (const file of files) {
                 const content = yaml.readIfExists(data.joinPath(file));
-                s[type] = objectAssignDeepNoMutate(s[type], content);
+                s[type] = objectAssignDeep({}, s[type], content);
             }
         }
     };
@@ -478,8 +481,7 @@ export function set(path: string[], value: string | number | boolean | KeyValue)
 }
 
 export function apply(settings: Record<string, unknown>, throwOnError = true): boolean {
-    getPersistedSettings(); // Ensure _settings is initialized.
-    const newSettings = objectAssignDeepNoMutate(_settings, settings);
+    const newSettings = objectAssignDeep({}, getPersistedSettings(), settings);
 
     utils.removeNullPropertiesFromObject(newSettings, NULLABLE_SETTINGS);
 

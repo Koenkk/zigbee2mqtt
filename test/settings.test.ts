@@ -6,7 +6,7 @@ import fs from "node:fs";
 import {dump, load} from "js-yaml";
 
 import mockedData from "../lib/util/data";
-import {objectAssignDeepNoMutate} from "../lib/util/objectAssignDeep";
+import {objectAssignDeep} from "../lib/util/objectAssignDeep";
 import * as settings from "../lib/util/settings";
 
 // mirrors the global `KeyValue`, which is not visible from the test project, previously implied by the untyped `object-assign-deep`
@@ -90,7 +90,7 @@ describe("Settings", () => {
     it("Should return default settings", () => {
         write(configurationFile, {});
         const s = settings.get();
-        const expected: ExpectedSettings = objectAssignDeepNoMutate({}, settings.testing.defaults);
+        const expected: ExpectedSettings = objectAssignDeep({}, settings.testing.defaults);
         expected.devices = {};
         expected.groups = {};
         expect(s).toStrictEqual(expected);
@@ -99,7 +99,7 @@ describe("Settings", () => {
     it("Should return settings", () => {
         write(configurationFile, {serial: {disable_led: true}});
         const s = settings.get();
-        const expected: ExpectedSettings = objectAssignDeepNoMutate({}, settings.testing.defaults);
+        const expected: ExpectedSettings = objectAssignDeep({}, settings.testing.defaults);
         expected.devices = {};
         expected.groups = {};
         expected.serial = {disable_led: true};
@@ -126,7 +126,7 @@ describe("Settings", () => {
             },
         };
 
-        const expected: ExpectedSettings = objectAssignDeepNoMutate({}, settings.testing.defaults);
+        const expected: ExpectedSettings = objectAssignDeep({}, settings.testing.defaults);
         expected.devices = {
             "0x00158d00018255df": {
                 friendly_name: "0x00158d00018255df",
@@ -179,7 +179,7 @@ describe("Settings", () => {
 
         write(configurationFile, {});
 
-        const expected: ExpectedSettings = objectAssignDeepNoMutate({}, settings.testing.defaults);
+        const expected: ExpectedSettings = objectAssignDeep({}, settings.testing.defaults);
         expected.frontend.enabled = true;
         expected.frontend.port = 8099;
         expected.homeassistant.enabled = true;
@@ -212,7 +212,7 @@ describe("Settings", () => {
             expect(settings.validate()).toStrictEqual([]);
 
             const s = settings.get();
-            const expected: ExpectedSettings = objectAssignDeepNoMutate({groups: {}, devices: {}}, settings.testing.defaults);
+            const expected: ExpectedSettings = objectAssignDeep({}, {groups: {}, devices: {}}, settings.testing.defaults);
             expected.mqtt.password = "password-in-env-var";
             expected.mqtt.server = "server";
             expect(s).toStrictEqual(expected);
