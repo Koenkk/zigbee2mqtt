@@ -52,7 +52,7 @@
         "mqtt": "^5.15.2",
         "object-assign-deep": "^0.4.0",
         "semver": "^7.8.5",
-        "srvx": "^0.12.4",
+        "srvx": "^0.12.5",
         "throttleit": "^3.0.0",
         "winston": "^3.19.0",
         "winston-syslog": "^2.7.1",
