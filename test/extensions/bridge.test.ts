@@ -4202,7 +4202,7 @@ describe("Extension: Bridge", () => {
                 [path.join("ext_converters", "afile.js")]: expect.any(Buffer),
                 "state.json": expect.any(Buffer),
             },
-            {level: 0},
+            {level: 6},
             expect.any(Function),
         );
         expect(Object.keys(mockFflateZip.mock.calls[0][0])).toStrictEqual([

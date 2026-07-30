@@ -343,10 +343,11 @@ export default class Bridge extends Extension {
         }
 
         const zipContent = await new Promise<Uint8Array>((resolve, reject) => {
-            // `level: 0` (store, no compression) keeps the archive identical to what `jszip` produced by default
-            zip(zipFiles, {level: 0}, (error, data) => (error ? reject(error) : resolve(data)));
+            // `jszip` defaulted to `STORE`, so backups used to be uncompressed; `fflate`'s default level shrinks them substantially
+            zip(zipFiles, {level: 6}, (error, data) => (error ? reject(error) : resolve(data)));
         });
 
+        // TODO: replace with `zipContent.toBase64()` once the Node requirement is >=25
         return utils.getResponse(message, {zip: Buffer.from(zipContent).toString("base64")});
     }
 
