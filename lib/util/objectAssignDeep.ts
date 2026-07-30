@@ -34,8 +34,6 @@ function cloneObject(input: UnknownRecord): UnknownRecord {
  * Merge all sources into `target` recursively.
  *
  * Key behavior:
- * - built-in types like `Date`, `Map`, etc. get erased down to `{}`
- * - getters are executed (possible side-effects)
  * - ignore properties `__proto__`, `constructor` & `prototype`
  * - assumes no infinite circular possible (unhandled for perf)
  *
