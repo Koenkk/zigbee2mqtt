@@ -23,6 +23,7 @@
     ],
     "scripts": {
         "build": "tsc && node index.js writehash",
+        "build:bundle": "tsdown",
         "build:types": "pnpm run clean && tsc --project tsconfig.types.json && cp lib/util/settings.schema.json dist/util",
         "build:watch": "tsc --watch",
         "check": "biome check --error-on-warnings",
@@ -69,7 +70,10 @@
         "@types/readable-stream": "4.0.24",
         "@types/ws": "8.18.1",
         "@vitest/coverage-v8": "^3.1.1",
+        "nf3": "^0.3.23",
+        "oxc-minify": "^0.142.0",
         "tmp": "^0.2.7",
+        "tsdown": "^0.22.14",
         "typescript": "^7.0.2",
         "vitest": "^3.1.1"
     },
