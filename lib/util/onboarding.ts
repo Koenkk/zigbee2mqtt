@@ -3,8 +3,8 @@ import type {ServerResponse} from "node:http";
 import {createServer} from "node:http";
 import path from "node:path";
 import expressStaticGzip from "express-static-gzip";
+import {type Unzipped, unzip} from "fflate";
 import finalhandler from "finalhandler";
-import JSZip from "jszip";
 import {findAllDevices} from "zigbee-herdsman/dist/adapter/adapterDiscovery";
 import type {OnboardData, OnboardFailureData, OnboardSubmitResponse, Zigbee2MQTTSettings} from "../types/api";
 import {stringify} from "../util/stringify";
@@ -49,20 +49,22 @@ function getZipEntryTargetPath(entryName: string): string {
 }
 
 async function extractZipDataToDataPath(zipContent: Buffer): Promise<void> {
-    const zip = await JSZip.loadAsync(zipContent);
+    const entries = await new Promise<Unzipped>((resolve, reject) => {
+        unzip(zipContent, (error, data) => (error ? reject(error) : resolve(data)));
+    });
 
-    for (const key in zip.files) {
-        const entry = zip.files[key];
-        const targetPath = getZipEntryTargetPath(entry.name);
+    for (const name in entries) {
+        const targetPath = getZipEntryTargetPath(name);
 
-        if (entry.dir) {
+        // directory entries are identified by a trailing slash
+        if (name.endsWith("/")) {
             mkdirSync(targetPath, {recursive: true});
 
             continue;
         }
 
         mkdirSync(path.dirname(targetPath), {recursive: true});
-        writeFileSync(targetPath, await entry.async("nodebuffer"));
+        writeFileSync(targetPath, entries[name]);
     }
 }
 
