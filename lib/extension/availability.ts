@@ -151,56 +151,61 @@ export default class Availability extends Extension {
         }
 
         this.pingQueueExecuting = true;
-        const device = this.pingQueue[0];
-        let pingSuccess = false;
-        const available = this.lastPublishedAvailabilities.get(device.ieeeAddr) || this.isAvailable(device);
-        const attempts = available ? 2 : 1;
 
-        for (let i = 1; i <= attempts; i++) {
-            try {
-                // Enable recovery if device is marked as available and first ping fails.
-                await device.zh.ping(!available || i !== 2);
+        try {
+            const device = this.pingQueue[0];
+            let pingSuccess = false;
+            const available = this.lastPublishedAvailabilities.get(device.ieeeAddr) || this.isAvailable(device);
+            const attempts = available ? 2 : 1;
 
-                pingSuccess = true;
+            for (let i = 1; i <= attempts; i++) {
+                try {
+                    // Enable recovery if device is marked as available and first ping fails.
+                    await device.zh.ping(!available || i !== 2);
 
-                logger.debug(`Successfully pinged '${device.name}' (attempt ${i}/${attempts})`);
-                break;
-            } catch (error) {
-                logger.warning(`Failed to ping '${device.name}' (attempt ${i}/${attempts}, ${(error as Error).message})`);
+                    pingSuccess = true;
 
-                // Try again in 3 seconds.
-                if (i !== attempts) {
-                    await utils.sleep(3);
+                    logger.debug(`Successfully pinged '${device.name}' (attempt ${i}/${attempts})`);
+                    break;
+                } catch (error) {
+                    logger.warning(`Failed to ping '${device.name}' (attempt ${i}/${attempts}, ${(error as Error).message})`);
+
+                    // Try again in 3 seconds.
+                    if (i !== attempts) {
+                        await utils.sleep(3);
+                    }
                 }
             }
-        }
 
-        if (this.stopped) {
-            // Exit here to avoid triggering any follow-up activity (e.g., re-queuing another ping attempt).
-            return;
-        }
-
-        if (!pingSuccess && this.getBackoff(device)) {
-            const currentBackoff = this.pingBackoffs.get(device.ieeeAddr) ?? 1;
-            // setting is "greater than" but since we already did the ping, we use ">=" for comparison below (pause next)
-            const pauseOnBackoff = this.getPauseOnBackoffGt(device);
-
-            if (pauseOnBackoff > 0 && currentBackoff >= pauseOnBackoff) {
-                this.backoffPausedDevices.add(device.ieeeAddr);
-            } else {
-                // results in backoffs: *1.5, *3, *6, *12... (with default timeout: 10, 15, 30, 60, 120)
-                this.pingBackoffs.set(device.ieeeAddr, currentBackoff * (available ? 1.5 : 2));
+            if (this.stopped) {
+                // Exit here to avoid triggering any follow-up activity (e.g., re-queuing another ping attempt).
+                return;
             }
+
+            if (!pingSuccess && this.getBackoff(device)) {
+                const currentBackoff = this.pingBackoffs.get(device.ieeeAddr) ?? 1;
+                // setting is "greater than" but since we already did the ping, we use ">=" for comparison below (pause next)
+                const pauseOnBackoff = this.getPauseOnBackoffGt(device);
+
+                if (pauseOnBackoff > 0 && currentBackoff >= pauseOnBackoff) {
+                    this.backoffPausedDevices.add(device.ieeeAddr);
+                } else {
+                    // results in backoffs: *1.5, *3, *6, *12... (with default timeout: 10, 15, 30, 60, 120)
+                    this.pingBackoffs.set(device.ieeeAddr, currentBackoff * (available ? 1.5 : 2));
+                }
+            }
+
+            await this.publishAvailability(device, !pingSuccess);
+            this.resetTimer(device, pingSuccess);
+            this.removeFromPingQueue(device);
+
+            // Sleep 2 seconds before executing next ping
+            await utils.sleep(2);
+        } catch (error) {
+            logger.error(`Ping queue processing failed unexpectedly: ${(error as Error).message}`);
+        } finally {
+            this.pingQueueExecuting = false;
         }
-
-        await this.publishAvailability(device, !pingSuccess);
-        this.resetTimer(device, pingSuccess);
-        this.removeFromPingQueue(device);
-
-        // Sleep 2 seconds before executing next ping
-        await utils.sleep(2);
-
-        this.pingQueueExecuting = false;
 
         await this.pingQueueExecuteNext();
     }
