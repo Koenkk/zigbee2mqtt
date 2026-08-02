@@ -300,10 +300,14 @@ export default class Availability extends Extension {
 
     @bind private async onLastSeenChanged(data: eventdata.LastSeenChanged): Promise<void> {
         if (utils.isAvailabilityEnabledForEntity(data.device, settings.get())) {
-            // Remove from ping queue, not necessary anymore since we know the device is online.
-            this.removeFromPingQueue(data.device);
-            this.resetTimer(data.device, true);
-            await this.publishAvailability(data.device, false);
+            try {
+                // Remove from ping queue, not necessary anymore since we know the device is online.
+                this.removeFromPingQueue(data.device);
+                this.resetTimer(data.device, true);
+                await this.publishAvailability(data.device, false);
+            } catch (error) {
+                logger.error(`onLastSeenChanged handling failed for '${data.device.name}' (${(error as Error).message})`);
+            }
         }
     }
 
