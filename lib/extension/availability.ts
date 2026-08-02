@@ -95,35 +95,46 @@ export default class Availability extends Extension {
         clearTimeout(this.timers.get(device.ieeeAddr));
         this.removeFromPingQueue(device);
 
-        // If the timer triggers, the device is not available anymore otherwise resetTimer already has been called
-        if (this.isActiveDevice(device)) {
-            const backoffEnabled = this.getBackoff(device);
-            const jitter = Math.random() * this.getMaxJitter(device);
-            let backoff = 1;
+        try {
+            // If the timer triggers, the device is not available anymore otherwise resetTimer already has been called
+            if (this.isActiveDevice(device)) {
+                const backoffEnabled = this.getBackoff(device);
+                const jitter = Math.random() * this.getMaxJitter(device);
+                let backoff = 1;
 
-            if (resetBackoff) {
-                // always cleanup even if backoff disabled (ensures proper state if changed at runtime)
-                this.backoffPausedDevices.delete(device.ieeeAddr);
-                this.pingBackoffs.delete(device.ieeeAddr);
-            } else if (backoffEnabled) {
-                backoff = this.pingBackoffs.get(device.ieeeAddr) ?? 1;
-            }
+                if (resetBackoff) {
+                    // always cleanup even if backoff disabled (ensures proper state if changed at runtime)
+                    this.backoffPausedDevices.delete(device.ieeeAddr);
+                    this.pingBackoffs.delete(device.ieeeAddr);
+                } else if (backoffEnabled) {
+                    backoff = this.pingBackoffs.get(device.ieeeAddr) ?? 1;
+                }
 
-            // never paused if was reset (just deleted) or backoff disabled, might as well skip the Set lookup
-            if (!backoffEnabled || resetBackoff || !this.backoffPausedDevices.has(device.ieeeAddr)) {
-                // If device did not check in, ping it, if that fails it will be marked as offline
+                // never paused if was reset (just deleted) or backoff disabled, might as well skip the Set lookup
+                if (!backoffEnabled || resetBackoff || !this.backoffPausedDevices.has(device.ieeeAddr)) {
+                    // If device did not check in, ping it, if that fails it will be marked as offline
+                    this.timers.set(
+                        device.ieeeAddr,
+                        setTimeout(
+                            this.addToPingQueue.bind(this, device),
+                            Math.min((this.getTimeout(device) + utils.seconds(1) + jitter) * backoff, MAX_TIMEOUT),
+                        ),
+                    );
+                }
+            } else {
                 this.timers.set(
                     device.ieeeAddr,
-                    setTimeout(
-                        this.addToPingQueue.bind(this, device),
-                        Math.min((this.getTimeout(device) + utils.seconds(1) + jitter) * backoff, MAX_TIMEOUT),
-                    ),
+                    setTimeout(this.publishAvailability.bind(this, device, true), this.getTimeout(device) + utils.seconds(1)),
                 );
             }
-        } else {
+        } catch (error) {
+            logger.error(
+                `resetTimer failed unexpectedly for '${device.name}' (${(error as Error).message}); scheduling fallback retry in 60s`,
+            );
+            // Fallback: always leave the device with SOME active timer, never orphaned.
             this.timers.set(
                 device.ieeeAddr,
-                setTimeout(this.publishAvailability.bind(this, device, true), this.getTimeout(device) + utils.seconds(1)),
+                setTimeout(() => this.resetTimer(device, resetBackoff), 60000),
             );
         }
     }
