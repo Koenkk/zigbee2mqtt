@@ -35,9 +35,6 @@ importers:
       mqtt:
         specifier: ^5.15.2
         version: 5.15.2
-      object-assign-deep:
-        specifier: ^0.4.0
-        version: 0.4.0
       semver:
         specifier: ^7.8.5
         version: 7.8.5
@@ -81,9 +78,6 @@ importers:
       '@types/node':
         specifier: ^26.1.2
         version: 26.1.2
-      '@types/object-assign-deep':
-        specifier: ^0.4.3
-        version: 0.4.3
       '@types/readable-stream':
         specifier: 4.0.24
         version: 4.0.24
@@ -521,9 +515,6 @@ packages:
 
   '@types/node@26.1.2':
     resolution: {integrity: sha512-Vu4a5UFA9rIIFJ7rB/Vaafh9lrCQszopTCx6KjFboXTGQbPNasehVR5TEiithSDGyd1DEiUByggTZsg8jukeIg==}
-
-  '@types/object-assign-deep@0.4.3':
-    resolution: {integrity: sha512-d9Gxaj5j1hzrxJ61EFEg13B4g4FgrT/DYtcDWFXPehR8DF2SUZbVMFtZIs8exkVRiqrqBpdTc/lUUZjncsPpMw==}
 
   '@types/readable-stream@4.0.24':
     resolution: {integrity: sha512-NRvUNC/JFGPJvqdAfEve8oginbM6V08u5NzLWpG8MwA2kTPOLnqk+wpwuPT+mp3aUsxyuT6m2gnrPuHYCruzEg==}
@@ -1054,10 +1045,6 @@ packages:
 
   number-allocator@1.0.14:
     resolution: {integrity: sha512-OrL44UTVAvkKdOdRQZIJpLkAdjXGTRda052sN4sO77bKEzYYqWKMBjQvrJFzqygI99gL6Z4u2xctPW1tB8ErvA==}
-
-  object-assign-deep@0.4.0:
-    resolution: {integrity: sha512-54Uvn3s+4A/cMWx9tlRez1qtc7pN7pbQ+Yi7mjLjcBpWLlP+XbSHiHbQW6CElDiV4OvuzqnMrBdkgxI1mT8V/Q==}
-    engines: {node: '>=6'}
 
   one-time@1.0.0:
     resolution: {integrity: sha512-5DXOiRKwuSEcQ/l0kGCF6Q3jcADFv5tSmRaJck/OqkVFcOzutB134KRSfF0xDrL39MNnqxbHBbUUcjZIhTgb2g==}
@@ -1705,8 +1692,6 @@ snapshots:
     dependencies:
       undici-types: 8.3.0
 
-  '@types/object-assign-deep@0.4.3': {}
-
   '@types/readable-stream@4.0.24':
     dependencies:
       '@types/node': 26.1.2
@@ -2216,8 +2201,6 @@ snapshots:
       js-sdsl: 4.3.0
     transitivePeerDependencies:
       - supports-color
-
-  object-assign-deep@0.4.0: {}
 
   one-time@1.0.0:
     dependencies:
