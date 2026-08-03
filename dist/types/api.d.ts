@@ -54,7 +54,7 @@ export type OnboardSubmitResponse = {
     success: false;
     error: string;
 };
-export interface Zigbee2MQTTDeviceOptions {
+export type Zigbee2MQTTDeviceOptions = {
     disabled?: boolean;
     retention?: number;
     availability?: boolean | {
@@ -76,8 +76,8 @@ export interface Zigbee2MQTTDeviceOptions {
     description?: string;
     qos?: 0 | 1 | 2;
     disable_automatic_update_check?: boolean;
-}
-export interface Zigbee2MQTTGroupOptions {
+};
+export type Zigbee2MQTTGroupOptions = {
     ID: number;
     optimistic?: boolean;
     off_state?: "all_members_off" | "last_member_state";
@@ -88,8 +88,8 @@ export interface Zigbee2MQTTGroupOptions {
     friendly_name: string;
     description?: string;
     qos?: 0 | 1 | 2;
-}
-export interface Zigbee2MQTTSettings {
+};
+export type Zigbee2MQTTSettings = {
     version?: number;
     /** only used internally during startup, removed on successful Z2M start */
     onboarding?: true;
@@ -221,7 +221,7 @@ export interface Zigbee2MQTTSettings {
         interval: number;
         reset_on_check: boolean;
     };
-}
+};
 export interface Zigbee2MQTTScene {
     id: number;
     name: string;
