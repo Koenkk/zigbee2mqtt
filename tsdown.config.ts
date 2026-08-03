@@ -9,17 +9,28 @@ const OUT_DIR = ".output";
 const DIST_DIR = path.join(OUT_DIR, "dist");
 
 /**
- * Loaded through a runtime path a bundler cannot follow, so tracing cannot discover them on its own.
+ * Absent from the module graph the plugin traces, so tracing cannot discover them on its own.
  *
  * - `@serialport/bindings-cpp` is resolved by `node-gyp-build`, which picks a `.node` file by platform at runtime.
  *   Note the Docker build deletes `prebuilds/` and rebuilds, moving the binary to `build/Release/`.
  * - `unix-dgram` and `winston-syslog` are optional and imported inside a guard (`lib/util/sd-notify.ts:19`,
  *   `lib/util/logger.ts:109`).
+ * - `iconv-lite` is a dependency of `zigbee-herdsman-converters`, required at the top of
+ *   `dist/devices/easyiot.js`. `FULL_TRACE_INCLUDE` copies that file rather than tracing it, and copying does not
+ *   follow imports, so nothing reaches `iconv-lite` -- the 15 models routing to `easyiot.js` threw `MODULE_NOT_FOUND`.
  * - The frontends are chosen by config at runtime (`lib/extension/frontend.ts:80`).
  * - `semver` is imported by `index.js:137`, which is copied rather than built, so it is absent from the module graph
  *   the plugin traces. Without it the artifact fails to start at all.
  */
-const TRACE_INCLUDE = ["@serialport/bindings-cpp", "unix-dgram", "winston-syslog", "zigbee2mqtt-windfront", "zigbee2mqtt-frontend", "semver"];
+const TRACE_INCLUDE = [
+    "@serialport/bindings-cpp",
+    "unix-dgram",
+    "winston-syslog",
+    "iconv-lite",
+    "zigbee2mqtt-windfront",
+    "zigbee2mqtt-frontend",
+    "semver",
+];
 
 /**
  * The output is CommonJS, so dependencies are reached through `require`. nf3 defaults to `["node", "import",
