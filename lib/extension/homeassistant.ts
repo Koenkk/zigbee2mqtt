@@ -1447,6 +1447,12 @@ export class HomeAssistant extends Extension {
                 delete entry.discovery_payload.name;
             }
 
+            const isContactSensor = entry.type === "binary_sensor" && firstExpose.name === "contact";
+            const isEndpointNameMissing = endpointName === undefined;
+            if (isContactSensor && isEndpointNameMissing) {
+                entry.discovery_payload.name = null;
+            }
+
             entry.endpoint = entity.isDevice() ? entity.endpoint(endpointName) : undefined;
         }
 

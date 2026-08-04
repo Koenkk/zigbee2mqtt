@@ -247,6 +247,33 @@ describe("Extension: HomeAssistant", () => {
         expect(textConfig.discovery_payload.entity_category).toStrictEqual("config");
     });
 
+    it("Should use the device name for contact sensors without an endpoint", () => {
+        const getDiscoveryConfig = (expose: zhc.Expose): KeyValueAny => {
+            const device = {
+                definition: {},
+                isDevice: (): boolean => true,
+                isGroup: (): boolean => false,
+                endpoint: () => undefined,
+                options: {},
+                exposes: (): zhc.Expose[] => [expose],
+                zh: {endpoints: []},
+            };
+            // @ts-expect-error private method and minimal test device
+            return extension.getConfigs(device)[0];
+        };
+
+        const endpointlessContact = new zhc.Binary("contact", zhc.access.STATE, false, true);
+        const contactConfig = getDiscoveryConfig(endpointlessContact);
+
+        expect(contactConfig.discovery_payload.name).toBeNull();
+        expect(contactConfig.discovery_payload.device_class).toStrictEqual("door");
+
+        const endpointContact = new zhc.Binary("contact", zhc.access.STATE, false, true).withEndpoint("left");
+        const endpointConfig = getDiscoveryConfig(endpointContact);
+
+        expect(endpointConfig.discovery_payload).not.toHaveProperty("name");
+    });
+
     it("Should apply expose-level Home Assistant discovery metadata", () => {
         const createDevice = (exposes: zhc.Expose[]): Device =>
             ({
