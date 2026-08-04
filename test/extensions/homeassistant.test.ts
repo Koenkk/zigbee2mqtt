@@ -247,7 +247,7 @@ describe("Extension: HomeAssistant", () => {
         expect(textConfig.discovery_payload.entity_category).toStrictEqual("config");
     });
 
-    it("Should use the device name for contact sensors without an endpoint", () => {
+    it("Should set the name of contact sensors without an endpoint to null", () => {
         const getDiscoveryConfig = (expose: zhc.Expose): KeyValueAny => {
             const device = {
                 definition: {},
