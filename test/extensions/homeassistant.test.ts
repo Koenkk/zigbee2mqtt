@@ -247,33 +247,6 @@ describe("Extension: HomeAssistant", () => {
         expect(textConfig.discovery_payload.entity_category).toStrictEqual("config");
     });
 
-    it("Should set the name of contact sensors without an endpoint to null", () => {
-        const getDiscoveryConfig = (expose: zhc.Expose): KeyValueAny => {
-            const device = {
-                definition: {},
-                isDevice: (): boolean => true,
-                isGroup: (): boolean => false,
-                endpoint: () => undefined,
-                options: {},
-                exposes: (): zhc.Expose[] => [expose],
-                zh: {endpoints: []},
-            };
-            // @ts-expect-error private method and minimal test device
-            return extension.getConfigs(device)[0];
-        };
-
-        const endpointlessContact = new zhc.Binary("contact", zhc.access.STATE, false, true);
-        const contactConfig = getDiscoveryConfig(endpointlessContact);
-
-        expect(contactConfig.discovery_payload.name).toBeNull();
-        expect(contactConfig.discovery_payload.device_class).toStrictEqual("door");
-
-        const endpointContact = new zhc.Binary("contact", zhc.access.STATE, false, true).withEndpoint("left");
-        const endpointConfig = getDiscoveryConfig(endpointContact);
-
-        expect(endpointConfig.discovery_payload).not.toHaveProperty("name");
-    });
-
     it("Should apply expose-level Home Assistant discovery metadata", () => {
         const createDevice = (exposes: zhc.Expose[]): Device =>
             ({
@@ -306,6 +279,25 @@ describe("Extension: HomeAssistant", () => {
             icon: "mdi:flash",
         });
         expect(configs.find((config) => config.object_id === "voltage")?.discovery_payload).not.toHaveProperty("type");
+    });
+
+    it("Should set discovery name to null when expose specifies homeassistant name null", () => {
+        const createDevice = (exposes: zhc.Expose[]): Device =>
+            ({
+                definition: {},
+                isDevice: (): boolean => true,
+                isGroup: (): boolean => false,
+                endpoint: () => undefined,
+                options: {},
+                exposes: (): zhc.Expose[] => exposes,
+                zh: {endpoints: []},
+            }) as Device;
+
+        const contactExpose = new zhc.Binary("contact", zhc.access.STATE, false, true).withHomeAssistant({name: null});
+
+        // @ts-expect-error private
+        const configs = extension.getConfigs(createDevice([contactExpose]));
+        expect(configs.find((config) => config.object_id === "contact")?.discovery_payload.name).toBeNull();
     });
 
     it("Should discover devices and groups", async () => {

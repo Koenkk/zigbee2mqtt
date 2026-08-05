@@ -401,6 +401,10 @@ const applyHomeAssistantExposeMetadata = (payload: DiscoveryEntry, homeAssistant
         payload.discovery_payload.icon = homeAssistant.icon;
     }
 
+    if (homeAssistant.name !== undefined) {
+        payload.discovery_payload.name = homeAssistant.name;
+    }
+
     if (homeAssistant.valueTemplate !== undefined) {
         if (homeAssistant.valueTemplate === null) {
             delete payload.discovery_payload.value_template;
@@ -1443,14 +1447,8 @@ export class HomeAssistant extends Extension {
 
             // Let Home Assistant generate entity name when device_class is present.
             // preserve_name allows device_class and explicit name to coexist (e.g. derived sensors).
-            if (entry.discovery_payload.device_class && !NUMERIC_DISCOVERY_LOOKUP[firstExpose.name]?.preserve_name) {
+            if (entry.discovery_payload.device_class && entry.discovery_payload.name !== null && !NUMERIC_DISCOVERY_LOOKUP[firstExpose.name]?.preserve_name) {
                 delete entry.discovery_payload.name;
-            }
-
-            const isContactSensor = entry.type === "binary_sensor" && firstExpose.name === "contact";
-            const isEndpointNameMissing = endpointName === undefined;
-            if (isContactSensor && isEndpointNameMissing) {
-                entry.discovery_payload.name = null;
             }
 
             entry.endpoint = entity.isDevice() ? entity.endpoint(endpointName) : undefined;
