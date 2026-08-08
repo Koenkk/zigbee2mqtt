@@ -44,7 +44,7 @@ function stringifyTypedArray(array: unknown[]): string {
     let res = `"0":${isBigInt ? `"${array[0]}"` : array[0]}`;
 
     for (let i = 1; i < array.length; i++) {
-        res += `,"${i}":${isBigInt ? `"${array[1]}"` : array[1]}`;
+        res += `,"${i}":${isBigInt ? `"${array[i]}"` : array[i]}`;
     }
 
     return res;
