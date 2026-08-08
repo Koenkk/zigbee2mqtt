@@ -188,5 +188,10 @@ describe("Utils", () => {
         const toJSONIsNull = {a: 1, toJSON: () => null};
 
         expect(stringify(toJSONIsNull)).toStrictEqual("null");
+
+        const emptyTypedArrayWithProperty = Object.assign(new Uint8Array(0), {unit: "raw"});
+
+        expect(stringify({data: emptyTypedArrayWithProperty})).toStrictEqual(JSON.stringify({data: {unit: "raw"}}));
+        expect(stringify({data: new Uint8Array(0)})).toStrictEqual(JSON.stringify({data: {}}));
     });
 });
