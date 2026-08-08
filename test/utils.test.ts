@@ -164,14 +164,19 @@ describe("Utils", () => {
                 b: 2,
                 3: "c",
                 d: Buffer.from([1, 2]),
-                e: new Int16Array([0xfffd, 0xff11]),
+                e: new Int16Array([0xfffd, 0xff11, 0x0001, 0x7fff]),
                 beef: 0xfacen,
-                zed: new BigUint64Array([1n, 0xffffffffn]),
+                zed: new BigUint64Array([1n, 0xffffffffn, 42n]),
                 ris: [1, undefined, "b", 0xfeefn, Number.NaN, undefined],
                 ls: undefined,
+                // one and two elements, on both the number and the bigint branch
+                one: new Uint8Array([7]),
+                two: new Int16Array([0x0001, 0x7fff]),
+                oneBig: new BigInt64Array([-9n]),
+                twoBig: new BigUint64Array([1n, 42n]),
             }),
         ).toStrictEqual(
-            `{"3":"c","a":"a","b":2,"beef":"64206","d":{"data":[1,2],"type":"Buffer"},"e":{"0":-3,"1":-239},"ris":[1,null,"b","65263",null,null],"zed":{"0":"1","1":"4294967295"}}`,
+            `{"3":"c","a":"a","b":2,"beef":"64206","d":{"data":[1,2],"type":"Buffer"},"e":{"0":-3,"1":-239,"2":1,"3":32767},"one":{"0":7},"oneBig":{"0":"-9"},"ris":[1,null,"b","65263",null,null],"two":{"0":1,"1":32767},"twoBig":{"0":"1","1":"42"},"zed":{"0":"1","1":"4294967295","2":"42"}}`,
         );
         // @ts-expect-error intentional to reach code for coverage
         expect(stringify(undefined)).toStrictEqual("null");
@@ -188,5 +193,10 @@ describe("Utils", () => {
         const toJSONIsNull = {a: 1, toJSON: () => null};
 
         expect(stringify(toJSONIsNull)).toStrictEqual("null");
+
+        const emptyTypedArrayWithProperty = Object.assign(new Uint8Array(0), {unit: "raw"});
+
+        expect(stringify({data: emptyTypedArrayWithProperty})).toStrictEqual(JSON.stringify({data: {unit: "raw"}}));
+        expect(stringify({data: new Uint8Array(0)})).toStrictEqual(JSON.stringify({data: {}}));
     });
 });
