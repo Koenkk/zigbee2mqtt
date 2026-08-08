@@ -164,14 +164,14 @@ describe("Utils", () => {
                 b: 2,
                 3: "c",
                 d: Buffer.from([1, 2]),
-                e: new Int16Array([0xfffd, 0xff11]),
+                e: new Int16Array([0xfffd, 0xff11, 0x0001, 0x7fff]),
                 beef: 0xfacen,
-                zed: new BigUint64Array([1n, 0xffffffffn]),
+                zed: new BigUint64Array([1n, 0xffffffffn, 42n]),
                 ris: [1, undefined, "b", 0xfeefn, Number.NaN, undefined],
                 ls: undefined,
             }),
         ).toStrictEqual(
-            `{"3":"c","a":"a","b":2,"beef":"64206","d":{"data":[1,2],"type":"Buffer"},"e":{"0":-3,"1":-239},"ris":[1,null,"b","65263",null,null],"zed":{"0":"1","1":"4294967295"}}`,
+            `{"3":"c","a":"a","b":2,"beef":"64206","d":{"data":[1,2],"type":"Buffer"},"e":{"0":-3,"1":-239,"2":1,"3":32767},"ris":[1,null,"b","65263",null,null],"zed":{"0":"1","1":"4294967295","2":"42"}}`,
         );
         // @ts-expect-error intentional to reach code for coverage
         expect(stringify(undefined)).toStrictEqual("null");
