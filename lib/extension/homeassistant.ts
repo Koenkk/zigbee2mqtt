@@ -1447,7 +1447,11 @@ export class HomeAssistant extends Extension {
 
             // Let Home Assistant generate entity name when device_class is present.
             // preserve_name allows device_class and explicit name to coexist (e.g. derived sensors).
-            if (entry.discovery_payload.device_class && entry.discovery_payload.name !== null && !NUMERIC_DISCOVERY_LOOKUP[firstExpose.name]?.preserve_name) {
+            if (
+                entry.discovery_payload.device_class &&
+                entry.discovery_payload.name !== null &&
+                !NUMERIC_DISCOVERY_LOOKUP[firstExpose.name]?.preserve_name
+            ) {
                 delete entry.discovery_payload.name;
             }
 
