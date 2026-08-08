@@ -40,8 +40,6 @@ function isTypedArray(value: unknown): value is unknown[] {
 }
 
 function stringifyTypedArray(array: unknown[]): string {
-    // The first element is written before the loop, so an empty array would
-    // otherwise emit `"0":undefined` and break the JSON.
     if (array.length === 0) {
         return "";
     }
