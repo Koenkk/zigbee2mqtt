@@ -339,7 +339,7 @@ const ENUM_DISCOVERY_LOOKUP: {[s: string]: KeyValue} = {
     motor_direction: {entity_category: "config", icon: "mdi:arrow-left-right"},
     motor_state: {entity_category: "diagnostic", icon: "mdi:state-machine"},
     motion_sensitivity: {entity_category: "config", icon: "mdi:tune"},
-    operation_mode: {entity_category: "config", icon: "mdi:tune" },
+    operation_mode: {entity_category: "config", icon: "mdi:tune"},
     operational_status: {entity_category: "diagnostic", icon: "mdi:state-machine"},
     power_on_behavior: {entity_category: "config", icon: "mdi:power-settings"},
     power_outage_memory: {entity_category: "config", icon: "mdi:power-settings"},
@@ -944,7 +944,7 @@ export class HomeAssistant extends Extension {
                     ?.features.find((f) => f.name === "tilt");
                 const motorState = allExposes
                     ?.filter(isEnumExpose)
-                    .find((e) => ["motor_state", "moving",  "operational_status"].includes(e.name) && e.access === ACCESS_STATE);
+                    .find((e) => ["motor_state", "moving", "operational_status"].includes(e.name) && e.access === ACCESS_STATE);
                 const running = allExposes?.filter(isBinaryExpose)?.find((e) => e.name === "running");
 
                 const discoveryEntry: DiscoveryEntry = {
