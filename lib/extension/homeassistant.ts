@@ -157,6 +157,10 @@ const NUMERIC_DISCOVERY_LOOKUP: {[s: string]: KeyValue} = {
     boost_heating_countdown_time_set: {entity_category: "config", icon: "mdi:timer"},
     boost_time: {entity_category: "config", icon: "mdi:timer"},
     calibration: {entity_category: "config", icon: "mdi:wrench-clock"},
+    calibration_button_hold_time: {entity_category: "config", icon: "mdi:wrench-clock"},
+    calibration_closing_time: {entity_category: "config", icon: "mdi:wrench-clock"},
+    calibration_motor_start_delay: {entity_category: "config", icon: "mdi:wrench-clock"},
+    calibration_opening_time: {entity_category: "config", icon: "mdi:wrench-clock"},
     calibration_time: {entity_category: "config", icon: "mdi:wrench-clock"},
     calibration_time_left: {entity_category: "config", icon: "mdi:wrench-clock"},
     calibration_time_right: {entity_category: "config", icon: "mdi:wrench-clock"},
@@ -333,8 +337,10 @@ const ENUM_DISCOVERY_LOOKUP: {[s: string]: KeyValue} = {
     mode: {entity_category: "config", icon: "mdi:tune"},
     mode_switch: {icon: "mdi:tune"},
     motor_direction: {entity_category: "config", icon: "mdi:arrow-left-right"},
+    motor_state: {entity_category: "diagnostic", icon: "mdi:state-machine"},
     motion_sensitivity: {entity_category: "config", icon: "mdi:tune"},
-    operation_mode: {entity_category: "config", icon: "mdi:tune"},
+    operation_mode: {entity_category: "config", icon: "mdi:tune" },
+    operational_status: {entity_category: "diagnostic", icon: "mdi:state-machine"},
     power_on_behavior: {entity_category: "config", icon: "mdi:power-settings"},
     power_outage_memory: {entity_category: "config", icon: "mdi:power-settings"},
     power_supply_mode: {entity_category: "config", icon: "mdi:power-settings"},
@@ -938,7 +944,7 @@ export class HomeAssistant extends Extension {
                     ?.features.find((f) => f.name === "tilt");
                 const motorState = allExposes
                     ?.filter(isEnumExpose)
-                    .find((e) => ["motor_state", "moving"].includes(e.name) && e.access === ACCESS_STATE);
+                    .find((e) => ["motor_state", "moving",  "operational_status"].includes(e.name) && e.access === ACCESS_STATE);
                 const running = allExposes?.filter(isBinaryExpose)?.find((e) => e.name === "running");
 
                 const discoveryEntry: DiscoveryEntry = {
@@ -961,7 +967,7 @@ export class HomeAssistant extends Extension {
                     discoveryEntry.discovery_payload.value_template = `{% if "${featurePropertyWithoutEndpoint(running)}" in value_json and value_json["${featurePropertyWithoutEndpoint(running)}"] %} {% if value_json["${featurePropertyWithoutEndpoint(position)}"] > 0 %} closing {% else %} opening {% endif %} {% else %} stopped {% endif %}`;
                 }
 
-                // If curtains have `motor_state` or `moving` property, lookup for possible
+                // If curtains have `motor_state`, `moving` or `operational_status`  property, lookup for possible
                 // state names to detect movement direction and use this in discovery.
                 if (motorState) {
                     const openingState = motorState.values.find((s) => COVER_OPENING_LOOKUP.includes(s.toString().toLowerCase()));
@@ -976,7 +982,7 @@ export class HomeAssistant extends Extension {
                     }
                 }
 
-                // If curtains do not have `running`, `motor_state` or `moving` properties.
+                // If curtains do not have `running`, `motor_state`, `moving` or `operational_status` properties.
                 if (!discoveryEntry.discovery_payload.value_template) {
                     discoveryEntry.discovery_payload.value_template = `{{ value_json["${featurePropertyWithoutEndpoint(state)}"] }}`;
                     discoveryEntry.discovery_payload.state_open = "OPEN";
