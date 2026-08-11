@@ -1,72 +1,47 @@
 import {execFileSync} from "node:child_process";
-import {readFileSync, writeFileSync} from "node:fs";
+import {readdirSync, readFileSync, rmSync, writeFileSync} from "node:fs";
 import path from "node:path";
+import {brotliDecompressSync, gzipSync} from "node:zlib";
 import {externals} from "nf3/plugin";
 import {minifySync} from "oxc-minify";
 import {defineConfig} from "tsdown";
 
 const OUT_DIR = ".output";
 const DIST_DIR = path.join(OUT_DIR, "dist");
+const FRONTEND_DIR = path.join(OUT_DIR, "node_modules", "zigbee2mqtt-windfront");
 
 /**
- * Absent from the module graph the plugin traces, so tracing cannot discover them on its own.
+ * Reached through a path tracing cannot follow: a `.node` picked by platform, a guarded optional import, a package
+ * named in the config, a require in the copied `index.js`, or an import of a file `FULL_TRACE_INCLUDE` copies without
+ * tracing (`iconv-lite`, required by `zigbee-herdsman-converters/dist/devices/easyiot.js`).
  *
- * - `@serialport/bindings-cpp` is resolved by `node-gyp-build`, which picks a `.node` file by platform at runtime.
- *   Note the Docker build deletes `prebuilds/` and rebuilds, moving the binary to `build/Release/`.
- * - `unix-dgram` and `winston-syslog` are optional and imported inside a guard (`lib/util/sd-notify.ts:19`,
- *   `lib/util/logger.ts:109`).
- * - `iconv-lite` is a dependency of `zigbee-herdsman-converters`, required at the top of
- *   `dist/devices/easyiot.js`. `FULL_TRACE_INCLUDE` copies that file rather than tracing it, and copying does not
- *   follow imports, so nothing reaches `iconv-lite` -- the 15 models routing to `easyiot.js` threw `MODULE_NOT_FOUND`.
- * - The frontends are chosen by config at runtime (`lib/extension/frontend.ts:80`).
- * - `semver` is imported by `index.js:137`, which is copied rather than built, so it is absent from the module graph
- *   the plugin traces. Without it the artifact fails to start at all.
+ * Only the default frontend ships, so `frontend.package: zigbee2mqtt-frontend` does not start here.
  */
-const TRACE_INCLUDE = [
-    "@serialport/bindings-cpp",
-    "unix-dgram",
-    "winston-syslog",
-    "iconv-lite",
-    "zigbee2mqtt-windfront",
-    "zigbee2mqtt-frontend",
-    "semver",
-];
+const TRACE_INCLUDE = ["@serialport/bindings-cpp", "unix-dgram", "winston-syslog", "iconv-lite", "zigbee2mqtt-windfront", "semver"];
 
 /**
- * The output is CommonJS, so dependencies are reached through `require`. nf3 defaults to `["node", "import",
- * "default"]`, which for a dual package copies the ESM build and leaves the file `exports.require` points at behind --
- * `require("js-yaml")` then fails on a package that looks present.
+ * The output is CommonJS. nf3 defaults to ESM-first, which for a dual package copies the build `exports.require` does
+ * not point at -- `require("js-yaml")` then fails on a package that looks present.
  */
 const CONDITIONS = ["node", "require", "default"];
 
 /**
- * Copied whole rather than file-by-file, because static analysis provably cannot enumerate what they need.
- *
- * - `zigbee-herdsman-converters/dist/index.js:176` does `require(\`./devices/${moduleName}\`)` with the name read from
- *   `models-index.json` at runtime. Tracing sees no device file and would drop all ~400 of them, leaving Z2M unable to
- *   recognise any device.
- * - The frontends export a function returning a directory of static assets; tracing only ever sees their `index.js`.
+ * Copied whole because tracing cannot enumerate what they need: `zigbee-herdsman-converters` requires
+ * `dist/devices/${name}.js` by a name read at runtime, the frontend serves its `dist/` as static assets. The glob
+ * leaves behind 8.4 MB of source maps and `.d.ts`.
  */
 const FULL_TRACE_INCLUDE: [string, {glob: string}][] = [
-    // narrowed to runtime files: an unqualified `dist/**` also drags in 7.8 MB of source maps and 0.6 MB of `.d.ts`,
-    // which is most of this package. Tracing finds `models-index.json` on its own, but match it anyway.
     ["zigbee-herdsman-converters", {glob: "dist/**/*.{js,json}"}],
-    // static assets, and no source maps or declarations shipped -- take everything
     ["zigbee2mqtt-windfront", {glob: "dist/**"}],
-    ["zigbee2mqtt-frontend", {glob: "dist/**"}],
 ];
 
 /**
- * Shrinks traced dependencies by ~40%. The frontends are excluded: their `dist/` is already a production build, so
- * re-minifying costs build time for nothing.
- *
- * `keepNames` is not optional. `zigbee-herdsman-converters` narrows types by class name --
- * `dist/lib/utils.js:705-714` does `obj.constructor.name.toLowerCase() === "endpoint" | "device" | "group"`, and
- * `dist/lib/philips.js:927` compares against `"Group"`. Those classes come from `zigbee-herdsman`, which is minified
- * too, so mangling them makes every one of those checks silently return false.
+ * Shrinks traced dependencies by ~40%; the frontend is excluded, its `dist/` is already a production build.
+ * `keepNames` is not optional: `zigbee-herdsman-converters` narrows types by class name (`dist/lib/utils.js:705-714`,
+ * `dist/lib/philips.js:927`) against classes from the also-minified `zigbee-herdsman`.
  */
 const MINIFY_TRANSFORM = {
-    filter: (id: string): boolean => /\.[cm]?js$/.test(id) && !id.includes("zigbee2mqtt-windfront") && !id.includes("zigbee2mqtt-frontend"),
+    filter: (id: string): boolean => /\.[cm]?js$/.test(id) && !id.includes("zigbee2mqtt-windfront"),
     handler: (code: string, id: string): string | undefined => {
         const keepNames = {function: true, class: true};
 
@@ -79,23 +54,30 @@ const MINIFY_TRANSFORM = {
     },
 };
 
-function writeHash(): void {
-    let hash = "unknown";
+/**
+ * The frontend ships every asset twice, `app.js` beside `app.js.br` -- 4.5 MB of the artifact. Dropping the plain copy
+ * and keeping only `.br` does not work: browsers offer brotli on secure origins only, and Z2M is normally served over
+ * plain HTTP on a LAN address, where Chrome sends `Accept-Encoding: gzip, deflate` and every asset would 404. Repacked
+ * as `.gz`, which every client accepts, one copy is enough and 4.3 MB goes away.
+ *
+ * `index.html` keeps both copies, at 1.5 kB: `express-static-gzip` turns a directory request into it by rewriting
+ * `req.url`, but looks up compressed variants by `req.path`, which still reads `/`.
+ */
+function repackFrontendAssets(): void {
+    for (const file of readdirSync(FRONTEND_DIR, {encoding: "utf8", recursive: true})) {
+        if (!file.endsWith(".br") || file.endsWith("index.html.br")) {
+            continue;
+        }
 
-    try {
-        hash = execFileSync("git", ["rev-parse", "--short=8", "HEAD"], {encoding: "utf8"}).trim() || "unknown";
-    } catch {
-        /* not a git checkout; "unknown" is what `index.js` would have recorded anyway */
+        const source = path.join(FRONTEND_DIR, file.slice(0, -3));
+
+        writeFileSync(`${source}.gz`, gzipSync(brotliDecompressSync(readFileSync(`${source}.br`)), {level: 9}));
+        rmSync(`${source}.br`);
+        rmSync(source, {force: true});
     }
-
-    writeFileSync(path.join(DIST_DIR, ".hash"), hash);
 }
 
-/**
- * Only `version` and `engines` are actually read at runtime -- by `lib/util/utils.ts:38` and `index.js:135`
- * respectively. `getDependencyVersion` reads each dependency's own `package.json`, never this one, so listing the
- * traced dependencies here would be decoration.
- */
+/** Only `version` and `engines` are read at runtime, by `lib/util/utils.ts:38` and `index.js:135`. */
 function writeManifest(): void {
     const source = JSON.parse(readFileSync("package.json", "utf8"));
 
@@ -130,9 +112,9 @@ export default defineConfig({
     format: "cjs",
     platform: "node",
     target: "node22",
-    // mirrors `lib/` into `dist/` one-to-one. `lib/util/utils.ts`, `lib/util/data.ts` and `lib/extension/externalJS.ts`
-    // each resolve `../..` from their own location; merging them into a shallower chunk repoints `dist/.hash`, the data
-    // directory and `node_modules` outside the install
+    // mirrors `lib/` into `dist/` one-to-one: `lib/util/utils.ts`, `lib/util/data.ts` and `lib/extension/externalJS.ts`
+    // resolve `../..` from their own location, so a shallower chunk repoints `dist/.hash`, the data directory and
+    // `node_modules` outside the install
     unbundle: true,
     fixedExtension: false,
     dts: false,
@@ -161,8 +143,17 @@ export default defineConfig({
     ],
     hooks: {
         "build:done": () => {
+            let hash = "unknown";
+
+            try {
+                hash = execFileSync("git", ["rev-parse", "--short=8", "HEAD"], {encoding: "utf8"}).trim() || "unknown";
+            } catch {
+                /* not a git checkout; "unknown" is what `index.js` would have recorded anyway */
+            }
+
+            writeFileSync(path.join(DIST_DIR, ".hash"), hash);
             writeManifest();
-            writeHash();
+            repackFrontendAssets();
         },
     },
 });
