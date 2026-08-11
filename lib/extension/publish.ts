@@ -267,8 +267,11 @@ export default class Publish extends Extension {
 
                     if (result?.membersState && optimistic) {
                         for (const [ieeeAddr, state] of Object.entries(result.membersState)) {
-                            // biome-ignore lint/style/noNonNullAssertion: might be a bit much assumed here?
-                            addToToPublish(this.zigbee.resolveEntity(ieeeAddr)!, state);
+                            const entity = this.zigbee.resolveEntity(ieeeAddr);
+
+                            if (entity) {
+                                addToToPublish(entity, state);
+                            }
                         }
                     }
                 } else if (parsedTopic.type === "get" && converter.convertGet) {
