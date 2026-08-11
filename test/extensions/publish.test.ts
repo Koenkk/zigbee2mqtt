@@ -496,9 +496,10 @@ describe("Extension: Publish", () => {
             await mockMQTTEvents.message("zigbee2mqtt/group_tradfri_remote/set", stringify({scene_recall: 1}));
             await flushPromises();
             expect(group.command).toHaveBeenCalledTimes(1);
-            expect(mockLogger.warning).toHaveBeenCalledWith(
-                expect.stringContaining(`Skipping unresolved group member '${devices.bulb_2.ieeeAddr}' while publishing 'group_tradfri_remote'`),
+            const unresolvedGroupMemberWarnings = mockLogger.warning.mock.calls.filter((call) =>
+                String(call[0]).includes("Skipping unresolved group member"),
             );
+            expect(unresolvedGroupMemberWarnings).toHaveLength(0);
         } finally {
             resolveEntitySpy.mockRestore();
         }
