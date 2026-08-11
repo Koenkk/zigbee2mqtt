@@ -134,19 +134,7 @@ export default class Publish extends Extension {
         const entityState = this.state.get(re);
         const membersState =
             re instanceof Group
-                ? Object.fromEntries(
-                      re.zh.members.flatMap((e) => {
-                          const member = this.zigbee.resolveEntity(e.deviceIeeeAddress);
-
-                          if (!member) {
-                              // Keep optimistic publish resilient when a group member has been removed or renamed.
-                              logger.warning(`Skipping unresolved group member '${e.deviceIeeeAddress}' while publishing '${re.name}'`);
-                              return [];
-                          }
-
-                          return [[e.deviceIeeeAddress, this.state.get(member)]];
-                      }),
-                  )
+                ? Object.fromEntries(Array.from(re.membersDevices(), (member) => [member.ieeeAddr, this.state.get(member)]))
                 : undefined;
         const converters = this.getDefinitionConverters(definition);
 
