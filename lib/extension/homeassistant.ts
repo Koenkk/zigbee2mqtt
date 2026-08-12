@@ -327,7 +327,7 @@ const ENUM_DISCOVERY_LOOKUP: {[s: string]: KeyValue} = {
     effect: {enabled_by_default: false, icon: "mdi:palette"},
     force: {entity_category: "config", icon: "mdi:valve"},
     keep_time: {entity_category: "config", icon: "mdi:av-timer"},
-    identify: {device_class: "identify"},
+    identify: {entity_category: "diagnostic", device_class: "identify"},
     keypad_lockout: {entity_category: "config", icon: "mdi:lock"},
     load_detection_mode: {entity_category: "config", icon: "mdi:tune"},
     load_dimmable: {entity_category: "config", icon: "mdi:chart-bell-curve"},
