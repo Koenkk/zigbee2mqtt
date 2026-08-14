@@ -1509,7 +1509,7 @@ export class HomeAssistant extends Extension {
                     // would otherwise require); the card reads `z2m_composite.schema` directly as an object.
                     const jsonAttributesTemplate =
                         `{"z2m_composite": {"value": {{ value_json['${property}'] | tojson }}, ` +
-                        `"property": ${stringify(property)}, "set_topic": ${stringify(setTopic)}, "schema": ${stringify(schema)}}}`;
+                        `"property": ${JSON.stringify(property)}, "set_topic": ${JSON.stringify(setTopic)}, "schema": ${stringify(schema)}}}`;
                     discoveryEntries.push({
                         type: "sensor",
                         object_id: property,
