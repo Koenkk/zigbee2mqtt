@@ -2,7 +2,7 @@
 import {afterAll, beforeAll, beforeEach, describe, expect, it, vi} from "vitest";
 import {Zdo} from "zigbee-herdsman";
 import * as data from "../mocks/data";
-import {mockJSZipFile, mockJSZipGenerateAsync} from "../mocks/jszip";
+import {mockFflateZip, mockFflateZipFailOnce} from "../mocks/fflate";
 import {mockLogger} from "../mocks/logger";
 import {events as mockMQTTEvents, mockMQTTPublishAsync} from "../mocks/mqtt";
 import {flushPromises} from "../mocks/utils";
@@ -2026,7 +2026,7 @@ describe("Extension: Bridge", () => {
                             },
                             {
                                 access: 2,
-                                description: "Inverts the cover position, false: open=100,close=0, true: open=0,close=100 (default false).",
+                                description: "Inverts the cover position and state, false: open=100,close=0, true: open=0,close=100 (default false).",
                                 label: "Invert cover",
                                 name: "invert_cover",
                                 property: "invert_cover",
@@ -2926,7 +2926,7 @@ describe("Extension: Bridge", () => {
         mockMQTTPublishAsync.mockClear();
         await mockZHEvents.deviceLeave({ieeeAddr: devices.bulb.ieeeAddr});
         await flushPromises();
-        expect(mockMQTTPublishAsync).toHaveBeenCalledTimes(3);
+        expect(mockMQTTPublishAsync).toHaveBeenCalledTimes(4);
         expect(mockMQTTPublishAsync).toHaveBeenCalledWith(
             "zigbee2mqtt/bridge/event",
             stringify({type: "device_leave", data: {ieee_address: "0x000b57fffec6a5b2", friendly_name: "bulb"}}),
@@ -2939,6 +2939,7 @@ describe("Extension: Bridge", () => {
             expect.any(String),
             {retain: true},
         );
+        expect(mockMQTTPublishAsync).toHaveBeenCalledWith("zigbee2mqtt/bridge/groups", expect.any(String), {retain: true});
     });
 
     it("Should allow permit join on all", async () => {
@@ -4312,16 +4313,39 @@ describe("Extension: Bridge", () => {
         mockMQTTEvents.message("zigbee2mqtt/bridge/request/backup", "");
         await flushPromises();
         expect(mockZHController.backup).toHaveBeenCalledTimes(1);
-        expect(mockJSZipFile).toHaveBeenCalledTimes(4);
-        expect(mockJSZipFile).toHaveBeenNthCalledWith(1, "configuration.yaml", expect.any(Object));
-        expect(mockJSZipFile).toHaveBeenNthCalledWith(2, path.join("ext_converters", "123", "myfile.js"), expect.any(Object));
-        expect(mockJSZipFile).toHaveBeenNthCalledWith(3, path.join("ext_converters", "afile.js"), expect.any(Object));
-        expect(mockJSZipFile).toHaveBeenNthCalledWith(4, "state.json", expect.any(Object));
-        expect(mockJSZipGenerateAsync).toHaveBeenCalledTimes(1);
-        expect(mockJSZipGenerateAsync).toHaveBeenNthCalledWith(1, {type: "base64"});
+        expect(mockFflateZip).toHaveBeenCalledTimes(1);
+        expect(mockFflateZip).toHaveBeenNthCalledWith(
+            1,
+            {
+                "configuration.yaml": expect.any(Buffer),
+                [path.join("ext_converters", "123", "myfile.js")]: expect.any(Buffer),
+                [path.join("ext_converters", "afile.js")]: expect.any(Buffer),
+                "state.json": expect.any(Buffer),
+            },
+            {level: 6},
+            expect.any(Function),
+        );
+        expect(Object.keys(mockFflateZip.mock.calls[0][0])).toStrictEqual([
+            "configuration.yaml",
+            path.join("ext_converters", "123", "myfile.js"),
+            path.join("ext_converters", "afile.js"),
+            "state.json",
+        ]);
         expect(mockMQTTPublishAsync).toHaveBeenCalledWith(
             "zigbee2mqtt/bridge/response/backup",
             stringify({data: {zip: "THISISBASE64"}, status: "ok"}),
+            {},
+        );
+    });
+
+    it("Should return an error when the backup archive cannot be created", async () => {
+        mockMQTTPublishAsync.mockClear();
+        mockFflateZipFailOnce(new Error("invalid zip data"));
+        mockMQTTEvents.message("zigbee2mqtt/bridge/request/backup", "");
+        await flushPromises();
+        expect(mockMQTTPublishAsync).toHaveBeenCalledWith(
+            "zigbee2mqtt/bridge/response/backup",
+            stringify({data: {}, status: "error", error: "invalid zip data"}),
             {},
         );
     });

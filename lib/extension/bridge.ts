@@ -1,8 +1,7 @@
 import fs from "node:fs";
 import path from "node:path";
 import bind from "bind-decorator";
-import JSZip from "jszip";
-import objectAssignDeep from "object-assign-deep";
+import {zip} from "fflate";
 import type winston from "winston";
 import Transport from "winston-transport";
 import {Zcl} from "zigbee-herdsman";
@@ -13,6 +12,7 @@ import type Group from "../model/group";
 import type {Zigbee2MQTTAPI, Zigbee2MQTTDevice, Zigbee2MQTTResponse, Zigbee2MQTTResponseEndpoints} from "../types/api";
 import data from "../util/data";
 import logger from "../util/logger";
+import {objectAssignDeep} from "../util/objectAssignDeep";
 import * as settings from "../util/settings";
 import {stringify} from "../util/stringify";
 import utils, {assertString, DEFAULT_BIND_GROUP_ID} from "../util/utils";
@@ -141,6 +141,7 @@ export default class Bridge extends Extension {
             await this.mqtt.publish("bridge/event", stringify(payload));
         });
         this.eventBus.onDeviceLeave(this, async (data) => {
+            await this.publishGroups();
             await this.publishDevices();
             await this.publishDefinitions();
 
@@ -328,7 +329,7 @@ export default class Bridge extends Extension {
         await this.zigbee.backup();
         const dataPath = data.getPath();
         const files = utils.getAllFiles(dataPath);
-        const zip = new JSZip();
+        const zipFiles: Record<string, Uint8Array> = {};
         const logDir = `log${path.sep}`;
         const otaDir = `ota${path.sep}`;
 
@@ -337,12 +338,17 @@ export default class Bridge extends Extension {
 
             // XXX: `log` could technically be something else depending on `log_directory` setting
             if (!name.startsWith(logDir) && !name.startsWith(otaDir)) {
-                zip.file(name, fs.readFileSync(f));
+                zipFiles[name] = fs.readFileSync(f);
             }
         }
 
-        const base64Zip = await zip.generateAsync({type: "base64"});
-        return utils.getResponse(message, {zip: base64Zip});
+        const zipContent = await new Promise<Uint8Array>((resolve, reject) => {
+            // `jszip` defaulted to `STORE`, so backups used to be uncompressed; `fflate`'s default level shrinks them substantially
+            zip(zipFiles, {level: 6}, (error, data) => (error ? reject(error) : resolve(data)));
+        });
+
+        // TODO: replace with `zipContent.toBase64()` once the Node requirement is >=25
+        return utils.getResponse(message, {zip: Buffer.from(zipContent).toString("base64")});
     }
 
     @bind async installCodeAdd(message: KeyValue | string): Promise<Zigbee2MQTTResponse<"bridge/response/install_code/add">> {

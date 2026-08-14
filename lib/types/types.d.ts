@@ -26,6 +26,9 @@ declare global {
     type PublishEntityState = (entity: Device | Group, payload: KeyValue, stateChangeReason?: StateChangeReason) => Promise<void>;
     type RecursivePartial<T> = {[P in keyof T]?: RecursivePartial<T[P]>};
     type MakePartialExcept<T, K extends keyof T> = Partial<Omit<T, K>> & Pick<T, K>;
+    /** Convert `A | B | C` into `A & B & C` */
+    // biome-ignore lint/suspicious/noExplicitAny: distributive conditional requires `any`
+    type UnionToIntersection<U> = (U extends any ? (x: U) => void : never) extends (x: infer I) => void ? I : never;
     interface KeyValue {
         // biome-ignore lint/suspicious/noExplicitAny: API
         [s: string]: any;

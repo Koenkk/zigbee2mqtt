@@ -190,6 +190,30 @@ describe("Extension: Receive", () => {
         expect(mockMQTTPublishAsync.mock.calls[1][0]).toStrictEqual("zigbee2mqtt/bridge/health");
     });
 
+    it("Should not bypass the debounce when a message produces no payload", async () => {
+        const device = devices.WSDCGQ11LM;
+        settings.set(["devices", device.ieeeAddr, "debounce"], 0.1);
+        settings.set(["advanced", "last_seen"], "ISO_8601");
+        // Attribute report without measuredValue: the lumi_temperature converter returns nothing.
+        const payload = {
+            data: {},
+            cluster: "msTemperatureMeasurement",
+            device,
+            endpoint: device.getEndpoint(1),
+            type: "attributeReport",
+            linkquality: 10,
+        };
+        await mockZHEvents.message(payload);
+        await flushPromises();
+        // The empty payload must not be published immediately (bypassing the debounce).
+        vi.advanceTimersByTime(50);
+        expect(mockMQTTPublishAsync).toHaveBeenCalledTimes(0);
+        vi.runOnlyPendingTimers();
+        await flushPromises();
+        expect(mockMQTTPublishAsync).toHaveBeenCalledTimes(2);
+        expect(mockMQTTPublishAsync.mock.calls[0][0]).toStrictEqual("zigbee2mqtt/weather_sensor");
+    });
+
     it("Should debounce and retain messages when set via device_options", async () => {
         const device = devices.WSDCGQ11LM;
         settings.set(["device_options", "debounce"], 0.1);
