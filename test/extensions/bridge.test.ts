@@ -3402,7 +3402,7 @@ describe("Extension: Bridge", () => {
                         "    model: 'lumi.plug',\n" +
                         "    vendor: '',\n" +
                         "    description: 'Automatically generated definition',\n" +
-                        '    extend: [m.onOff()],\n' +
+                        "    extend: [m.onOff()],\n" +
                         "};\n",
                 },
                 status: "ok",
