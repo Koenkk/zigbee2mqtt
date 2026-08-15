@@ -254,6 +254,22 @@ export interface Zigbee2MQTTDeviceEndpointConfiguredReporting {
     reportable_change: number;
 }
 
+export interface Zigbee2MQTTDeviceEndpointBindingDiff {
+    bindings: Zigbee2MQTTDeviceEndpointBinding[];
+    /** Bindings the device holds that were not known to Zigbee2MQTT */
+    added: Zigbee2MQTTDeviceEndpointBinding[];
+    /** Bindings known to Zigbee2MQTT that the device does not hold */
+    removed: Zigbee2MQTTDeviceEndpointBinding[];
+}
+
+export interface Zigbee2MQTTDeviceEndpointReportingChange
+    extends Partial<Omit<Zigbee2MQTTDeviceEndpointConfiguredReporting, "cluster" | "attribute">>,
+        Pick<Zigbee2MQTTDeviceEndpointConfiguredReporting, "cluster" | "attribute"> {
+    endpoint: number;
+    /** `removed` when the device does not hold the reporting, `failed` when it could not be read. Intervals are absent for both. */
+    status: "unchanged" | "updated" | "removed" | "failed";
+}
+
 export interface Zigbee2MQTTDeviceDefinition {
     source: "native" | "generated" | "external";
     model: string;
@@ -608,6 +624,15 @@ export interface Zigbee2MQTTAPI {
         ieee_list?: Eui64[];
     };
 
+    "bridge/request/device/binds/read": {
+        id: string;
+    };
+
+    "bridge/response/device/binds/read": {
+        id: string;
+        endpoints: Record<number, Zigbee2MQTTDeviceEndpointBindingDiff>;
+    };
+
     "bridge/request/device/configure":
         | {
               id: string | number;
@@ -825,6 +850,17 @@ export interface Zigbee2MQTTAPI {
         manufacturer_code?: number;
     };
 
+    "bridge/request/device/reporting/sync": {
+        id: string;
+        /** When omitted, every endpoint of the device is synced */
+        endpoint?: string | number;
+    };
+
+    "bridge/response/device/reporting/sync": {
+        id: string;
+        changes: Zigbee2MQTTDeviceEndpointReportingChange[];
+    };
+
     "bridge/request/group/remove": {
         id: string;
         force?: boolean;
@@ -1006,6 +1042,7 @@ export type Zigbee2MQTTRequestEndpoints =
     | "bridge/request/device/bind"
     | "bridge/request/device/unbind"
     | "bridge/request/device/binds/clear"
+    | "bridge/request/device/binds/read"
     | "bridge/request/device/configure"
     | "bridge/request/device/remove"
     | "bridge/request/device/ota_update/check"
@@ -1022,6 +1059,7 @@ export type Zigbee2MQTTRequestEndpoints =
     | "bridge/request/device/rename"
     | "bridge/request/device/reporting/configure"
     | "bridge/request/device/reporting/read"
+    | "bridge/request/device/reporting/sync"
     | "bridge/request/group/remove"
     | "bridge/request/group/add"
     | "bridge/request/group/rename"
@@ -1058,6 +1096,7 @@ export type Zigbee2MQTTResponseEndpoints =
     | "bridge/response/device/bind"
     | "bridge/response/device/unbind"
     | "bridge/response/device/binds/clear"
+    | "bridge/response/device/binds/read"
     | "bridge/response/device/configure"
     | "bridge/response/device/remove"
     | "bridge/response/device/ota_update/check"
@@ -1071,6 +1110,7 @@ export type Zigbee2MQTTResponseEndpoints =
     | "bridge/response/device/rename"
     | "bridge/response/device/reporting/configure"
     | "bridge/response/device/reporting/read"
+    | "bridge/response/device/reporting/sync"
     | "bridge/response/group/remove"
     | "bridge/response/group/add"
     | "bridge/response/group/rename"

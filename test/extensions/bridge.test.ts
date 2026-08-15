@@ -4175,6 +4175,261 @@ describe("Extension: Bridge", () => {
         );
     });
 
+    it("Should allow to sync reporting config", async () => {
+        const device = devices.bulb;
+        const endpoint = device.getEndpoint(1)!;
+        const configuredReportings = endpoint.configuredReportings;
+
+        endpoint.readReportingConfig.mockClear();
+        // zigbee-herdsman reconciles the cached reportings with what the device reports
+        endpoint.readReportingConfig.mockImplementationOnce(() => {
+            endpoint.configuredReportings = [
+                {
+                    cluster: {name: "genOnOff", ID: 6},
+                    attribute: {name: "onOff", ID: 0},
+                    minimumReportInterval: 1,
+                    maximumReportInterval: 65534,
+                    reportableChange: 20,
+                },
+            ];
+
+            return Promise.resolve([]);
+        });
+        mockMQTTPublishAsync.mockClear();
+        mockMQTTEvents.message("zigbee2mqtt/bridge/request/device/reporting/sync", stringify({id: "bulb"}));
+        await flushPromises();
+
+        expect(endpoint.readReportingConfig).toHaveBeenCalledTimes(1);
+        expect(endpoint.readReportingConfig).toHaveBeenCalledWith(6, [{attribute: {ID: 0}}], {});
+        expect(mockMQTTPublishAsync).toHaveBeenCalledWith(
+            "zigbee2mqtt/bridge/response/device/reporting/sync",
+            stringify({
+                data: {
+                    id: "bulb",
+                    changes: [
+                        {
+                            endpoint: 1,
+                            cluster: "genOnOff",
+                            attribute: "onOff",
+                            status: "updated",
+                            minimum_report_interval: 1,
+                            maximum_report_interval: 65534,
+                            reportable_change: 20,
+                        },
+                    ],
+                },
+                status: "ok",
+            }),
+            {},
+        );
+        expect(mockMQTTPublishAsync).toHaveBeenCalledWith("zigbee2mqtt/bridge/devices", expect.any(String), {retain: true});
+
+        endpoint.configuredReportings = configuredReportings;
+    });
+
+    it("Should report reporting config the device does not have", async () => {
+        const device = devices.bulb;
+        const endpoint = device.getEndpoint(1)!;
+        const configuredReportings = endpoint.configuredReportings;
+
+        endpoint.readReportingConfig.mockClear();
+        endpoint.readReportingConfig.mockImplementationOnce(() => {
+            endpoint.configuredReportings = [];
+
+            return Promise.resolve([]);
+        });
+        mockMQTTPublishAsync.mockClear();
+        mockMQTTEvents.message("zigbee2mqtt/bridge/request/device/reporting/sync", stringify({id: "bulb", endpoint: 1}));
+        await flushPromises();
+
+        expect(mockMQTTPublishAsync).toHaveBeenCalledWith(
+            "zigbee2mqtt/bridge/response/device/reporting/sync",
+            stringify({
+                data: {
+                    id: "bulb",
+                    changes: [{endpoint: 1, cluster: "genOnOff", attribute: "onOff", status: "removed"}],
+                },
+                status: "ok",
+            }),
+            {},
+        );
+        expect(mockLogger.warning).toHaveBeenCalledWith("Device 'bulb' does not have the 'genOnOff.onOff' reporting Zigbee2MQTT expected");
+
+        endpoint.configuredReportings = configuredReportings;
+    });
+
+    it("Should report reporting config that could not be read", async () => {
+        const device = devices.bulb;
+        const endpoint = device.getEndpoint(1)!;
+
+        endpoint.readReportingConfig.mockClear();
+        endpoint.readReportingConfig.mockRejectedValueOnce(new Error("timeout"));
+        mockMQTTPublishAsync.mockClear();
+        mockMQTTEvents.message("zigbee2mqtt/bridge/request/device/reporting/sync", stringify({id: "bulb", endpoint: 1}));
+        await flushPromises();
+
+        expect(mockMQTTPublishAsync).toHaveBeenCalledWith(
+            "zigbee2mqtt/bridge/response/device/reporting/sync",
+            stringify({
+                data: {
+                    id: "bulb",
+                    changes: [{endpoint: 1, cluster: "genOnOff", attribute: "onOff", status: "failed"}],
+                },
+                status: "ok",
+            }),
+            {},
+        );
+        expect(mockLogger.warning).toHaveBeenCalledWith("Failed to read reporting config of 'bulb' cluster 'genOnOff' (timeout)");
+    });
+
+    it("Should throw error when sync reporting config is called with malformed payload", async () => {
+        const device = devices.bulb;
+        const endpoint = device.getEndpoint(1)!;
+
+        endpoint.readReportingConfig.mockClear();
+        mockMQTTPublishAsync.mockClear();
+        mockMQTTEvents.message("zigbee2mqtt/bridge/request/device/reporting/sync", stringify({idz: "bulb"}));
+        await flushPromises();
+
+        expect(endpoint.readReportingConfig).toHaveBeenCalledTimes(0);
+        expect(mockMQTTPublishAsync).toHaveBeenCalledWith(
+            "zigbee2mqtt/bridge/response/device/reporting/sync",
+            stringify({data: {}, status: "error", error: "Invalid payload"}),
+            {},
+        );
+    });
+
+    it("Should throw error when sync reporting config is called for non-existing endpoint", async () => {
+        const device = devices.bulb;
+        const endpoint = device.getEndpoint(1)!;
+
+        endpoint.readReportingConfig.mockClear();
+        mockMQTTPublishAsync.mockClear();
+        mockMQTTEvents.message("zigbee2mqtt/bridge/request/device/reporting/sync", stringify({id: "bulb", endpoint: "non_existing_endpoint"}));
+        await flushPromises();
+
+        expect(endpoint.readReportingConfig).toHaveBeenCalledTimes(0);
+        expect(mockMQTTPublishAsync).toHaveBeenCalledWith(
+            "zigbee2mqtt/bridge/response/device/reporting/sync",
+            stringify({data: {}, status: "error", error: "Device '0x000b57fffec6a5b2' does not have endpoint 'non_existing_endpoint'"}),
+            {},
+        );
+    });
+
+    it("Should allow to read the binding table", async () => {
+        const device = devices.remote;
+
+        device.mockClear();
+        mockMQTTPublishAsync.mockClear();
+        mockMQTTEvents.message("zigbee2mqtt/bridge/request/device/binds/read", stringify({id: "remote"}));
+        await flushPromises();
+
+        expect(device.bindingTable).toHaveBeenCalledTimes(1);
+        expect(mockMQTTPublishAsync).toHaveBeenCalledWith(
+            "zigbee2mqtt/bridge/response/device/binds/read",
+            stringify({
+                data: {
+                    id: "remote",
+                    endpoints: {
+                        1: {
+                            bindings: [
+                                {cluster: "genLevelCtrl", target: {type: "endpoint", ieee_address: "0x000b57fffec6a5b3", endpoint: 1}},
+                                {cluster: "genOnOff", target: {type: "endpoint", ieee_address: "0x000b57fffec6a5b3", endpoint: 1}},
+                                {cluster: "lightingColorCtrl", target: {type: "endpoint", ieee_address: "0x000b57fffec6a5b3", endpoint: 1}},
+                                {cluster: "genOnOff", target: {type: "group", id: 1}},
+                                {cluster: "genLevelCtrl", target: {type: "group", id: 1}},
+                            ],
+                            added: [],
+                            removed: [],
+                        },
+                        2: {bindings: [], added: [], removed: []},
+                    },
+                },
+                status: "ok",
+            }),
+            {},
+        );
+        // nothing diverged, so no need to republish the devices
+        expect(mockMQTTPublishAsync).not.toHaveBeenCalledWith("zigbee2mqtt/bridge/devices", expect.any(String), {retain: true});
+    });
+
+    it("Should report bindings the device no longer holds", async () => {
+        const device = devices.remote;
+        const endpoint = device.getEndpoint(1)!;
+        const binds = endpoint.binds;
+
+        device.mockClear();
+        // the device reports an empty binding table, zigbee-herdsman clears the cached binds accordingly
+        device.bindingTable.mockImplementationOnce(() => {
+            endpoint.binds = [];
+
+            return Promise.resolve([]);
+        });
+        mockMQTTPublishAsync.mockClear();
+        mockMQTTEvents.message("zigbee2mqtt/bridge/request/device/binds/read", stringify({id: "remote"}));
+        await flushPromises();
+
+        const published = mockMQTTPublishAsync.mock.calls.find((c) => c[0] === "zigbee2mqtt/bridge/response/device/binds/read");
+        const response = JSON.parse(published![1] as string);
+
+        expect(response.status).toBe("ok");
+        expect(response.data.endpoints[1].bindings).toStrictEqual([]);
+        expect(response.data.endpoints[1].removed).toHaveLength(5);
+        expect(response.data.endpoints[1].added).toStrictEqual([]);
+        expect(mockLogger.warning).toHaveBeenCalledWith(expect.stringContaining("is missing 5 binding(s)"));
+        expect(mockMQTTPublishAsync).toHaveBeenCalledWith("zigbee2mqtt/bridge/devices", expect.any(String), {retain: true});
+
+        endpoint.binds = binds;
+    });
+
+    it("Should throw error when read binding table is called with malformed payload", async () => {
+        const device = devices.remote;
+
+        device.mockClear();
+        mockMQTTPublishAsync.mockClear();
+        mockMQTTEvents.message("zigbee2mqtt/bridge/request/device/binds/read", stringify({idz: "remote"}));
+        await flushPromises();
+
+        expect(device.bindingTable).toHaveBeenCalledTimes(0);
+        expect(mockMQTTPublishAsync).toHaveBeenCalledWith(
+            "zigbee2mqtt/bridge/response/device/binds/read",
+            stringify({data: {}, status: "error", error: "Invalid payload"}),
+            {},
+        );
+    });
+
+    it("Should throw error when read binding table is called for non-existing device", async () => {
+        const device = devices.remote;
+
+        device.mockClear();
+        mockMQTTPublishAsync.mockClear();
+        mockMQTTEvents.message("zigbee2mqtt/bridge/request/device/binds/read", stringify({id: "remotez"}));
+        await flushPromises();
+
+        expect(device.bindingTable).toHaveBeenCalledTimes(0);
+        expect(mockMQTTPublishAsync).toHaveBeenCalledWith(
+            "zigbee2mqtt/bridge/response/device/binds/read",
+            stringify({data: {}, status: "error", error: "Device 'remotez' does not exist"}),
+            {},
+        );
+    });
+
+    it("Should throw error when reading the binding table fails", async () => {
+        const device = devices.remote;
+
+        device.mockClear();
+        device.bindingTable.mockRejectedValueOnce(new Error("timeout"));
+        mockMQTTPublishAsync.mockClear();
+        mockMQTTEvents.message("zigbee2mqtt/bridge/request/device/binds/read", stringify({id: "remote"}));
+        await flushPromises();
+
+        expect(mockMQTTPublishAsync).toHaveBeenCalledWith(
+            "zigbee2mqtt/bridge/response/device/binds/read",
+            stringify({data: {}, status: "error", error: "timeout"}),
+            {},
+        );
+    });
+
     it("Should allow to create a backup", async () => {
         fs.mkdirSync(path.join(data.mockDir, "ext_converters"));
         fs.writeFileSync(path.join(data.mockDir, "ext_converters", "afile.js"), "test123");
