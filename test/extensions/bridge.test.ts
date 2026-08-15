@@ -4227,6 +4227,47 @@ describe("Extension: Bridge", () => {
         endpoint.configuredReportings = configuredReportings;
     });
 
+    it("Should not report an array reportable change as diverged", async () => {
+        const device = devices.bulb;
+        const endpoint = device.getEndpoint(1)!;
+        const configuredReportings = endpoint.configuredReportings;
+        const reporting = {
+            cluster: {name: "seMetering", ID: 1794},
+            attribute: {name: "currentSummDelivered", ID: 0},
+            minimumReportInterval: 10,
+            maximumReportInterval: 65000,
+            reportableChange: [0, 10],
+        };
+
+        endpoint.configuredReportings = [reporting];
+        endpoint.readReportingConfig.mockClear();
+        endpoint.readReportingConfig.mockImplementationOnce(() => {
+            // same values, distinct array instance
+            endpoint.configuredReportings = [{...reporting, reportableChange: [0, 10]}];
+
+            return Promise.resolve([]);
+        });
+        mockMQTTPublishAsync.mockClear();
+        mockMQTTEvents.message("zigbee2mqtt/bridge/request/device/reporting/sync", stringify({id: "bulb", endpoint: 1}));
+        await flushPromises();
+
+        const published = mockMQTTPublishAsync.mock.calls.find((c) => c[0] === "zigbee2mqtt/bridge/response/device/reporting/sync");
+
+        expect(JSON.parse(published![1] as string).data.changes).toStrictEqual([
+            {
+                endpoint: 1,
+                cluster: "seMetering",
+                attribute: "currentSummDelivered",
+                status: "unchanged",
+                minimum_report_interval: 10,
+                maximum_report_interval: 65000,
+                reportable_change: [0, 10],
+            },
+        ]);
+
+        endpoint.configuredReportings = configuredReportings;
+    });
+
     it("Should report reporting config the device does not have", async () => {
         const device = devices.bulb;
         const endpoint = device.getEndpoint(1)!;
@@ -4351,6 +4392,22 @@ describe("Extension: Bridge", () => {
         );
         // nothing diverged, so no need to republish the devices
         expect(mockMQTTPublishAsync).not.toHaveBeenCalledWith("zigbee2mqtt/bridge/devices", expect.any(String), {retain: true});
+    });
+
+    it("Should not let the bind extension respond to a binds read", async () => {
+        const device = devices.remote;
+
+        device.mockClear();
+        mockMQTTPublishAsync.mockClear();
+        mockMQTTEvents.message("zigbee2mqtt/bridge/request/device/binds/read", stringify({id: "remote"}));
+        await flushPromises();
+
+        expect(mockMQTTPublishAsync).not.toHaveBeenCalledWith("zigbee2mqtt/bridge/response/device/bind", expect.any(String), expect.any(Object));
+        expect(mockMQTTPublishAsync).toHaveBeenCalledWith(
+            "zigbee2mqtt/bridge/response/device/binds/read",
+            expect.stringContaining('"status":"ok"'),
+            {},
+        );
     });
 
     it("Should report bindings the device no longer holds", async () => {

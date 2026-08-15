@@ -14,7 +14,7 @@ type ZHConfiguredReporting = {
     attribute: {name: string | undefined; ID?: number; manufacturerCode?: number};
     minimumReportInterval: number;
     maximumReportInterval: number;
-    reportableChange: number;
+    reportableChange: number | number[];
 };
 type ZHEndpointCluster = {
     ID?: number;

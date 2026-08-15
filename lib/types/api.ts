@@ -251,7 +251,8 @@ export interface Zigbee2MQTTDeviceEndpointConfiguredReporting {
     attribute: string | number;
     minimum_report_interval: number;
     maximum_report_interval: number;
-    reportable_change: number;
+    /** An array for attributes wider than 32 bit, e.g. `seMetering.currentSummDelivered` */
+    reportable_change: number | number[];
 }
 
 export interface Zigbee2MQTTDeviceEndpointBindingDiff {

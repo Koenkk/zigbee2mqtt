@@ -678,7 +678,7 @@ export default class Bridge extends Extension {
                     const unchanged =
                         current.minimumReportInterval === reporting.minimumReportInterval &&
                         current.maximumReportInterval === reporting.maximumReportInterval &&
-                        current.reportableChange === reporting.reportableChange;
+                        equals(current.reportableChange, reporting.reportableChange);
 
                     if (!unchanged) {
                         diverged++;
