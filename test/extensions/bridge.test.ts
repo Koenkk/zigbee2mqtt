@@ -4382,8 +4382,9 @@ describe("Extension: Bridge", () => {
                             ],
                             added: [],
                             removed: [],
+                            missing_bindings: [],
                         },
-                        2: {bindings: [], added: [], removed: []},
+                        2: {bindings: [], added: [], removed: [], missing_bindings: []},
                     },
                 },
                 status: "ok",
@@ -4437,6 +4438,27 @@ describe("Extension: Bridge", () => {
         expect(mockMQTTPublishAsync).toHaveBeenCalledWith("zigbee2mqtt/bridge/devices", expect.any(String), {retain: true});
 
         endpoint.binds = binds;
+    });
+
+    it("Should report clusters that cannot report for lack of a binding", async () => {
+        // `bulb` has a configured reporting for genOnOff but no bindings at all
+        const device = devices.bulb;
+
+        device.mockClear();
+        mockMQTTPublishAsync.mockClear();
+        mockMQTTEvents.message("zigbee2mqtt/bridge/request/device/binds/read", stringify({id: "bulb"}));
+        await flushPromises();
+
+        const published = mockMQTTPublishAsync.mock.calls.find((c) => c[0] === "zigbee2mqtt/bridge/response/device/binds/read");
+        const response = JSON.parse(published![1] as string);
+
+        expect(response.data.endpoints[1].missing_bindings).toStrictEqual(["genOnOff"]);
+        // reported even though the cache and the device agree, so repeated calls keep flagging it
+        expect(response.data.endpoints[1].removed).toStrictEqual([]);
+        expect(mockLogger.warning).toHaveBeenCalledWith(
+            "Device 'bulb' endpoint 1 has configured reporting for genOnOff but is not bound to the coordinator, " +
+                "so it cannot report. Reconfigure the device to restore reporting.",
+        );
     });
 
     it("Should throw error when read binding table is called with malformed payload", async () => {

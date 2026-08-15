@@ -261,6 +261,8 @@ export interface Zigbee2MQTTDeviceEndpointBindingDiff {
     added: Zigbee2MQTTDeviceEndpointBinding[];
     /** Bindings known to Zigbee2MQTT that the device does not hold */
     removed: Zigbee2MQTTDeviceEndpointBinding[];
+    /** Clusters with configured reporting but no binding to the coordinator, the device cannot report those */
+    missing_bindings: string[];
 }
 
 export interface Zigbee2MQTTDeviceEndpointReportingChange

@@ -720,14 +720,24 @@ export default class Bridge extends Extension {
         await device.zh.bindingTable();
 
         const endpoints: Zigbee2MQTTAPI["bridge/response/device/binds/read"]["endpoints"] = {};
+        const coordinatorEndpoint = this.zigbee.firstCoordinatorEndpoint();
         let diverged = 0;
 
         for (const endpoint of device.zh.endpoints) {
             // biome-ignore lint/style/noNonNullAssertion: every endpoint was snapshotted above
             const previous = before.get(endpoint.ID)!;
-            const bindings = endpoint.binds.map(utils.toEndpointBinding);
+            const binds = endpoint.binds;
+            const bindings = binds.map(utils.toEndpointBinding);
             const added = bindings.filter((b) => !previous.some((p) => equals(p, b)));
             const removed = previous.filter((p) => !bindings.some((b) => equals(p, b)));
+            const boundClusters = new Set(binds.filter((b) => b.target === coordinatorEndpoint).map((b) => b.cluster.ID));
+            const missingBindings: string[] = [];
+
+            for (const reporting of endpoint.configuredReportings) {
+                if (!boundClusters.has(reporting.cluster.ID) && !missingBindings.includes(reporting.cluster.name)) {
+                    missingBindings.push(reporting.cluster.name);
+                }
+            }
 
             if (removed.length > 0) {
                 logger.warning(
@@ -736,8 +746,15 @@ export default class Bridge extends Extension {
                 );
             }
 
+            if (missingBindings.length > 0) {
+                logger.warning(
+                    `Device '${device.name}' endpoint ${endpoint.ID} has configured reporting for ${missingBindings.join(", ")} ` +
+                        "but is not bound to the coordinator, so it cannot report. Reconfigure the device to restore reporting.",
+                );
+            }
+
             diverged += added.length + removed.length;
-            endpoints[endpoint.ID] = {bindings, added, removed};
+            endpoints[endpoint.ID] = {bindings, added, removed, missing_bindings: missingBindings};
         }
 
         if (diverged > 0) {
