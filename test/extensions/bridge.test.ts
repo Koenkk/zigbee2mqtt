@@ -4227,6 +4227,86 @@ describe("Extension: Bridge", () => {
         endpoint.configuredReportings = configuredReportings;
     });
 
+    it("Should skip endpoints without configured reporting", async () => {
+        const device = devices.bulb;
+        const endpoint = device.getEndpoint(1)!;
+        const configuredReportings = endpoint.configuredReportings;
+
+        endpoint.configuredReportings = [];
+        endpoint.readReportingConfig.mockClear();
+        mockMQTTPublishAsync.mockClear();
+        mockMQTTEvents.message("zigbee2mqtt/bridge/request/device/reporting/sync", stringify({id: "bulb"}));
+        await flushPromises();
+
+        expect(endpoint.readReportingConfig).toHaveBeenCalledTimes(0);
+        expect(mockMQTTPublishAsync).toHaveBeenCalledWith(
+            "zigbee2mqtt/bridge/response/device/reporting/sync",
+            stringify({data: {id: "bulb", changes: []}, status: "ok"}),
+            {},
+        );
+
+        endpoint.configuredReportings = configuredReportings;
+    });
+
+    it("Should read attributes of the same cluster in a single request", async () => {
+        const device = devices.bulb;
+        const endpoint = device.getEndpoint(1)!;
+        const configuredReportings = endpoint.configuredReportings;
+        const reportings = [
+            {
+                cluster: {name: "genOnOff", ID: 6},
+                attribute: {name: "onOff", ID: 0},
+                minimumReportInterval: 1,
+                maximumReportInterval: 10,
+                reportableChange: 20,
+            },
+            {
+                cluster: {name: "genOnOff", ID: 6},
+                attribute: {name: "startUpOnOff", ID: 16387},
+                minimumReportInterval: 1,
+                maximumReportInterval: 10,
+                reportableChange: 20,
+            },
+        ];
+
+        endpoint.configuredReportings = reportings;
+        endpoint.readReportingConfig.mockClear();
+        endpoint.readReportingConfig.mockImplementationOnce(() => Promise.resolve([]));
+        mockMQTTPublishAsync.mockClear();
+        mockMQTTEvents.message("zigbee2mqtt/bridge/request/device/reporting/sync", stringify({id: "bulb", endpoint: 1}));
+        await flushPromises();
+
+        expect(endpoint.readReportingConfig).toHaveBeenCalledTimes(1);
+        expect(endpoint.readReportingConfig).toHaveBeenCalledWith(6, [{attribute: {ID: 0}}, {attribute: {ID: 16387}}], {});
+
+        endpoint.configuredReportings = configuredReportings;
+    });
+
+    it("Should read manufacturer specific attributes with their manufacturer code", async () => {
+        const device = devices.bulb;
+        const endpoint = device.getEndpoint(1)!;
+        const configuredReportings = endpoint.configuredReportings;
+
+        endpoint.configuredReportings = [
+            {
+                cluster: {name: "genOnOff", ID: 6},
+                attribute: {name: "someManufacturerAttribute", ID: 16384, manufacturerCode: 4476},
+                minimumReportInterval: 1,
+                maximumReportInterval: 10,
+                reportableChange: 20,
+            },
+        ];
+        endpoint.readReportingConfig.mockClear();
+        endpoint.readReportingConfig.mockImplementationOnce(() => Promise.resolve([]));
+        mockMQTTPublishAsync.mockClear();
+        mockMQTTEvents.message("zigbee2mqtt/bridge/request/device/reporting/sync", stringify({id: "bulb", endpoint: 1}));
+        await flushPromises();
+
+        expect(endpoint.readReportingConfig).toHaveBeenCalledWith(6, [{attribute: {ID: 16384}}], {manufacturerCode: 4476});
+
+        endpoint.configuredReportings = configuredReportings;
+    });
+
     it("Should not report an array reportable change as diverged", async () => {
         const device = devices.bulb;
         const endpoint = device.getEndpoint(1)!;
