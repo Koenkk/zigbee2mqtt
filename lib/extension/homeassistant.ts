@@ -427,10 +427,6 @@ const applyHomeAssistantExposeMetadata = (payload: DiscoveryEntry, homeAssistant
         payload.discovery_payload.icon = homeAssistant.icon;
     }
 
-    if (homeAssistant.name !== undefined) {
-        payload.discovery_payload.name = homeAssistant.name;
-    }
-
     if (homeAssistant.valueTemplate !== undefined) {
         if (homeAssistant.valueTemplate === null) {
             delete payload.discovery_payload.value_template;
@@ -1140,7 +1136,7 @@ export class HomeAssistant extends Extension {
                         object_id: endpointName ? `switch_${firstExpose.name}_${endpointName}` : `switch_${firstExpose.name}`,
                         discovery_payload: {
                             name:
-                                endpointName && !firstExpose.homeassistant?.preserveName
+                                endpointName && firstExpose.homeassistant?.name !== "preserve"
                                     ? /* v8 ignore next */ `${firstExpose.label} ${endpointName}`
                                     : firstExpose.label,
                             value_template:
@@ -1164,7 +1160,7 @@ export class HomeAssistant extends Extension {
                         mockProperties: [{property: firstExpose.property, value: null}],
                         discovery_payload: {
                             name:
-                                endpointName && !firstExpose.homeassistant?.preserveName
+                                endpointName && firstExpose.homeassistant?.name !== "preserve"
                                     ? /* v8 ignore next */ `${firstExpose.label} ${endpointName}`
                                     : firstExpose.label,
                             value_template: `{{ value_json["${firstExpose.property}"] }}`,
@@ -1192,7 +1188,9 @@ export class HomeAssistant extends Extension {
                         mockProperties: [{property: firstExpose.property, value: null}],
                         discovery_payload: {
                             name:
-                                endpointName && !firstExpose.homeassistant?.preserveName ? `${firstExpose.label} ${endpointName}` : firstExpose.label,
+                                endpointName && firstExpose.homeassistant?.name !== "preserve"
+                                    ? `${firstExpose.label} ${endpointName}`
+                                    : firstExpose.label,
                             value_template: `{{ value_json["${firstExpose.property}"] }}`,
                             command_topic: true,
                             command_topic_prefix: endpointName,
@@ -1243,7 +1241,10 @@ export class HomeAssistant extends Extension {
                     object_id: endpointName ? `${firstExpose.name}_${endpointName}` : `${firstExpose.name}`,
                     mockProperties: [{property: firstExpose.property, value: null}],
                     discovery_payload: {
-                        name: endpointName && !firstExpose.homeassistant?.preserveName ? `${firstExpose.label} ${endpointName}` : firstExpose.label,
+                        name:
+                            endpointName && firstExpose.homeassistant?.name !== "preserve"
+                                ? `${firstExpose.label} ${endpointName}`
+                                : firstExpose.label,
                         value_template: `{{ value_json["${firstExpose.property}"] }}`,
                         enabled_by_default: !allowsSet,
                         ...(firstExpose.unit && {unit_of_measurement: firstExpose.unit}),
@@ -1478,13 +1479,16 @@ export class HomeAssistant extends Extension {
                 delete entry.discovery_payload.entity_category;
             }
 
+            const exposeName = firstExpose.homeassistant?.name;
+
+            // If name = null Home Assistant will use the device name as entity name.
+            // This is intentionally a null-only check to distinguish it from an undefined value.
+            if (exposeName === null) {
+                entry.discovery_payload.name = null;
+            }
             // Let Home Assistant generate entity name when device_class is present.
-            // preserveName allows device_class and explicit name to coexist (e.g. derived sensors).
-            if (
-                entry.discovery_payload.device_class &&
-                entry.discovery_payload.name !== null &&
-                !firstExpose.homeassistant?.preserveName
-            ) {
+            // preserve name allows device_class and explicit name to coexist (e.g. derived sensors).
+            else if (entry.discovery_payload.device_class && exposeName !== "preserve") {
                 delete entry.discovery_payload.name;
             }
 
