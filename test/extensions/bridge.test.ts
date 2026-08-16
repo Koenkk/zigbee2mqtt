@@ -4198,19 +4198,16 @@ describe("Extension: Bridge", () => {
                                 {cluster: "genOnOff", target: {type: "group", id: 1}},
                                 {cluster: "genLevelCtrl", target: {type: "group", id: 1}},
                             ],
-                            added: [],
-                            removed: [],
                             missing_bindings: [],
                         },
-                        2: {bindings: [], added: [], removed: [], missing_bindings: []},
+                        2: {bindings: [], missing_bindings: []},
                     },
                 },
                 status: "ok",
             }),
             {},
         );
-        // nothing diverged, so no need to republish the devices
-        expect(mockMQTTPublishAsync).not.toHaveBeenCalledWith("zigbee2mqtt/bridge/devices", expect.any(String), {retain: true});
+        expect(mockMQTTPublishAsync).toHaveBeenCalledWith("zigbee2mqtt/bridge/devices", expect.any(String), {retain: true});
     });
 
     it("Should not let the bind extension respond to a binds read", async () => {
@@ -4229,7 +4226,7 @@ describe("Extension: Bridge", () => {
         );
     });
 
-    it("Should report bindings the device no longer holds", async () => {
+    it("Should report the bindings the device actually holds", async () => {
         const device = devices.remote;
         const endpoint = device.getEndpoint(1)!;
         const binds = endpoint.binds;
@@ -4250,9 +4247,6 @@ describe("Extension: Bridge", () => {
 
         expect(response.status).toBe("ok");
         expect(response.data.endpoints[1].bindings).toStrictEqual([]);
-        expect(response.data.endpoints[1].removed).toHaveLength(5);
-        expect(response.data.endpoints[1].added).toStrictEqual([]);
-        expect(mockLogger.warning).toHaveBeenCalledWith(expect.stringContaining("is missing 5 binding(s)"));
         expect(mockMQTTPublishAsync).toHaveBeenCalledWith("zigbee2mqtt/bridge/devices", expect.any(String), {retain: true});
 
         endpoint.binds = binds;
@@ -4270,9 +4264,8 @@ describe("Extension: Bridge", () => {
         const published = mockMQTTPublishAsync.mock.calls.find((c) => c[0] === "zigbee2mqtt/bridge/response/device/binds/read");
         const response = JSON.parse(published![1] as string);
 
+        // derived from current state, so repeated calls keep flagging it
         expect(response.data.endpoints[1].missing_bindings).toStrictEqual(["genOnOff"]);
-        // reported even though the cache and the device agree, so repeated calls keep flagging it
-        expect(response.data.endpoints[1].removed).toStrictEqual([]);
         expect(mockLogger.warning).toHaveBeenCalledWith(
             "Device 'bulb' endpoint 1 has configured reporting for genOnOff but is not bound to the coordinator, " +
                 "so it cannot report. Reconfigure the device to restore reporting.",
@@ -4315,14 +4308,14 @@ describe("Extension: Bridge", () => {
         const device = devices.remote;
 
         device.mockClear();
-        device.bindingTable.mockRejectedValueOnce(new Error("timeout"));
+        device.bindingTable.mockRejectedValueOnce(new Error("Status 'NOT_SUPPORTED'"));
         mockMQTTPublishAsync.mockClear();
         mockMQTTEvents.message("zigbee2mqtt/bridge/request/device/binds/read", stringify({id: "remote"}));
         await flushPromises();
 
         expect(mockMQTTPublishAsync).toHaveBeenCalledWith(
             "zigbee2mqtt/bridge/response/device/binds/read",
-            stringify({data: {}, status: "error", error: "timeout"}),
+            stringify({data: {}, status: "error", error: "Failed to read the binding table of 'remote' (Status 'NOT_SUPPORTED')"}),
             {},
         );
     });

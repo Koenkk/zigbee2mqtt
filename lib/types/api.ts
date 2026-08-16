@@ -255,12 +255,9 @@ export interface Zigbee2MQTTDeviceEndpointConfiguredReporting {
     reportable_change: number | number[];
 }
 
-export interface Zigbee2MQTTDeviceEndpointBindingDiff {
+export interface Zigbee2MQTTDeviceEndpointBindings {
+    /** The bindings the device itself holds */
     bindings: Zigbee2MQTTDeviceEndpointBinding[];
-    /** Bindings the device holds that were not known to Zigbee2MQTT */
-    added: Zigbee2MQTTDeviceEndpointBinding[];
-    /** Bindings known to Zigbee2MQTT that the device does not hold */
-    removed: Zigbee2MQTTDeviceEndpointBinding[];
     /** Clusters with configured reporting but no binding to the coordinator, the device cannot report those */
     missing_bindings: string[];
 }
@@ -625,7 +622,7 @@ export interface Zigbee2MQTTAPI {
 
     "bridge/response/device/binds/read": {
         id: string;
-        endpoints: Record<number, Zigbee2MQTTDeviceEndpointBindingDiff>;
+        endpoints: Record<number, Zigbee2MQTTDeviceEndpointBindings>;
     };
 
     "bridge/request/device/configure":

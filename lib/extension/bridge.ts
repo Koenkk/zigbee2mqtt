@@ -1,7 +1,6 @@
 import fs from "node:fs";
 import path from "node:path";
 import bind from "bind-decorator";
-import equals from "fast-deep-equal/es6";
 import {zip} from "fflate";
 import type winston from "winston";
 import Transport from "winston-transport";
@@ -587,7 +586,7 @@ export default class Bridge extends Extension {
     }
 
     /**
-     * Read the binding table from the device itself (ZDO `Mgmt_Bind_req`) and reconcile the cached bindings with it.
+     * Read the binding table from the device itself, which reconciles the cached binds of every endpoint with it.
      *
      * Zigbee2MQTT otherwise never verifies its cache, so a device that silently dropped its bindings keeps looking
      * correctly bound while it no longer reports anything.
@@ -598,22 +597,21 @@ export default class Bridge extends Extension {
         }
 
         const device = this.getEntity("device", message.id);
-        const before = new Map(device.zh.endpoints.map((e) => [e.ID, e.binds.map(utils.toEndpointBinding)]));
 
-        // updates the cached binds of every endpoint of the device
-        await device.zh.bindingTable();
+        try {
+            await device.zh.bindingTable();
+        } catch (error) {
+            // support is optional, devices without a binding table fail here
+            throw new Error(`Failed to read the binding table of '${device.name}' (${(error as Error).message})`);
+        }
+
+        await this.publishDevices();
 
         const endpoints: Zigbee2MQTTAPI["bridge/response/device/binds/read"]["endpoints"] = {};
         const coordinatorEndpoint = this.zigbee.firstCoordinatorEndpoint();
-        let diverged = 0;
 
         for (const endpoint of device.zh.endpoints) {
-            // biome-ignore lint/style/noNonNullAssertion: every endpoint was snapshotted above
-            const previous = before.get(endpoint.ID)!;
             const binds = endpoint.binds;
-            const bindings = binds.map(utils.toEndpointBinding);
-            const added = bindings.filter((b) => !previous.some((p) => equals(p, b)));
-            const removed = previous.filter((p) => !bindings.some((b) => equals(p, b)));
             const boundClusters = new Set(binds.filter((b) => b.target === coordinatorEndpoint).map((b) => b.cluster.ID));
             const missingBindings: string[] = [];
 
@@ -623,13 +621,6 @@ export default class Bridge extends Extension {
                 }
             }
 
-            if (removed.length > 0) {
-                logger.warning(
-                    `Device '${device.name}' endpoint ${endpoint.ID} is missing ${removed.length} binding(s) Zigbee2MQTT expected: ` +
-                        `${removed.map((b) => b.cluster).join(", ")}. Reconfigure the device to restore reporting.`,
-                );
-            }
-
             if (missingBindings.length > 0) {
                 logger.warning(
                     `Device '${device.name}' endpoint ${endpoint.ID} has configured reporting for ${missingBindings.join(", ")} ` +
@@ -637,12 +628,7 @@ export default class Bridge extends Extension {
                 );
             }
 
-            diverged += added.length + removed.length;
-            endpoints[endpoint.ID] = {bindings, added, removed, missing_bindings: missingBindings};
-        }
-
-        if (diverged > 0) {
-            await this.publishDevices();
+            endpoints[endpoint.ID] = {bindings: binds.map(utils.toEndpointBinding), missing_bindings: missingBindings};
         }
 
         return utils.getResponse(message, {id: message.id, endpoints});
