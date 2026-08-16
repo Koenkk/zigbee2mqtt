@@ -10,13 +10,7 @@ import {InterviewState} from "zigbee-herdsman/dist/controller/model/device";
 import * as zhc from "zigbee-herdsman-converters";
 import Device from "../model/device";
 import type Group from "../model/group";
-import type {
-    Zigbee2MQTTAPI,
-    Zigbee2MQTTDevice,
-    Zigbee2MQTTDeviceEndpointReportingChange,
-    Zigbee2MQTTResponse,
-    Zigbee2MQTTResponseEndpoints,
-} from "../types/api";
+import type {Zigbee2MQTTAPI, Zigbee2MQTTDevice, Zigbee2MQTTResponse, Zigbee2MQTTResponseEndpoints} from "../types/api";
 import data from "../util/data";
 import logger from "../util/logger";
 import {objectAssignDeep} from "../util/objectAssignDeep";
@@ -43,7 +37,6 @@ export default class Bridge extends Extension {
         "device/configure_reporting": this.deviceReportingConfigure,
         "device/reporting/configure": this.deviceReportingConfigure,
         "device/reporting/read": this.deviceReportingRead,
-        "device/reporting/sync": this.deviceReportingSync,
         "device/binds/read": this.deviceBindsRead,
         "device/remove": this.deviceRemove,
         "device/interview": this.deviceInterview,
@@ -594,115 +587,6 @@ export default class Bridge extends Extension {
     }
 
     /**
-     * Read back every configured reporting Zigbee2MQTT has cached for the device and reconcile the cache with what the
-     * device actually holds. Entries the device does not have are pruned, diverging intervals are corrected.
-     */
-    @bind async deviceReportingSync(message: string | KeyValue): Promise<Zigbee2MQTTResponse<"bridge/response/device/reporting/sync">> {
-        if (typeof message !== "object" || message.id === undefined) {
-            throw new Error("Invalid payload");
-        }
-
-        const device = this.getEntity("device", message.id);
-        let endpoints = device.zh.endpoints;
-
-        if (message.endpoint !== undefined) {
-            const endpoint = device.endpoint(message.endpoint);
-
-            if (!endpoint) {
-                throw new Error(`Device '${device.ID}' does not have endpoint '${message.endpoint}'`);
-            }
-
-            endpoints = [endpoint];
-        }
-
-        const changes: Zigbee2MQTTDeviceEndpointReportingChange[] = [];
-        let diverged = 0;
-
-        for (const endpoint of endpoints) {
-            const before = endpoint.configuredReportings;
-
-            if (before.length === 0) {
-                continue;
-            }
-
-            // `readReportingConfig` allows a single manufacturer code per call, so read per cluster and manufacturer code
-            const groups = new Map<string, typeof before>();
-
-            for (const reporting of before) {
-                const key = `${reporting.cluster.ID}-${reporting.attribute.manufacturerCode}`;
-                const group = groups.get(key);
-
-                if (group) {
-                    group.push(reporting);
-                } else {
-                    groups.set(key, [reporting]);
-                }
-            }
-
-            for (const group of groups.values()) {
-                const {cluster, attribute} = group[0];
-
-                try {
-                    await endpoint.readReportingConfig(
-                        cluster.ID,
-                        group.map((r) => ({attribute: {ID: r.attribute.ID}})),
-                        attribute.manufacturerCode !== undefined ? {manufacturerCode: attribute.manufacturerCode} : {},
-                    );
-                } catch (error) {
-                    logger.warning(`Failed to read reporting config of '${device.name}' cluster '${cluster.name}' (${(error as Error).message})`);
-
-                    for (const reporting of group) {
-                        const {cluster: name, attribute: attr} = utils.toConfiguredReporting(reporting);
-
-                        changes.push({endpoint: endpoint.ID, cluster: name, attribute: attr, status: "failed"});
-                        diverged++;
-                    }
-
-                    continue;
-                }
-
-                const after = endpoint.configuredReportings;
-
-                for (const reporting of group) {
-                    const current = after.find((c) => c.cluster.ID === cluster.ID && c.attribute.ID === reporting.attribute.ID);
-
-                    if (!current) {
-                        const {cluster: name, attribute: attr} = utils.toConfiguredReporting(reporting);
-
-                        logger.warning(`Device '${device.name}' does not have the '${name}.${attr}' reporting Zigbee2MQTT expected`);
-                        changes.push({endpoint: endpoint.ID, cluster: name, attribute: attr, status: "removed"});
-                        diverged++;
-                        continue;
-                    }
-
-                    const unchanged =
-                        current.minimumReportInterval === reporting.minimumReportInterval &&
-                        current.maximumReportInterval === reporting.maximumReportInterval &&
-                        equals(current.reportableChange, reporting.reportableChange);
-
-                    if (!unchanged) {
-                        diverged++;
-                    }
-
-                    changes.push({
-                        endpoint: endpoint.ID,
-                        ...utils.toConfiguredReporting(current),
-                        status: unchanged ? "unchanged" : "updated",
-                    });
-                }
-            }
-        }
-
-        if (diverged > 0) {
-            await this.publishDevices();
-        }
-
-        logger.info(`Synced reporting for '${message.id}', ${diverged} of ${changes.length} diverged`);
-
-        return utils.getResponse(message, {id: message.id, changes});
-    }
-
-    /**
      * Read the binding table from the device itself (ZDO `Mgmt_Bind_req`) and reconcile the cached bindings with it.
      *
      * Zigbee2MQTT otherwise never verifies its cache, so a device that silently dropped its bindings keeps looking
@@ -1005,7 +889,13 @@ export default class Bridge extends Extension {
                 }
 
                 for (const configuredReporting of endpoint.configuredReportings) {
-                    data.configured_reportings.push(utils.toConfiguredReporting(configuredReporting));
+                    data.configured_reportings.push({
+                        cluster: configuredReporting.cluster.name,
+                        attribute: configuredReporting.attribute.name || configuredReporting.attribute.ID,
+                        minimum_report_interval: configuredReporting.minimumReportInterval,
+                        maximum_report_interval: configuredReporting.maximumReportInterval,
+                        reportable_change: configuredReporting.reportableChange,
+                    });
                 }
 
                 endpoints[endpoint.ID] = data;

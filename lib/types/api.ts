@@ -265,14 +265,6 @@ export interface Zigbee2MQTTDeviceEndpointBindingDiff {
     missing_bindings: string[];
 }
 
-export interface Zigbee2MQTTDeviceEndpointReportingChange
-    extends Partial<Omit<Zigbee2MQTTDeviceEndpointConfiguredReporting, "cluster" | "attribute">>,
-        Pick<Zigbee2MQTTDeviceEndpointConfiguredReporting, "cluster" | "attribute"> {
-    endpoint: number;
-    /** `removed` when the device does not hold the reporting, `failed` when it could not be read. Intervals are absent for both. */
-    status: "unchanged" | "updated" | "removed" | "failed";
-}
-
 export interface Zigbee2MQTTDeviceDefinition {
     source: "native" | "generated" | "external";
     model: string;
@@ -853,17 +845,6 @@ export interface Zigbee2MQTTAPI {
         manufacturer_code?: number;
     };
 
-    "bridge/request/device/reporting/sync": {
-        id: string;
-        /** When omitted, every endpoint of the device is synced */
-        endpoint?: string | number;
-    };
-
-    "bridge/response/device/reporting/sync": {
-        id: string;
-        changes: Zigbee2MQTTDeviceEndpointReportingChange[];
-    };
-
     "bridge/request/group/remove": {
         id: string;
         force?: boolean;
@@ -1062,7 +1043,6 @@ export type Zigbee2MQTTRequestEndpoints =
     | "bridge/request/device/rename"
     | "bridge/request/device/reporting/configure"
     | "bridge/request/device/reporting/read"
-    | "bridge/request/device/reporting/sync"
     | "bridge/request/group/remove"
     | "bridge/request/group/add"
     | "bridge/request/group/rename"
@@ -1113,7 +1093,6 @@ export type Zigbee2MQTTResponseEndpoints =
     | "bridge/response/device/rename"
     | "bridge/response/device/reporting/configure"
     | "bridge/response/device/reporting/read"
-    | "bridge/response/device/reporting/sync"
     | "bridge/response/group/remove"
     | "bridge/response/group/add"
     | "bridge/response/group/rename"

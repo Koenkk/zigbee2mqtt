@@ -9,7 +9,6 @@ import type * as zhc from "zigbee-herdsman-converters";
 import type {
     Zigbee2MQTTAPI,
     Zigbee2MQTTDeviceEndpointBinding,
-    Zigbee2MQTTDeviceEndpointConfiguredReporting,
     Zigbee2MQTTResponse,
     Zigbee2MQTTResponseEndpoints,
     Zigbee2MQTTScene,
@@ -288,16 +287,6 @@ function toEndpointBinding(bind: zh.Bind): Zigbee2MQTTDeviceEndpointBinding {
     };
 }
 
-function toConfiguredReporting(configuredReporting: zh.Endpoint["configuredReportings"][number]): Zigbee2MQTTDeviceEndpointConfiguredReporting {
-    return {
-        cluster: configuredReporting.cluster.name,
-        attribute: configuredReporting.attribute.name || configuredReporting.attribute.ID,
-        minimum_report_interval: configuredReporting.minimumReportInterval,
-        maximum_report_interval: configuredReporting.maximumReportInterval,
-        reportable_change: configuredReporting.reportableChange,
-    };
-}
-
 function flatten<Type>(arr: Type[][]): Type[] {
     return ([] as Type[]).concat(...arr);
 }
@@ -441,7 +430,6 @@ export default {
     isZHEndpoint,
     isZHGroup,
     toEndpointBinding,
-    toConfiguredReporting,
     hours,
     minutes,
     seconds,
