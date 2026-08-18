@@ -6,12 +6,11 @@ import {createServer as createSecureServer} from "node:https";
 import type {Socket} from "node:net";
 import {posix} from "node:path";
 import bind from "bind-decorator";
-import expressStaticGzip from "express-static-gzip";
-import finalhandler from "finalhandler";
 import WebSocket from "ws";
 import data from "../util/data";
 import logger from "../util/logger";
 import * as settings from "../util/settings";
+import {createStaticFileServer, sendNotFound} from "../util/staticFileServer";
 import {stringify} from "../util/stringify";
 import utils from "../util/utils";
 import Extension from "./extension";
@@ -65,46 +64,39 @@ export class Frontend extends Extension {
 
                 return false;
             };
-            const options: expressStaticGzip.ExpressStaticGzipOptions = {
-                enableBrotli: true,
-                serveStatic: {
-                    /* v8 ignore start */
-                    setHeaders: (res: ServerResponse, path: string): void => {
-                        if (path.endsWith("index.html")) {
-                            res.setHeader("Cache-Control", "no-store");
-                        }
-                    },
-                    /* v8 ignore stop */
-                },
-            };
             const frontend = (await import(settings.get().frontend.package)) as typeof import("zigbee2mqtt-frontend");
-            const fileServer = expressStaticGzip(frontend.default.getPath(), options);
-            const deviceIconsFileServer = expressStaticGzip(data.joinPath("device_icons"), options);
+            const logError = logger.error.bind(logger);
+            const fileServer = createStaticFileServer(frontend.default.getPath(), logError);
+            const deviceIconsFileServer = createStaticFileServer(data.joinPath("device_icons"), logError);
             const onRequest = (request: IncomingMessage, response: ServerResponse): void => {
-                const next = finalhandler(request, response);
                 // biome-ignore lint/style/noNonNullAssertion: `Only valid for request obtained from Server`
-                const newUrl = posix.relative(this.baseUrl, request.url!);
+                const url = request.url!;
+                const newUrl = posix.relative(this.baseUrl, url);
 
                 // The request url is not within the frontend base url, so the relative path starts with '..'
                 if (newUrl.startsWith(".")) {
-                    next();
+                    sendNotFound(request, response);
 
                     return;
                 }
 
-                // Attach originalUrl so that static-server can perform a redirect to '/' when serving the root directory.
-                // This is necessary for the browser to resolve relative assets paths correctly.
-                request.originalUrl = request.url;
+                // The base url itself is a directory, redirect to its trailing slash form so the browser resolves the
+                // relative asset paths in `index.html` against the frontend root instead of against its parent.
+                if (newUrl === "" && !url.endsWith("/")) {
+                    response.writeHead(301, {Location: `${url}/`});
+                    response.end();
+
+                    return;
+                }
+
                 request.url = `/${newUrl}`;
-                request.path = request.url;
 
                 if (newUrl.startsWith("device_icons/")) {
-                    request.path = request.path.replace("device_icons/", "");
                     request.url = request.url.replace("/device_icons", "");
 
-                    deviceIconsFileServer(request, response, next);
+                    deviceIconsFileServer(request, response);
                 } else {
-                    fileServer(request, response, next);
+                    fileServer(request, response);
                 }
             };
 
