@@ -785,6 +785,16 @@ describe("Extension: Bridge", () => {
                                 type: "text",
                             },
                             {
+                                access: 2,
+                                category: "config",
+                                description: "Initiate device identification",
+                                label: "Identify",
+                                name: "identify",
+                                property: "identify",
+                                type: "enum",
+                                values: ["identify"],
+                            },
+                            {
                                 access: 1,
                                 category: "diagnostic",
                                 description: "Link quality (signal strength)",
@@ -830,6 +840,17 @@ describe("Extension: Bridge", () => {
                                 type: "numeric",
                                 value_min: 0,
                                 value_step: 0.1,
+                            },
+                            {
+                                access: 2,
+                                description:
+                                    "Sets the duration of the identification procedure in seconds (i.e., how long the device would flash).The value ranges from 1 to 30 seconds (default: 3).",
+                                label: "Identify timeout",
+                                name: "identify_timeout",
+                                property: "identify_timeout",
+                                type: "numeric",
+                                value_max: 30,
+                                value_min: 1,
                             },
                             {
                                 access: 2,
@@ -3420,7 +3441,7 @@ describe("Extension: Bridge", () => {
                         "    model: 'lumi.plug',\n" +
                         "    vendor: '',\n" +
                         "    description: 'Automatically generated definition',\n" +
-                        '    extend: [m.onOff({"powerOnBehavior":false})],\n' +
+                        "    extend: [m.onOff()],\n" +
                         "};\n",
                 },
                 status: "ok",
