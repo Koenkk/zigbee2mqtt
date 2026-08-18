@@ -743,7 +743,13 @@ export default class Bridge extends Extension {
                 // Refresh Cluster definition
                 await this.publishDefinitions();
 
-                const responseData: Zigbee2MQTTAPI["bridge/response/device/remove"] = {id: ID, block, force, keep_config: keepConfig, clear_cache: clearCache};
+                const responseData: Zigbee2MQTTAPI["bridge/response/device/remove"] = {
+                    id: ID,
+                    block,
+                    force,
+                    keep_config: keepConfig,
+                    clear_cache: clearCache,
+                };
 
                 return utils.getResponse(message, responseData);
             }
