@@ -526,7 +526,7 @@ describe("Extension: Publish", () => {
         expect(group.command).toHaveBeenCalledWith("genOnOff", "on", {}, {});
         expect(mockMQTTPublishAsync).toHaveBeenCalledTimes(2);
         expect(mockMQTTPublishAsync.mock.calls[1][0]).toStrictEqual("zigbee2mqtt/hue_twilight_group");
-        expect(JSON.parse(mockMQTTPublishAsync.mock.calls[1][1])).toStrictEqual({state: "ON"});
+        expect(JSON.parse(mockMQTTPublishAsync.mock.calls[1][1])).toStrictEqual({state: "ON", group_state: "ON"});
     });
 
     it("Should publish messages to groups with on and brightness", async () => {

@@ -268,7 +268,10 @@ describe("Extension: Groups", () => {
         await flushPromises();
         expect(mockMQTTPublishAsync).toHaveBeenCalledTimes(2);
         expect(mockMQTTPublishAsync).toHaveBeenCalledWith("zigbee2mqtt/GLEDOPTO_2ID", stringify({state_cct: "ON"}), {retain: false, qos: 0});
-        expect(mockMQTTPublishAsync).toHaveBeenCalledWith("zigbee2mqtt/gledopto_group", stringify({state: "ON"}), {retain: false, qos: 0});
+        expect(mockMQTTPublishAsync).toHaveBeenCalledWith("zigbee2mqtt/gledopto_group", stringify({state: "ON", group_state: "ON"}), {
+            retain: false,
+            qos: 0,
+        });
         expect(group.command).toHaveBeenCalledTimes(1);
         expect(group.command).toHaveBeenCalledWith("genOnOff", "on", {}, {});
     });
@@ -281,7 +284,10 @@ describe("Extension: Groups", () => {
         await flushPromises();
         expect(mockMQTTPublishAsync).toHaveBeenCalledTimes(2);
         expect(mockMQTTPublishAsync).toHaveBeenCalledWith("zigbee2mqtt/GLEDOPTO_2ID", stringify({state_cct: "ON"}), {retain: false, qos: 0});
-        expect(mockMQTTPublishAsync).toHaveBeenCalledWith("zigbee2mqtt/gledopto_group", stringify({state: "ON"}), {retain: false, qos: 0});
+        expect(mockMQTTPublishAsync).toHaveBeenCalledWith("zigbee2mqtt/gledopto_group", stringify({state: "ON", group_state: "ON"}), {
+            retain: false,
+            qos: 0,
+        });
         expect(group.command).toHaveBeenCalledTimes(0);
     });
 

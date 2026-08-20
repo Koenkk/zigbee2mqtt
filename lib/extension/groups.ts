@@ -198,13 +198,12 @@ export default class Groups extends Extension {
 
             if (device?.isDevice() && this.state.exists(device)) {
                 const state = this.state.get(device);
-                const endpointNames = device.getEndpointNames();
+                const endpointName = device.endpointName(member);
                 const stateKey =
-                    endpointNames &&
-                    endpointNames.length >= member.ID &&
-                    device.definition?.meta?.multiEndpoint &&
-                    !device.definition.meta.multiEndpointSkip?.includes("state")
-                        ? `state_${endpointNames[member.ID - 1]}`
+                    endpointName &&
+                    !device.definition?.meta?.multiEndpointSkip?.includes("state") &&
+                    (device.definition?.meta?.multiEndpoint || state.state === undefined)
+                        ? `state_${endpointName}`
                         : "state";
 
                 const memberState = state[stateKey];
