@@ -85,6 +85,28 @@ describe("Extension: Publish", () => {
         expect(mockMQTTPublishAsync.mock.calls[0][2]).toStrictEqual({qos: 0, retain: false});
     });
 
+    it("Should refresh dynamic exposes requested by a set converter", async () => {
+        const device = controller.zigbee.resolveEntity("bulb_color")!;
+        const definition = device.definition!;
+        const converter = {
+            key: ["dynamic_expose_test"],
+            convertSet: (_entity: unknown, _key: string, _value: unknown, meta: {deviceExposesChanged: () => void}) => {
+                meta.deviceExposesChanged();
+            },
+        };
+        definition.toZigbee ??= [];
+        definition.toZigbee.push(converter);
+        const exposesChanged = vi.spyOn(controller.eventBus, "emitExposesAndDevicesChanged");
+
+        try {
+            await mockMQTTEvents.message("zigbee2mqtt/bulb_color/set", stringify({dynamic_expose_test: true}));
+            await flushPromises();
+            expect(exposesChanged).toHaveBeenCalledWith(device);
+        } finally {
+            definition.toZigbee.pop();
+        }
+    });
+
     it("Should corretly handle mallformed messages", async () => {
         await mockMQTTEvents.message("zigbee2mqtt/foo", "");
         await mockMQTTEvents.message("zigbee2mqtt/bulb_color/set", "");
