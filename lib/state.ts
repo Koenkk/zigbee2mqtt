@@ -1,9 +1,8 @@
 import {existsSync, readFileSync, writeFileSync} from "node:fs";
 
-import objectAssignDeep from "object-assign-deep";
-
 import data from "./util/data";
 import logger from "./util/logger";
+import {objectAssignDeep} from "./util/objectAssignDeep";
 import * as settings from "./util/settings";
 import utils from "./util/utils";
 

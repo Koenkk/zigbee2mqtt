@@ -180,8 +180,11 @@ export default class Receive extends Extension {
 
         if (!utils.objectIsEmpty(payload)) {
             await publish(payload);
-        } else {
-            await utils.publishLastSeen({device: data.device, reason: "messageEmitted"}, settings.get(), true, this.publishEntityState);
+        } else if (settings.get().advanced.last_seen && settings.get().advanced.last_seen !== "disable") {
+            // A message was received that produced no payload (e.g. a frame the converter has no data
+            // for). Publish through the regular publish() path so the per-device debounce/throttle
+            // still applies, instead of publishing the full cached state immediately via publishLastSeen.
+            await publish({});
         }
     }
 }

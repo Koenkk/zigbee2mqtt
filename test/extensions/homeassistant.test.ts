@@ -281,6 +281,25 @@ describe("Extension: HomeAssistant", () => {
         expect(configs.find((config) => config.object_id === "voltage")?.discovery_payload).not.toHaveProperty("type");
     });
 
+    it("Should set discovery name to null when expose specifies homeassistant name null", () => {
+        const createDevice = (exposes: zhc.Expose[]): Device =>
+            ({
+                definition: {},
+                isDevice: (): boolean => true,
+                isGroup: (): boolean => false,
+                endpoint: () => undefined,
+                options: {},
+                exposes: (): zhc.Expose[] => exposes,
+                zh: {endpoints: []},
+            }) as Device;
+
+        const contactExpose = new zhc.Binary("contact", zhc.access.STATE, false, true).withHomeAssistant({name: null});
+
+        // @ts-expect-error private
+        const configs = extension.getConfigs(createDevice([contactExpose]));
+        expect(configs.find((config) => config.object_id === "contact")?.discovery_payload.name).toBeNull();
+    });
+
     it("Should discover devices and groups", async () => {
         settings.set(["homeassistant", "experimental_event_entities"], true);
         settings.set(["groups", "9", "homeassistant"], {name: "HA Discovery Group", icon: "mdi:lightbulb-group"});
@@ -1867,6 +1886,7 @@ describe("Extension: HomeAssistant", () => {
                 effect: null,
                 effect_color: null,
                 effect_speed: null,
+                identify: null,
                 linkquality: null,
                 state: null,
                 power_on_behavior: null,
@@ -1892,6 +1912,7 @@ describe("Extension: HomeAssistant", () => {
                 effect: null,
                 effect_color: null,
                 effect_speed: null,
+                identify: null,
                 linkquality: null,
                 state: null,
                 power_on_behavior: null,
@@ -1916,6 +1937,7 @@ describe("Extension: HomeAssistant", () => {
                 effect: null,
                 effect_color: null,
                 effect_speed: null,
+                identify: null,
                 state: "ON",
                 power_on_behavior: null,
                 update: {state: null, installed_version: -1, latest_version: -1},
