@@ -1007,9 +1007,9 @@ export class HomeAssistant extends Extension {
                             `${closingState}` +
                             `{% elif "${stateProperty}" in value_json %}` +
                             `{{ value_json["${stateProperty}"] }}` +
-                            `{% else %}` +
+                            "{% else %}" +
                             `${stoppedState}` +
-                            `{% endif %}`;
+                            "{% endif %}";
                     }
                 }
 
