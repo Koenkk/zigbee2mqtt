@@ -3624,6 +3624,28 @@ describe("Extension: Bridge", () => {
         );
     });
 
+    it("Should warn on unsupported device option", async () => {
+        mockMQTTPublishAsync.mockClear();
+        mockLogger.warning.mockClear();
+        mockMQTTEvents.message("zigbee2mqtt/bridge/request/device/options", stringify({options: {unsupported: true}, id: "bulb"}));
+        await flushPromises();
+        expect(settings.getDevice("bulb")).toHaveProperty("unsupported");
+        expect(mockLogger.warning).toHaveBeenCalledWith("Device 'bulb' does not support option 'unsupported'");
+        expect(mockMQTTPublishAsync).toHaveBeenCalledWith(
+            "zigbee2mqtt/bridge/response/device/options",
+            stringify({
+                data: {
+                    from: {retain: true, description: "this is my bulb"},
+                    to: {retain: true, description: "this is my bulb", unsupported: true},
+                    id: "bulb",
+                    restart_required: false,
+                },
+                status: "ok",
+            }),
+            {},
+        );
+    });
+
     it("Should allow to add group by string", async () => {
         mockMQTTPublishAsync.mockClear();
         mockMQTTEvents.message("zigbee2mqtt/bridge/request/group/add", "group_193");
