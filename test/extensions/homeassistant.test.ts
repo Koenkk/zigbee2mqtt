@@ -1978,6 +1978,29 @@ describe("Extension: HomeAssistant", () => {
         expect(message).toStrictEqual({color_mode: "brightness", state: "ON"});
     });
 
+    it("Should coerce an unsupported color_mode on a multi-endpoint light (light_<endpoint>)", () => {
+        // Same rule as the single-endpoint color-temperature-only case above, but keyed by the
+        // color_mode_<endpoint>/color_<endpoint>/color_temp_<endpoint> properties multi-endpoint
+        // lights (e.g. zigfred plus) use instead of the bare ones.
+        const entity = {
+            ID: "stub_multi_endpoint",
+            isDevice: (): boolean => true,
+            isGroup: (): boolean => false,
+            definition: {},
+        } as unknown as Device;
+        // @ts-expect-error private
+        extension.discovered[entity.ID] = {
+            messages: {"light/stub/light_l1/config": {payload: stringify({supported_color_modes: ["color_temp"]}), published: true}},
+            triggers: new Set(),
+            mockProperties: new Set(),
+            discovered: true,
+        };
+        const message: KeyValueAny = {color_mode_l1: "xy", color_l1: {x: 0.4576, y: 0.41}, color_temp_l1: 300, state_l1: "ON"};
+        // @ts-expect-error private
+        extension.adjustMessageBeforePublish(entity, message);
+        expect(message).toStrictEqual({color_mode_l1: "color_temp", color_temp_l1: 300, state_l1: "ON"});
+    });
+
     it("Should not touch color_mode xy on a light that supports it (control case)", async () => {
         // Control case for the coercion above: bulb_color supports `xy`, so a reported `xy`
         // color_mode must be published unchanged.
