@@ -2150,8 +2150,56 @@ export class HomeAssistant extends Extension {
             }
         }
 
+        this.coerceUnsupportedColorMode(entity, message);
+
         if (entity.isDevice() && entity.definition?.ota && message.update?.latest_version == null) {
             message.update = {...message.update, installed_version: -1, latest_version: -1};
+        }
+    }
+
+    /**
+     * Some lights report a `color_mode` that is not in their Home Assistant discovery config's
+     * `supported_color_modes`, e.g. a color-temperature-only light that reports `xy` right after
+     * power-on. Home Assistant's MQTT JSON light schema then logs
+     * `Invalid color mode 'xy' received` and ignores the whole update.
+     * https://github.com/Koenkk/zigbee2mqtt/issues/28757
+     * https://github.com/Koenkk/zigbee2mqtt/issues/25052
+     * https://github.com/Koenkk/zigbee-herdsman-converters/pull/12943
+     *
+     * Coerce such a `color_mode` to `color_temp` whenever the light's discovered
+     * `supported_color_modes` includes it, and drop the (now invalid) `color` object so Home
+     * Assistant does not additionally reject that. Lights whose reported `color_mode` is already
+     * supported (the vast majority of updates) are left untouched.
+     */
+    private coerceUnsupportedColorMode(entity: Device | Group | Bridge, message: KeyValue): void {
+        const discovered = this.getDiscovered(entity);
+
+        for (const topic in discovered.messages) {
+            const topicMatch = topic.match(this.discoveryRegexWoTopic);
+            const lightMatch = topicMatch && topicMatch[1] === "light" ? /^light(?:_(.+))?$/.exec(topicMatch[3]) : null;
+
+            if (!lightMatch) {
+                continue;
+            }
+
+            const endpoint = lightMatch[1];
+            const colorModeKey = endpoint ? `color_mode_${endpoint}` : "color_mode";
+            const colorMode = message[colorModeKey];
+
+            if (typeof colorMode !== "string") {
+                continue;
+            }
+
+            const supportedColorModes: string[] | undefined = JSON.parse(discovered.messages[topic].payload).supported_color_modes;
+
+            if (!supportedColorModes || supportedColorModes.includes(colorMode)) {
+                continue;
+            }
+
+            if (supportedColorModes.includes("color_temp")) {
+                message[colorModeKey] = "color_temp";
+                delete message[endpoint ? `color_${endpoint}` : "color"];
+            }
         }
     }
 
