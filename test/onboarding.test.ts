@@ -31,16 +31,10 @@ const mockHttpClose = vi.fn<Server["close"]>(
     },
 );
 const mockFindAllDevices = vi.fn<typeof findAllDevices>(async () => []);
-const mockStaticFileServer = vi.fn((_req, res, next) => {
-    if (typeof next === "function") {
-        next();
-    }
-
+const mockStaticFileServer = vi.fn((_req, res) => {
     res.end();
 });
-const mockExpressStaticGzip = vi.fn((_path: unknown, _options: unknown) => mockStaticFileServer);
-const mockFinalHandlerNext = vi.fn();
-const mockFinalhandler = vi.fn((_req: unknown, _res: unknown) => mockFinalHandlerNext);
+const mockCreateStaticFileServer = vi.fn((_dir: unknown, _logError: unknown) => mockStaticFileServer);
 
 vi.mock("node:fs", {spy: true});
 vi.mock("node:http", () => ({
@@ -62,11 +56,8 @@ vi.mock("node:http", () => ({
         };
     }),
 }));
-vi.mock("express-static-gzip", () => ({
-    default: vi.fn((path, options) => mockExpressStaticGzip(path, options)),
-}));
-vi.mock("finalhandler", () => ({
-    default: vi.fn((req, res) => mockFinalhandler(req, res)),
+vi.mock("../lib/util/staticFileServer", () => ({
+    createStaticFileServer: vi.fn((dir, logError) => mockCreateStaticFileServer(dir, logError)),
 }));
 vi.mock("zigbee-herdsman/dist/adapter/adapterDiscovery", () => ({
     findAllDevices: vi.fn(() => mockFindAllDevices()),
@@ -194,10 +185,7 @@ describe("Onboarding", () => {
         mockFindAllDevices.mockClear();
         mockHttpErrorListener = undefined;
         mockStaticFileServer.mockClear();
-        mockExpressStaticGzip.mockClear();
-        mockFinalHandlerNext.mockClear();
-        mockFinalhandler.mockClear();
-        mockStaticFileServer.mockClear();
+        mockCreateStaticFileServer.mockClear();
         settings.reRead();
     });
 
@@ -735,7 +723,6 @@ describe("Onboarding", () => {
         });
 
         await expect(p).resolves.toStrictEqual(true);
-        expect(mockFinalhandler).toHaveBeenCalled();
         expect(mockStaticFileServer).toHaveBeenCalled();
     });
 
@@ -757,7 +744,6 @@ describe("Onboarding", () => {
         });
 
         await expect(p).resolves.toStrictEqual(false);
-        expect(mockFinalhandler).toHaveBeenCalled();
         expect(mockStaticFileServer).toHaveBeenCalled();
     });
 

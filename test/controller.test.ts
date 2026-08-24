@@ -1061,6 +1061,17 @@ describe("Controller", () => {
         );
     });
 
+    it("Publish entity state attribute output with a null color", async () => {
+        await controller.start();
+        settings.set(["advanced", "output"], "attribute_and_json");
+        mockMQTTPublishAsync.mockClear();
+        const device = getZ2MDevice("bulb");
+        await controller.publishEntityState(device, {state: "ON", color: null});
+        await flushPromises();
+        expect(mockMQTTPublishAsync).toHaveBeenCalledWith("zigbee2mqtt/bulb/state", "ON", {qos: 0, retain: true});
+        expect(mockMQTTPublishAsync).toHaveBeenCalledWith("zigbee2mqtt/bulb/color", "", {qos: 0, retain: true});
+    });
+
     it("Publish entity state attribute_json output filtered", async () => {
         await controller.start();
         settings.set(["advanced", "output"], "attribute_and_json");
