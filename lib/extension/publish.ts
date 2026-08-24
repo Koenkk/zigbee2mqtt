@@ -216,7 +216,7 @@ export default class Publish extends Extension {
 
             // Converter didn't return a result, skip
             const entitySettingsKeyValue: KeyValue = entitySettings;
-            const meta: zhc.Tz.Meta & {deviceExposesChanged: () => void} = {
+            const meta: zhc.Tz.Meta = {
                 endpoint_name: endpointName,
                 options: entitySettingsKeyValue,
                 message: {...message},

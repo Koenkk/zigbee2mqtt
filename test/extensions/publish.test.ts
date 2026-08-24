@@ -8,7 +8,7 @@ import {flushPromises} from "../mocks/utils";
 import {devices, groups, events as mockZHEvents} from "../mocks/zigbeeHerdsman";
 
 import {stringify} from "../../lib/util/stringify";
-import {clearGlobalStore} from "zigbee-herdsman-converters";
+import {clearGlobalStore, type Tz} from "zigbee-herdsman-converters";
 import {Controller} from "../../lib/controller";
 import {loadTopicGetSetRegex} from "../../lib/extension/publish";
 import * as settings from "../../lib/util/settings";
@@ -88,9 +88,9 @@ describe("Extension: Publish", () => {
     it("Should refresh dynamic exposes requested by a set converter", async () => {
         const device = controller.zigbee.resolveEntity("bulb_color")!;
         const definition = device.definition!;
-        const converter = {
+        const converter: Tz.Converter = {
             key: ["dynamic_expose_test"],
-            convertSet: (_entity: unknown, _key: string, _value: unknown, meta: {deviceExposesChanged: () => void}) => {
+            convertSet: (_entity, _key, _value, meta) => {
                 meta.deviceExposesChanged();
             },
         };
