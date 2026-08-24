@@ -1840,10 +1840,6 @@ describe("Extension: HomeAssistant", () => {
     });
 
     it("Should copy hue/saturtion to h/s if present", async () => {
-        // bulb_color (LLC020) prefers `xy` over `hs` (see `preferHS` in exposeToConfig), so its HA
-        // discovery only lists `xy`/`color_temp` as supported_color_modes. A `hs` update is therefore
-        // coerced to `color_temp` (see "Should coerce an unsupported color_mode to color_temp" below)
-        // and the h/s copy below never reaches Home Assistant for this device/mode combination.
         const device = devices.bulb_color;
         const data = {currentHue: 0, currentSaturation: 254};
         const payload = {data, cluster: "lightingColorCtrl", device, endpoint: device.getEndpoint(1), type: "attributeReport", linkquality: 10};
@@ -1854,7 +1850,8 @@ describe("Extension: HomeAssistant", () => {
         expect(mockMQTTPublishAsync).toHaveBeenCalledWith(
             "zigbee2mqtt/bulb_color",
             stringify({
-                color_mode: "color_temp",
+                color: {hue: 0, saturation: 100, h: 0, s: 100},
+                color_mode: "hs",
                 effect: null,
                 effect_color: null,
                 effect_speed: null,
@@ -1867,30 +1864,42 @@ describe("Extension: HomeAssistant", () => {
         );
     });
 
-    it("Should still copy hue/saturation to h/s when the reported color_mode is supported", () => {
-        // Isolates the h/s copy handled above from the color_mode coercion: here `xy` is a
-        // supported color mode for bulb_color, so adjustMessageBeforePublish leaves color_mode
-        // alone and only the hue -> h / saturation -> s copy applies.
-        const entity = getZ2MEntity(devices.bulb_color);
-        const message: KeyValueAny = {color_mode: "xy", color: {x: 0.4576, y: 0.41, hue: 0, saturation: 100}};
-        // @ts-expect-error private
-        extension.adjustMessageBeforePublish(entity, message);
-        expect(message).toStrictEqual({
-            color: {x: 0.4576, y: 0.41, hue: 0, saturation: 100, h: 0, s: 100},
-            color_mode: "xy",
-            effect: null,
-            effect_color: null,
-            effect_speed: null,
-            linkquality: null,
-            power_on_behavior: null,
-            state: null,
-            update: {installed_version: -1, latest_version: -1, state: null},
-        });
+    it("Should not touch color_mode hs on a color-capable light that supports it (control case, #28757)", async () => {
+        // bulb_color (LLC020) supports both `xy` and `hs`, but z2m's `preferHS` tie-break in
+        // exposeToConfig discovers it to Home Assistant as `xy`-only (supported_color_modes:
+        // ["xy", "color_temp"]). A `hs` update is therefore not literally a "supported" mode either
+        // - yet coerceUnsupportedColorMode deliberately leaves it alone (see the doc comment on
+        // coerceUnsupportedColorMode) because this device *does* have color support: forcing it to
+        // color_temp would misrepresent an actively-displayed saturated color as white. This is the
+        // real-world shape of https://github.com/Koenkk/zigbee2mqtt/issues/28757 (an IKEA LED2110R3
+        // full-color bulb sitting in `hs` mode) and is deliberately not covered by this fix.
+        const device = devices.bulb_color;
+        const data = {currentHue: 0, currentSaturation: 254};
+        const payload = {data, cluster: "lightingColorCtrl", device, endpoint: device.getEndpoint(1), type: "attributeReport", linkquality: 10};
+        mockMQTTPublishAsync.mockClear();
+        await mockZHEvents.message(payload);
+        await flushPromises();
+        expect(mockMQTTPublishAsync).toHaveBeenCalledTimes(1);
+        expect(mockMQTTPublishAsync).toHaveBeenCalledWith(
+            "zigbee2mqtt/bulb_color",
+            stringify({
+                color: {hue: 0, saturation: 100, h: 0, s: 100},
+                color_mode: "hs",
+                effect: null,
+                effect_color: null,
+                effect_speed: null,
+                linkquality: null,
+                state: null,
+                power_on_behavior: null,
+                update: {state: null, installed_version: -1, latest_version: -1},
+            }),
+            {retain: false, qos: 0},
+        );
     });
 
     it("Should coerce an unsupported color_mode to color_temp on a color-temperature-only light", async () => {
-        // https://github.com/Koenkk/zigbee2mqtt/issues/28757, https://github.com/Koenkk/zigbee2mqtt/issues/25052
-        // https://github.com/Koenkk/zigbee-herdsman-converters/pull/12943
+        // https://github.com/Koenkk/zigbee2mqtt/issues/25052, https://github.com/Koenkk/zigbee2mqtt/issues/21710
+        // https://github.com/Koenkk/zigbee2mqtt/issues/32799, https://github.com/Koenkk/zigbee-herdsman-converters/pull/12943
         // `bulb` (LED1545G12) is color-temperature-only (supported_color_modes: ["color_temp"]), but
         // some color-temp-only lights report a stray `colorMode: xy` (e.g. right after power-on).
         // Home Assistant would log "Invalid color mode 'xy' received" and ignore the update, so it
@@ -1917,6 +1926,56 @@ describe("Extension: HomeAssistant", () => {
             }),
             {retain: true, qos: 0},
         );
+    });
+
+    it("Should drop color_mode on a color-temperature-only light when no color_temp value is present", () => {
+        // Guards against trading one Home Assistant warning for another: coercing color_mode to
+        // "color_temp" without an accompanying color_temp value in the same message would make HA's
+        // schema_json instead log "Invalid or incomplete color value received" (it reads
+        // values["color_temp"] unconditionally once color_mode says color_temp). Dropping color_mode
+        // entirely means HA simply leaves color alone for this update - same as if the device hadn't
+        // reported anything color-related at all.
+        const entity = {
+            ID: "stub_color_temp_only",
+            isDevice: (): boolean => true,
+            isGroup: (): boolean => false,
+            definition: {},
+        } as unknown as Device;
+        // @ts-expect-error private
+        extension.discovered[entity.ID] = {
+            messages: {"light/stub/light/config": {payload: stringify({supported_color_modes: ["color_temp"]}), published: true}},
+            triggers: new Set(),
+            mockProperties: new Set(),
+            discovered: true,
+        };
+        const message: KeyValueAny = {color_mode: "xy", color: {x: 0.4576, y: 0.41}, state: "ON"};
+        // @ts-expect-error private
+        extension.adjustMessageBeforePublish(entity, message);
+        expect(message).toStrictEqual({state: "ON"});
+    });
+
+    it("Should coerce an unsupported color_mode to brightness on a light with no color support", () => {
+        // https://github.com/Koenkk/zigbee2mqtt/issues/26545 added the `["brightness"]` discovery
+        // fallback for lights with no color capability at all (see exposeToConfig). Those can still
+        // carry a stale/bogus color_mode (e.g. left over in cached state), which must be cleared up
+        // the same way as for color-temperature-only lights above.
+        const entity = {
+            ID: "stub_brightness_only",
+            isDevice: (): boolean => true,
+            isGroup: (): boolean => false,
+            definition: {},
+        } as unknown as Device;
+        // @ts-expect-error private
+        extension.discovered[entity.ID] = {
+            messages: {"light/stub/light/config": {payload: stringify({supported_color_modes: ["brightness"]}), published: true}},
+            triggers: new Set(),
+            mockProperties: new Set(),
+            discovered: true,
+        };
+        const message: KeyValueAny = {color_mode: "xy", color: {x: 0.4576, y: 0.41}, state: "ON"};
+        // @ts-expect-error private
+        extension.adjustMessageBeforePublish(entity, message);
+        expect(message).toStrictEqual({color_mode: "brightness", state: "ON"});
     });
 
     it("Should not touch color_mode xy on a light that supports it (control case)", async () => {

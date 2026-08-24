@@ -2158,18 +2158,25 @@ export class HomeAssistant extends Extension {
     }
 
     /**
-     * Some lights report a `color_mode` that is not in their Home Assistant discovery config's
-     * `supported_color_modes`, e.g. a color-temperature-only light that reports `xy` right after
-     * power-on. Home Assistant's MQTT JSON light schema then logs
-     * `Invalid color mode 'xy' received` and ignores the whole update.
-     * https://github.com/Koenkk/zigbee2mqtt/issues/28757
+     * Lights with no color support at all - `supported_color_modes` has exactly one entry, one of
+     * `color_temp`, `brightness`, or `onoff` - sometimes report a stray/unsupported `color_mode`
+     * (e.g. `xy` right after power-on, or a bogus value left over in cached state); Home Assistant's
+     * MQTT JSON light schema then logs `Invalid color mode 'x' received` and ignores the whole
+     * update. For those lights only, drop the (now invalid) `color` object and coerce `color_mode`
+     * to the light's one supported mode - using `color_temp` solely when a `color_temp` value is
+     * present in the same message, otherwise dropping `color_mode` entirely so Home Assistant just
+     * leaves color alone instead of logging "Invalid or incomplete color value received" for the
+     * missing value. Lights that do support `xy`/`hs` are left fully untouched, even when reporting
+     * the other one of the two - that is the shape of
+     * https://github.com/Koenkk/zigbee2mqtt/issues/28757 (a full-color light z2m's `preferHS`
+     * discovered to Home Assistant as `xy`-only while actively displaying a saturated `hs` color) -
+     * because forcing such a light to `color_temp` would misrepresent it as white; that variant
+     * needs an `hs` <-> `xy` conversion (or discovering both modes), which is out of scope here.
      * https://github.com/Koenkk/zigbee2mqtt/issues/25052
+     * https://github.com/Koenkk/zigbee2mqtt/issues/21710
+     * https://github.com/Koenkk/zigbee2mqtt/issues/32799
+     * https://github.com/Koenkk/zigbee2mqtt/issues/26545
      * https://github.com/Koenkk/zigbee-herdsman-converters/pull/12943
-     *
-     * Coerce such a `color_mode` to `color_temp` whenever the light's discovered
-     * `supported_color_modes` includes it, and drop the (now invalid) `color` object so Home
-     * Assistant does not additionally reject that. Lights whose reported `color_mode` is already
-     * supported (the vast majority of updates) are left untouched.
      */
     private coerceUnsupportedColorMode(entity: Device | Group | Bridge, message: KeyValue): void {
         const discovered = this.getDiscovered(entity);
@@ -2196,9 +2203,21 @@ export class HomeAssistant extends Extension {
                 continue;
             }
 
-            if (supportedColorModes.includes("color_temp")) {
+            const onlySupportedMode = supportedColorModes.length === 1 ? supportedColorModes[0] : undefined;
+
+            if (!onlySupportedMode || !["color_temp", "brightness", "onoff"].includes(onlySupportedMode)) {
+                // Multi-mode or color-capable (xy/hs) light: leave untouched, see #28757 above.
+                continue;
+            }
+
+            delete message[endpoint ? `color_${endpoint}` : "color"];
+
+            if (onlySupportedMode !== "color_temp") {
+                message[colorModeKey] = onlySupportedMode;
+            } else if (message[endpoint ? `color_temp_${endpoint}` : "color_temp"] !== undefined) {
                 message[colorModeKey] = "color_temp";
-                delete message[endpoint ? `color_${endpoint}` : "color"];
+            } else {
+                delete message[colorModeKey];
             }
         }
     }
