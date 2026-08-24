@@ -3627,8 +3627,16 @@ describe("Extension: Bridge", () => {
     it("Should warn on unsupported device option", async () => {
         mockMQTTPublishAsync.mockClear();
         mockLogger.warning.mockClear();
+
+        const device = controller.zigbee.resolveEntity(devices.bulb.ieeeAddr);
+        assert(device && "definition" in device);
+        const definitionOptions = device.definition?.options;
+        device.definition!.options = undefined;
+
         mockMQTTEvents.message("zigbee2mqtt/bridge/request/device/options", stringify({options: {unsupported: true}, id: "bulb"}));
         await flushPromises();
+        device.definition!.options = definitionOptions;
+
         expect(settings.getDevice("bulb")).toHaveProperty("unsupported");
         expect(mockLogger.warning).toHaveBeenCalledWith("Device 'bulb' does not support option 'unsupported'");
         expect(mockMQTTPublishAsync).toHaveBeenCalledWith(
