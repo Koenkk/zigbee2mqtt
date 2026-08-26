@@ -9,6 +9,12 @@ import * as settings from "../util/settings";
 import utils from "../util/utils";
 import Extension from "./extension";
 
+/**
+ * Upper bound for a `setTimeout` delay. Node.js stores the delay as a 32-bit signed integer; anything above this
+ * is coerced to `1`, which would turn an ever-growing backoff into a tight loop instead of an ever-longer wait.
+ */
+const MAX_TIMEOUT = 2147483647;
+
 const RETRIEVE_ON_RECONNECT: readonly {keys: string[]; condition?: (state: KeyValue) => boolean}[] = [
     {keys: ["state"]},
     {keys: ["brightness"], condition: (state: KeyValue): boolean => state.state === "ON"},
@@ -108,7 +114,10 @@ export default class Availability extends Extension {
                 // If device did not check in, ping it, if that fails it will be marked as offline
                 this.timers.set(
                     device.ieeeAddr,
-                    setTimeout(this.addToPingQueue.bind(this, device), (this.getTimeout(device) + utils.seconds(1) + jitter) * backoff),
+                    setTimeout(
+                        this.addToPingQueue.bind(this, device),
+                        Math.min((this.getTimeout(device) + utils.seconds(1) + jitter) * backoff, MAX_TIMEOUT),
+                    ),
                 );
             }
         } else {
