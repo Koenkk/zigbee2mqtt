@@ -22,7 +22,6 @@ const CACHE_IGNORE_PROPERTIES = [
     "no_occupancy_since",
     "step_mode",
     "transition_time",
-    "duration",
     "elapsed",
     "from_side",
     "to_side",
