@@ -713,12 +713,13 @@ describe("Extension: Availability", () => {
     });
 
     it("keeps draining the ping queue when processing fails unexpectedly", async () => {
+        settings.set(["availability", "active", "max_jitter"], 0); // easier testing
         const availability = controller.getExtension("Availability")! as Availability;
         const device = controller.zigbee.resolveEntity(devices.bulb_color.ieeeAddr);
         mockLogger.error.mockClear();
 
         // @ts-expect-error private
-        vi.spyOn(availability, "publishAvailability").mockImplementationOnce(() => {
+        const publishAvailabilitySpy = vi.spyOn(availability, "publishAvailability").mockImplementationOnce(() => {
             throw new Error("failed");
         });
 
@@ -726,12 +727,19 @@ describe("Extension: Availability", () => {
         availability.addToPingQueue(device);
         await flushPromises();
 
-        expect(mockLogger.error).toHaveBeenCalledWith("Ping queue processing failed unexpectedly: failed");
+        expect(mockLogger.error).toHaveBeenCalledWith("Ping queue processing failed unexpectedly for 'bulb_color' (failed)");
         // the queue is not left blocked by the failure
         // @ts-expect-error private
         expect(availability.pingQueue).toEqual([]);
         // @ts-expect-error private
         expect(availability.pingQueueExecuting).toStrictEqual(false);
+        // the device is dropped from the queue instead of being retried right away in a tight loop
+        expect(publishAvailabilitySpy).toHaveBeenCalledTimes(1);
+        expect(devices.bulb_color.ping).toHaveBeenCalledTimes(1);
+
+        // its timer is re-armed, so it is picked up again on the next interval
+        await setTimeAndAdvanceTimers(utils.minutes(11));
+        expect(devices.bulb_color.ping).toHaveBeenCalledTimes(2);
     });
 
     it("keeps running when handling a last seen change fails", async () => {

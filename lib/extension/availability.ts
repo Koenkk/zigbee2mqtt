@@ -161,8 +161,9 @@ export default class Availability extends Extension {
 
         this.pingQueueExecuting = true;
 
+        const device = this.pingQueue[0];
+
         try {
-            const device = this.pingQueue[0];
             let pingSuccess = false;
             const available = this.lastPublishedAvailabilities.get(device.ieeeAddr) || this.isAvailable(device);
             const attempts = available ? 2 : 1;
@@ -211,7 +212,9 @@ export default class Availability extends Extension {
             // Sleep 2 seconds before executing next ping
             await utils.sleep(2);
         } catch (error) {
-            logger.error(`Ping queue processing failed unexpectedly: ${(error as Error).message}`);
+            logger.error(`Ping queue processing failed unexpectedly for '${device.name}' (${(error as Error).message})`);
+            this.resetTimer(device);
+            this.removeFromPingQueue(device);
         } finally {
             this.pingQueueExecuting = false;
         }
