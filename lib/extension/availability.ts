@@ -128,9 +128,7 @@ export default class Availability extends Extension {
                 );
             }
         } catch (error) {
-            logger.error(
-                `resetTimer failed unexpectedly for '${device.name}' (${(error as Error).message}); scheduling fallback retry in 60s`,
-            );
+            logger.error(`resetTimer failed unexpectedly for '${device.name}' (${(error as Error).message}); scheduling fallback retry in 60s`);
             // Fallback: always leave the device with SOME active timer, never orphaned.
             this.timers.set(
                 device.ieeeAddr,
