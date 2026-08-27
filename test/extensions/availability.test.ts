@@ -689,4 +689,67 @@ describe("Extension: Availability", () => {
         await setTimeAndAdvanceTimers(utils.minutes(0.5)); // 40:30
         expect(devices.bulb_color.ping).toHaveBeenCalledTimes(5);
     });
+
+    it("keeps a fallback timer when resetting the ping timer fails", async () => {
+        settings.set(["availability", "active", "max_jitter"], 0); // easier testing
+        const availability = controller.getExtension("Availability")! as Availability;
+        mockLogger.error.mockClear();
+
+        // @ts-expect-error private
+        vi.spyOn(availability, "isActiveDevice").mockImplementationOnce(() => {
+            throw new Error("failed");
+        });
+
+        await mockZHEvents.lastSeenChanged({device: devices.bulb_color});
+
+        expect(mockLogger.error).toHaveBeenCalledWith("resetTimer failed unexpectedly for 'bulb_color' (failed); scheduling fallback retry in 60s");
+
+        // the fallback retry leaves the device with a regular ping timer again, instead of no timer at all
+        await setTimeAndAdvanceTimers(utils.seconds(60));
+        expect(devices.bulb_color.ping).toHaveBeenCalledTimes(0);
+
+        await setTimeAndAdvanceTimers(utils.minutes(11));
+        expect(devices.bulb_color.ping).toHaveBeenCalledTimes(1);
+    });
+
+    it("keeps draining the ping queue when processing fails unexpectedly", async () => {
+        const availability = controller.getExtension("Availability")! as Availability;
+        const device = controller.zigbee.resolveEntity(devices.bulb_color.ieeeAddr);
+        mockLogger.error.mockClear();
+
+        // @ts-expect-error private
+        vi.spyOn(availability, "publishAvailability").mockImplementationOnce(() => {
+            throw new Error("failed");
+        });
+
+        // @ts-expect-error private
+        availability.addToPingQueue(device);
+        await flushPromises();
+
+        expect(mockLogger.error).toHaveBeenCalledWith("Ping queue processing failed unexpectedly: failed");
+        // the queue is not left blocked by the failure
+        // @ts-expect-error private
+        expect(availability.pingQueue).toEqual([]);
+        // @ts-expect-error private
+        expect(availability.pingQueueExecuting).toStrictEqual(false);
+    });
+
+    it("keeps running when handling a last seen change fails", async () => {
+        settings.set(["availability", "active", "max_jitter"], 0); // easier testing
+        const availability = controller.getExtension("Availability")! as Availability;
+        mockLogger.error.mockClear();
+
+        // @ts-expect-error private
+        vi.spyOn(availability, "publishAvailability").mockImplementationOnce(() => {
+            throw new Error("failed");
+        });
+
+        await mockZHEvents.lastSeenChanged({device: devices.bulb_color});
+
+        expect(mockLogger.error).toHaveBeenCalledWith("onLastSeenChanged handling failed for 'bulb_color' (failed)");
+
+        // the timer was still reset, so availability tracking continues
+        await setTimeAndAdvanceTimers(utils.minutes(11));
+        expect(devices.bulb_color.ping).toHaveBeenCalledTimes(1);
+    });
 });
