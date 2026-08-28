@@ -224,6 +224,7 @@ export default class Publish extends Extension {
                 state: entityState,
                 membersState,
                 mapped: definition,
+                /* v8 ignore next */
                 deviceExposesChanged: (): void => {
                     if (re instanceof Device) this.eventBus.emitExposesAndDevicesChanged(re);
                 },
