@@ -466,6 +466,20 @@ export default class Bridge extends Extension {
 
         const ID = message.id;
         const entity = this.getEntity(entityType, ID);
+
+        if (entity instanceof Device) {
+            const supportedOptions = new Set(Object.keys(settings.schemaJson.definitions.device.properties));
+            for (const option of entity.definition?.options ?? []) {
+                supportedOptions.add(option.property);
+            }
+
+            for (const option of Object.keys(message.options)) {
+                if (!supportedOptions.has(option)) {
+                    logger.warning(`Device '${ID}' does not support option '${option}'`);
+                }
+            }
+        }
+
         const oldOptions = objectAssignDeep({}, cleanup(entity.options));
 
         if (message.options.icon) {
