@@ -622,6 +622,7 @@ export interface Zigbee2MQTTAPI {
         id: string;
         block?: boolean;
         force?: boolean;
+        keep_config?: boolean;
         clear_cache?: boolean;
     };
 
@@ -629,6 +630,7 @@ export interface Zigbee2MQTTAPI {
         id: string;
         block: boolean;
         force: boolean;
+        keep_config: boolean;
         clear_cache: boolean;
     };
 

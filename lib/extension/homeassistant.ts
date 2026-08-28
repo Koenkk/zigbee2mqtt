@@ -964,7 +964,7 @@ export class HomeAssistant extends Extension {
                     ?.features.find((f) => f.name === "tilt");
                 const motorState = allExposes
                     ?.filter(isEnumExpose)
-                    .find((e) => ["motor_state", "moving"].includes(e.name) && e.access === ACCESS_STATE);
+                    .find((e) => ["motor_state", "moving"].includes(e.name) && e.access & ACCESS_STATE);
                 const running = allExposes?.filter(isBinaryExpose)?.find((e) => e.name === "running");
 
                 const discoveryEntry: DiscoveryEntry = {
@@ -990,6 +990,9 @@ export class HomeAssistant extends Extension {
                 // If curtains have `motor_state` or `moving` property, lookup for possible
                 // state names to detect movement direction and use this in discovery.
                 if (motorState) {
+                    const motorStateProperty = featurePropertyWithoutEndpoint(motorState);
+                    const stateProperty = featurePropertyWithoutEndpoint(state);
+
                     const openingState = motorState.values.find((s) => COVER_OPENING_LOOKUP.includes(s.toString().toLowerCase()));
                     const closingState = motorState.values.find((s) => COVER_CLOSING_LOOKUP.includes(s.toString().toLowerCase()));
                     const stoppedState = motorState.values.find((s) => COVER_STOPPED_LOOKUP.includes(s.toString().toLowerCase()));
@@ -997,8 +1000,19 @@ export class HomeAssistant extends Extension {
                     if (openingState && closingState && stoppedState) {
                         discoveryEntry.discovery_payload.state_opening = openingState;
                         discoveryEntry.discovery_payload.state_closing = closingState;
+                        discoveryEntry.discovery_payload.state_open = "OPEN";
+                        discoveryEntry.discovery_payload.state_closed = "CLOSE";
                         discoveryEntry.discovery_payload.state_stopped = stoppedState;
-                        discoveryEntry.discovery_payload.value_template = `{% if "${featurePropertyWithoutEndpoint(motorState)}" in value_json and value_json["${featurePropertyWithoutEndpoint(motorState)}"] %} {{ value_json["${featurePropertyWithoutEndpoint(motorState)}"] }} {% else %} ${stoppedState} {% endif %}`;
+                        discoveryEntry.discovery_payload.value_template =
+                            `{% if "${motorStateProperty}" in value_json and value_json["${motorStateProperty}"] == "${openingState}" %}` +
+                            `${openingState}` +
+                            `{% elif "${motorStateProperty}" in value_json and value_json["${motorStateProperty}"] == "${closingState}" %}` +
+                            `${closingState}` +
+                            `{% elif "${stateProperty}" in value_json %}` +
+                            `{{ value_json["${stateProperty}"] }}` +
+                            "{% else %}" +
+                            `${stoppedState}` +
+                            "{% endif %}";
                     }
                 }
 
