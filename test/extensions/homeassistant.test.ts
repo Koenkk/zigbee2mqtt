@@ -1669,12 +1669,15 @@ describe("Extension: HomeAssistant", () => {
             position_topic: "zigbee2mqtt/0xa4c138018cf95021/left",
             set_position_template: '{ "position_left": {{ position }} }',
             set_position_topic: "zigbee2mqtt/0xa4c138018cf95021/left/set",
+            state_closed: "CLOSE",
             state_closing: "DOWN",
+            state_open: "OPEN",
             state_opening: "UP",
             state_stopped: "STOP",
             state_topic: "zigbee2mqtt/0xa4c138018cf95021/left",
             unique_id: "0xa4c138018cf95021_cover_left_zigbee2mqtt",
-            value_template: '{% if "moving" in value_json and value_json["moving"] %} {{ value_json["moving"] }} {% else %} STOP {% endif %}',
+            value_template:
+                '{% if "moving" in value_json and value_json["moving"] == "UP" %}UP{% elif "moving" in value_json and value_json["moving"] == "DOWN" %}DOWN{% elif "state" in value_json %}{{ value_json["state"] }}{% else %}STOP{% endif %}',
         };
         const payload_right = {
             availability: [
@@ -1700,13 +1703,24 @@ describe("Extension: HomeAssistant", () => {
             position_topic: "zigbee2mqtt/0xa4c138018cf95021/right",
             set_position_template: '{ "position_right": {{ position }} }',
             set_position_topic: "zigbee2mqtt/0xa4c138018cf95021/right/set",
+            state_closed: "CLOSE",
             state_closing: "DOWN",
+            state_open: "OPEN",
             state_opening: "UP",
             state_stopped: "STOP",
             state_topic: "zigbee2mqtt/0xa4c138018cf95021/right",
             unique_id: "0xa4c138018cf95021_cover_right_zigbee2mqtt",
-            value_template: '{% if "moving" in value_json and value_json["moving"] %} {{ value_json["moving"] }} {% else %} STOP {% endif %}',
+            value_template:
+                '{% if "moving" in value_json and value_json["moving"] == "UP" %}UP{% elif "moving" in value_json and value_json["moving"] == "DOWN" %}DOWN{% elif "state" in value_json %}{{ value_json["state"] }}{% else %}STOP{% endif %}',
         };
+
+        const coverLeftCalls = mockMQTTPublishAsync.mock.calls.filter(
+            ([topic]) => topic === "homeassistant/cover/0xa4c138018cf95021/cover_left/config",
+        );
+
+        for (const [, actualPayload] of coverLeftCalls) {
+            console.log(JSON.parse(actualPayload));
+        }
 
         expect(mockMQTTPublishAsync).toHaveBeenCalledWith("homeassistant/cover/0xa4c138018cf95021/cover_left/config", stringify(payload_left), {
             retain: true,
