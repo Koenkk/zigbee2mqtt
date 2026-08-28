@@ -34,6 +34,7 @@ const CLUSTERS = {
     lightingColorCtrl: Zcl.Clusters.lightingColorCtrl.ID,
     closuresWindowCovering: Zcl.Clusters.closuresWindowCovering.ID,
     hvacThermostat: Zcl.Clusters.hvacThermostat.ID,
+    hvacFanCtrl: Zcl.Clusters.hvacFanCtrl.ID,
     msIlluminanceMeasurement: Zcl.Clusters.msIlluminanceMeasurement.ID,
     msTemperatureMeasurement: Zcl.Clusters.msTemperatureMeasurement.ID,
     msRelativeHumidity: Zcl.Clusters.msRelativeHumidity.ID,

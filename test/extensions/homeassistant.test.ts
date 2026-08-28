@@ -2411,7 +2411,7 @@ describe("Extension: HomeAssistant", () => {
 
     it("Should discover trigger when action is published", async () => {
         const discovered = mockMQTTPublishAsync.mock.calls.filter((c) => c[0].includes("0x0017880104e45520")).map((c) => c[0]);
-        expect(discovered.length).toBe(5);
+        expect(discovered.length).toBe(6);
 
         mockMQTTPublishAsync.mockClear();
 
@@ -2448,6 +2448,7 @@ describe("Extension: HomeAssistant", () => {
             stringify({
                 action: "single",
                 battery: null,
+                identify: null,
                 linkquality: null,
                 voltage: null,
                 power_outage_count: null,
@@ -3363,6 +3364,7 @@ describe("Extension: HomeAssistant", () => {
         expect(JSON.parse(mockMQTTPublishAsync.mock.calls[0][1])).toStrictEqual({
             action: "single",
             battery: null,
+            identify: null,
             linkquality: null,
             voltage: null,
             power_outage_count: null,
@@ -3373,6 +3375,7 @@ describe("Extension: HomeAssistant", () => {
         expect(JSON.parse(mockMQTTPublishAsync.mock.calls[1][1])).toStrictEqual({
             action: "",
             battery: null,
+            identify: null,
             linkquality: null,
             voltage: null,
             power_outage_count: null,
