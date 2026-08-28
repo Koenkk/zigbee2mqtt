@@ -224,11 +224,11 @@ export default class Publish extends Extension {
                 state: entityState,
                 membersState,
                 mapped: definition,
-                /* v8 ignore next */
-                publish: (payload: KeyValue) => this.publishEntityState(re, payload),
                 deviceExposesChanged: (): void => {
                     if (re instanceof Device) this.eventBus.emitExposesAndDevicesChanged(re);
                 },
+                /* v8 ignore next */
+                publish: (payload: KeyValue) => this.publishEntityState(re, payload),
             };
 
             // Strip endpoint name from meta.message properties.
