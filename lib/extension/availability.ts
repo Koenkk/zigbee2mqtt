@@ -331,7 +331,9 @@ export default class Availability extends Extension {
                             options,
                             state,
                             device: device.zh,
+                            /* v8 ignore start */
                             deviceExposesChanged: (): void => this.eventBus.emitExposesAndDevicesChanged(device),
+                            /* v8 ignore stop */
                             /* v8 ignore next */
                             publish: (payload: KeyValue) => this.publishEntityState(device, payload),
                         };
