@@ -1485,12 +1485,12 @@ export class HomeAssistant extends Extension {
                 delete entry.discovery_payload.entity_category;
             }
 
-            // If name = null Home Assistant will use the device name as entity name.
-            // This is intentionally a null-only check to distinguish it from an undefined value.
-
             // Let Home Assistant generate entity name when device_class is present.
             // homeassistant.name allows device_class and explicit name to coexist (e.g. derived sensors).
-            else if (entry.discovery_payload.device_class && !firstExpose.homeassistant?.name) {
+            // If name = null Home Assistant will use the device name as entity name.
+            // This is intentionally an undefined-only check to distinguish it from an null value.
+
+            if (entry.discovery_payload.device_class && firstExpose.homeassistant?.name === undefined) {
                 delete entry.discovery_payload.name;
             }
 
