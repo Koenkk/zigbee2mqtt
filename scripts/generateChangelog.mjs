@@ -72,6 +72,10 @@ for (const changelog of changelogs) {
     if (changelog.project === "Nerivec/zigbee2mqtt-windfront") {
         const releaseRsp = await fetch("https://api.github.com/repos/Nerivec/zigbee2mqtt-windfront/releases");
         const releases = await releaseRsp.json();
+        if (!releaseRsp.ok || !Array.isArray(releases)) {
+            const message = typeof releases.message === "string" ? `: ${releases.message}` : "";
+            throw new Error(`Failed to retrieve releases for ${changelog.project} (${releaseRsp.status})${message}`);
+        }
         for (const release of releases) {
             if (release.name === `v${windfrontTillVersion}`) {
                 break;
