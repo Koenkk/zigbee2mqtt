@@ -10,6 +10,8 @@ const zhcTillVersion = process.argv[3];
 const zhTillVersion = process.argv[4];
 const frontendTillVersion = process.argv[5];
 const windfrontTillVersion = process.argv[6];
+const githubToken = process.env.GH_TOKEN;
+const githubHeaders = githubToken ? {Authorization: `Bearer ${githubToken}`} : {};
 
 const changelogs = [
     {
@@ -70,7 +72,7 @@ const capitalizeFirstChar = (str) => str.charAt(0).toUpperCase() + str.slice(1);
 
 for (const changelog of changelogs) {
     if (changelog.project === "Nerivec/zigbee2mqtt-windfront") {
-        const releaseRsp = await fetch("https://api.github.com/repos/Nerivec/zigbee2mqtt-windfront/releases");
+        const releaseRsp = await fetch("https://api.github.com/repos/Nerivec/zigbee2mqtt-windfront/releases", {headers: githubHeaders});
         const releases = await releaseRsp.json();
         if (!releaseRsp.ok || !Array.isArray(releases)) {
             const message = typeof releases.message === "string" ? `: ${releases.message}` : "";
@@ -112,7 +114,9 @@ for (const changelog of changelogs) {
                 let user =
                     commitUserKey in commitUserLookup
                         ? commitUserLookup[commitUserKey]
-                        : execSync(`curl -s https://api.github.com/repos/${changelog.project}/commits/${commit} | jq -r '.author.login'`)
+                        : execSync(
+                              `curl -s ${githubToken ? `-H "Authorization: Bearer ${githubToken}" ` : ""}https://api.github.com/repos/${changelog.project}/commits/${commit} | jq -r '.author.login'`,
+                          )
                               .toString()
                               .trim();
                 if (user !== "null") commitUserLookup[commitUserKey] = user;
