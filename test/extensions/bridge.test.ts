@@ -1184,6 +1184,17 @@ describe("Extension: Bridge", () => {
                                 type: "numeric",
                             },
                             {
+                                access: 2,
+                                category: "config",
+                                description:
+                                    "Initiate device identification. This device is asleep by default.You may need to wake it up first before sending the identify command.",
+                                label: "Identify",
+                                name: "identify",
+                                property: "identify",
+                                type: "enum",
+                                values: ["identify"],
+                            },
+                            {
                                 access: 1,
                                 category: "diagnostic",
                                 description: "Triggered action (e.g. a button click)",
@@ -1216,6 +1227,17 @@ describe("Extension: Bridge", () => {
                                 property: "device_temperature_calibration",
                                 type: "numeric",
                                 value_step: 0.1,
+                            },
+                            {
+                                access: 2,
+                                description:
+                                    "Sets the duration of the identification procedure in seconds (i.e., how long the device would flash).The value ranges from 1 to 30 seconds (default: 3).",
+                                label: "Identify timeout",
+                                name: "identify_timeout",
+                                property: "identify_timeout",
+                                type: "numeric",
+                                value_max: 30,
+                                value_min: 1,
                             },
                         ],
                         supports_ota: false,
@@ -3620,6 +3642,36 @@ describe("Extension: Bridge", () => {
         expect(mockMQTTPublishAsync).toHaveBeenCalledWith(
             "zigbee2mqtt/bridge/response/device/options",
             stringify({data: {}, status: "error", error: "Invalid payload"}),
+            {},
+        );
+    });
+
+    it("Should warn on unsupported device option", async () => {
+        mockMQTTPublishAsync.mockClear();
+        mockLogger.warning.mockClear();
+
+        const device = controller.zigbee.resolveEntity(devices.bulb.ieeeAddr);
+        assert(device && "definition" in device);
+        const definitionOptions = device.definition?.options;
+        device.definition!.options = undefined;
+
+        mockMQTTEvents.message("zigbee2mqtt/bridge/request/device/options", stringify({options: {unsupported: true}, id: "bulb"}));
+        await flushPromises();
+        device.definition!.options = definitionOptions;
+
+        expect(settings.getDevice("bulb")).toHaveProperty("unsupported");
+        expect(mockLogger.warning).toHaveBeenCalledWith("Device 'bulb' does not support option 'unsupported'");
+        expect(mockMQTTPublishAsync).toHaveBeenCalledWith(
+            "zigbee2mqtt/bridge/response/device/options",
+            stringify({
+                data: {
+                    from: {retain: true, description: "this is my bulb"},
+                    to: {retain: true, description: "this is my bulb", unsupported: true},
+                    id: "bulb",
+                    restart_required: false,
+                },
+                status: "ok",
+            }),
             {},
         );
     });

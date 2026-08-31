@@ -1100,6 +1100,28 @@ describe("Controller", () => {
         expect(mockMQTTPublishAsync).toHaveBeenCalledWith("zigbee2mqtt/bulb", stringify({state: "ON", brightness: 200}), {qos: 0, retain: true});
     });
 
+    it("Publish entity state caches a duration reported by the device", async () => {
+        await controller.start();
+        mockMQTTPublishAsync.mockClear();
+
+        const device = getZ2MDevice("bulb");
+        await controller.publishEntityState(device, {state: "ON", duration: 30});
+        await flushPromises();
+
+        expect(controller.state.get(device)).toStrictEqual({brightness: 50, color_temp: 370, linkquality: 99, state: "ON", duration: 30});
+    });
+
+    it("Publish entity state keeps an action_duration out of the cache", async () => {
+        await controller.start();
+        mockMQTTPublishAsync.mockClear();
+
+        const device = getZ2MDevice("bulb");
+        await controller.publishEntityState(device, {state: "ON", action_duration: 1500});
+        await flushPromises();
+
+        expect(controller.state.get(device)).toStrictEqual({brightness: 50, color_temp: 370, linkquality: 99, state: "ON"});
+    });
+
     it("Publish entity state attribute_json output filtered cache", async () => {
         await controller.start();
         settings.set(["advanced", "output"], "attribute_and_json");
