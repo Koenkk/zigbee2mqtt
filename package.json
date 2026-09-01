@@ -1,6 +1,6 @@
 {
     "name": "zigbee2mqtt",
-    "version": "2.13.0-dev",
+    "version": "2.14.0",
     "description": "Zigbee to MQTT bridge using Zigbee-herdsman",
     "main": "index.js",
     "types": "dist/types/api.d.ts",
@@ -43,7 +43,7 @@
     "homepage": "https://koenkk.github.io/zigbee2mqtt",
     "dependencies": {
         "zigbee-herdsman": "10.9.1",
-        "zigbee-herdsman-converters": "26.102.0"
+        "zigbee-herdsman-converters": "26.103.0"
     },
     "devDependencies": {},
     "pnpm": {
