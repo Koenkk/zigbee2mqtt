@@ -1005,8 +1005,10 @@ export class HomeAssistant extends Extension {
                             `${openingState}` +
                             `{% elif "${motorStateProperty}" in value_json and value_json["${motorStateProperty}"] == "${closingState}" %}` +
                             `${closingState}` +
-                            `{% elif "${stateProperty}" in value_json %}` +
-                            `{{ value_json["${stateProperty}"] }}` +
+                            `{% elif "${stateProperty}" in value_json and value_json["${stateProperty}"] == "OPEN" %}` +
+                            "OPEN" +
+                            `{% elif "${stateProperty}" in value_json and value_json["${stateProperty}"] == "CLOSE" %}` +
+                            "CLOSE" +
                             "{% else %}" +
                             `${stoppedState}` +
                             "{% endif %}";
