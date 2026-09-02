@@ -1677,7 +1677,7 @@ describe("Extension: HomeAssistant", () => {
             state_topic: "zigbee2mqtt/0xa4c138018cf95021/left",
             unique_id: "0xa4c138018cf95021_cover_left_zigbee2mqtt",
             value_template:
-                '{% if "moving" in value_json and value_json["moving"] == "UP" %}UP{% elif "moving" in value_json and value_json["moving"] == "DOWN" %}DOWN{% elif "state" in value_json and value_json["state"] == "OPEN" %}OPEN{% elif "state" in value_json and value_json["state"] == "CLOSE" %}CLOSE{% else %}STOP{% endif %}',
+                '{% if "position" in value_json and value_json["position"] == 0 and "state" in value_json and value_json["state"] == "CLOSE" %}CLOSE{% elif "position" in value_json and value_json["position"] == 100 and "state" in value_json and value_json["state"] == "OPEN" %}OPEN{% elif "moving" in value_json and value_json["moving"] == "UP" %}UP{% elif "moving" in value_json and value_json["moving"] == "DOWN" %}DOWN{% elif "moving" in value_json and value_json["moving"] == "STOP" and "position" in value_json %}{% if value_json["position"] == 0 %}CLOSE{% else %}OPEN{% endif %}{% elif "state" in value_json and value_json["state"] == "OPEN" %}OPEN{% elif "state" in value_json and value_json["state"] == "CLOSE" %}CLOSE{% else %}STOP{% endif %}',
         };
         const payload_right = {
             availability: [
@@ -1711,7 +1711,7 @@ describe("Extension: HomeAssistant", () => {
             state_topic: "zigbee2mqtt/0xa4c138018cf95021/right",
             unique_id: "0xa4c138018cf95021_cover_right_zigbee2mqtt",
             value_template:
-                '{% if "moving" in value_json and value_json["moving"] == "UP" %}UP{% elif "moving" in value_json and value_json["moving"] == "DOWN" %}DOWN{% elif "state" in value_json and value_json["state"] == "OPEN" %}OPEN{% elif "state" in value_json and value_json["state"] == "CLOSE" %}CLOSE{% else %}STOP{% endif %}',
+                '{% if "position" in value_json and value_json["position"] == 0 and "state" in value_json and value_json["state"] == "CLOSE" %}CLOSE{% elif "position" in value_json and value_json["position"] == 100 and "state" in value_json and value_json["state"] == "OPEN" %}OPEN{% elif "moving" in value_json and value_json["moving"] == "UP" %}UP{% elif "moving" in value_json and value_json["moving"] == "DOWN" %}DOWN{% elif "moving" in value_json and value_json["moving"] == "STOP" and "position" in value_json %}{% if value_json["position"] == 0 %}CLOSE{% else %}OPEN{% endif %}{% elif "state" in value_json and value_json["state"] == "OPEN" %}OPEN{% elif "state" in value_json and value_json["state"] == "CLOSE" %}CLOSE{% else %}STOP{% endif %}',
         };
 
         const coverLeftCalls = mockMQTTPublishAsync.mock.calls.filter(
