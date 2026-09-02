@@ -1677,7 +1677,7 @@ describe("Extension: HomeAssistant", () => {
             state_topic: "zigbee2mqtt/0xa4c138018cf95021/left",
             unique_id: "0xa4c138018cf95021_cover_left_zigbee2mqtt",
             value_template:
-                '{% if "moving" in value_json and value_json["moving"] == "UP" %}UP{% elif "moving" in value_json and value_json["moving"] == "DOWN" %}DOWN{% elif "state" in value_json %}{{ value_json["state"] }}{% else %}STOP{% endif %}',
+                '{% if "position" in value_json and value_json["position"] == 0 and "state" in value_json and value_json["state"] == "CLOSE" %}CLOSE{% elif "position" in value_json and value_json["position"] == 100 and "state" in value_json and value_json["state"] == "OPEN" %}OPEN{% elif "moving" in value_json and value_json["moving"] == "UP" %}UP{% elif "moving" in value_json and value_json["moving"] == "DOWN" %}DOWN{% elif "moving" in value_json and value_json["moving"] == "STOP" and "position" in value_json %}{% if value_json["position"] == 0 %}CLOSE{% else %}OPEN{% endif %}{% elif "state" in value_json and value_json["state"] == "OPEN" %}OPEN{% elif "state" in value_json and value_json["state"] == "CLOSE" %}CLOSE{% else %}STOP{% endif %}',
         };
         const payload_right = {
             availability: [
@@ -1711,7 +1711,7 @@ describe("Extension: HomeAssistant", () => {
             state_topic: "zigbee2mqtt/0xa4c138018cf95021/right",
             unique_id: "0xa4c138018cf95021_cover_right_zigbee2mqtt",
             value_template:
-                '{% if "moving" in value_json and value_json["moving"] == "UP" %}UP{% elif "moving" in value_json and value_json["moving"] == "DOWN" %}DOWN{% elif "state" in value_json %}{{ value_json["state"] }}{% else %}STOP{% endif %}',
+                '{% if "position" in value_json and value_json["position"] == 0 and "state" in value_json and value_json["state"] == "CLOSE" %}CLOSE{% elif "position" in value_json and value_json["position"] == 100 and "state" in value_json and value_json["state"] == "OPEN" %}OPEN{% elif "moving" in value_json and value_json["moving"] == "UP" %}UP{% elif "moving" in value_json and value_json["moving"] == "DOWN" %}DOWN{% elif "moving" in value_json and value_json["moving"] == "STOP" and "position" in value_json %}{% if value_json["position"] == 0 %}CLOSE{% else %}OPEN{% endif %}{% elif "state" in value_json and value_json["state"] == "OPEN" %}OPEN{% elif "state" in value_json and value_json["state"] == "CLOSE" %}CLOSE{% else %}STOP{% endif %}',
         };
 
         const coverLeftCalls = mockMQTTPublishAsync.mock.calls.filter(
@@ -1729,6 +1729,62 @@ describe("Extension: HomeAssistant", () => {
         expect(mockMQTTPublishAsync).toHaveBeenCalledWith("homeassistant/cover/0xa4c138018cf95021/cover_right/config", stringify(payload_right), {
             retain: true,
             qos: 1,
+        });
+    });
+
+    it("Should derive stopped cover state from position for motor_state covers", () => {
+        const coverExpose = new zhc.Cover().withPosition();
+        const motorStateExpose = new zhc.Enum("motor_state", zhc.access.STATE, ["opening", "closing", "stopped"]);
+        const device = {
+            definition: {},
+            isDevice: (): boolean => true,
+            isGroup: (): boolean => false,
+            endpoint: () => undefined,
+            options: {},
+            exposes: (): zhc.Expose[] => [coverExpose, motorStateExpose],
+            zh: {endpoints: []},
+        } as Device;
+
+        // @ts-expect-error private
+        const configs = extension.getConfigs(device);
+        const cover = configs.find((c) => c.type === "cover");
+        expect(cover).toBeDefined();
+        expect(cover!.discovery_payload).toMatchObject({
+            state_opening: "opening",
+            state_closing: "closing",
+            state_open: "OPEN",
+            state_closed: "CLOSE",
+            state_stopped: "stopped",
+            value_template:
+                '{% if "position" in value_json and value_json["position"] == 0 and "state" in value_json and value_json["state"] == "CLOSE" %}CLOSE{% elif "position" in value_json and value_json["position"] == 100 and "state" in value_json and value_json["state"] == "OPEN" %}OPEN{% elif "motor_state" in value_json and value_json["motor_state"] == "opening" %}opening{% elif "motor_state" in value_json and value_json["motor_state"] == "closing" %}closing{% elif "motor_state" in value_json and value_json["motor_state"] == "stopped" and "position" in value_json %}{% if value_json["position"] == 0 %}CLOSE{% else %}OPEN{% endif %}{% elif "state" in value_json and value_json["state"] == "OPEN" %}OPEN{% elif "state" in value_json and value_json["state"] == "CLOSE" %}CLOSE{% else %}stopped{% endif %}',
+        });
+    });
+
+    it("Should preserve motor_state and state fallback for covers without position", () => {
+        const coverExpose = new zhc.Cover();
+        const motorStateExpose = new zhc.Enum("motor_state", zhc.access.STATE, ["opening", "closing", "stopped"]);
+        const device = {
+            definition: {},
+            isDevice: (): boolean => true,
+            isGroup: (): boolean => false,
+            endpoint: () => undefined,
+            options: {},
+            exposes: (): zhc.Expose[] => [coverExpose, motorStateExpose],
+            zh: {endpoints: []},
+        } as Device;
+
+        // @ts-expect-error private
+        const configs = extension.getConfigs(device);
+        const cover = configs.find((c) => c.type === "cover");
+        expect(cover).toBeDefined();
+        expect(cover!.discovery_payload).toMatchObject({
+            state_opening: "opening",
+            state_closing: "closing",
+            state_open: "OPEN",
+            state_closed: "CLOSE",
+            state_stopped: "stopped",
+            value_template:
+                '{% if "motor_state" in value_json and value_json["motor_state"] == "opening" %}opening{% elif "motor_state" in value_json and value_json["motor_state"] == "closing" %}closing{% elif "state" in value_json and value_json["state"] == "OPEN" %}OPEN{% elif "state" in value_json and value_json["state"] == "CLOSE" %}CLOSE{% else %}stopped{% endif %}',
         });
     });
 
