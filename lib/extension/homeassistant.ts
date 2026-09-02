@@ -211,6 +211,7 @@ const NUMERIC_DISCOVERY_LOOKUP: {[s: string]: KeyValue} = {
     external_humidity: {device_class: "humidity", icon: "mdi:water-percent", state_class: "measurement"},
     fading_time: {entity_category: "config", icon: "mdi:timer"},
     formaldehyd: {state_class: "measurement"},
+    formaldehyde: {state_class: "measurement"},
     flow: {device_class: "volume_flow_rate", state_class: "measurement"},
     gas: {device_class: "gas", state_class: "total_increasing", icon: "mdi:meter-gas"},
     gas_density: {icon: "mdi:google-circles-communities", state_class: "measurement"},
