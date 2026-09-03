@@ -624,12 +624,29 @@ export default class Bind extends Extension {
 
                     if (!this.pollDebouncers[key]) {
                         this.pollDebouncers[key] = debounce(async () => {
+                            // biome-ignore lint/style/noNonNullAssertion: TODO: biome migration: ???
+                            const resolvedDevice = this.zigbee.resolveEntity(device)!;
+
                             try {
                                 await endpoint.read(poll.read.cluster, readAttrs);
                             } catch (error) {
-                                // biome-ignore lint/style/noNonNullAssertion: TODO: biome migration: ???
-                                const resolvedDevice = this.zigbee.resolveEntity(device)!;
-                                logger.error(`Failed to poll ${readAttrs} from ${resolvedDevice.name} (${(error as Error).message})`);
+                                let errorMessage = (error as Error).message;
+
+                                // Add jitter: 1000ms + random 0-500ms
+                                const jitter = Math.random() * 500;
+                                const delay = 1000 + jitter;
+                                logger.warning(
+                                    `Failed to poll ${readAttrs} from ${resolvedDevice.name} (${errorMessage}), retrying in ${Math.round(delay)}ms`,
+                                );
+                                await utils.sleep(delay / 1000);
+
+                                try {
+                                    await endpoint.read(poll.read.cluster, readAttrs);
+                                } catch (retryError) {
+                                    errorMessage = (retryError as Error).message;
+                                }
+
+                                logger.error(`Failed to poll ${readAttrs} from ${resolvedDevice.name} (${errorMessage})`);
                             }
                         }, 1000);
                     }
