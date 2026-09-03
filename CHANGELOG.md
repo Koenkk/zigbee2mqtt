@@ -1,5 +1,16 @@
 # Changelog
 
+## [2.14.1](https://github.com/Koenkk/zigbee2mqtt/compare/2.14.0...2.14.1) (2026-09-03)
+
+
+### Bug Fixes
+
+* Home Assistant: add state class for formaldehyde ([#33006](https://github.com/Koenkk/zigbee2mqtt/issues/33006)) ([bbfb929](https://github.com/Koenkk/zigbee2mqtt/commit/bbfb929d7ed8166a6fbba40efb591a00666e59c2))
+* Home Assistant: fix some cover exposes ([#33003](https://github.com/Koenkk/zigbee2mqtt/issues/33003)) ([932a813](https://github.com/Koenkk/zigbee2mqtt/commit/932a8137c8102ad1e96bf911f8e498770ba9ac91))
+* **ignore:** update zigbee-herdsman to 10.9.2 ([#33021](https://github.com/Koenkk/zigbee2mqtt/issues/33021)) ([d362f15](https://github.com/Koenkk/zigbee2mqtt/commit/d362f15c8257ae407f42ba0ef1d9aa549d5d5f47))
+* **ignore:** update zigbee-herdsman-converters to 26.104.0 ([#33008](https://github.com/Koenkk/zigbee2mqtt/issues/33008)) ([dad9a59](https://github.com/Koenkk/zigbee2mqtt/commit/dad9a59ee689cd96f270fcaf5cc4af7eb67dde08))
+* **ignore:** update zigbee-herdsman-converters to 26.105.0 ([#33022](https://github.com/Koenkk/zigbee2mqtt/issues/33022)) ([fd1da4d](https://github.com/Koenkk/zigbee2mqtt/commit/fd1da4d4e58436ec15318845f94b57c74b840355))
+
 ## [2.14.0](https://github.com/Koenkk/zigbee2mqtt/compare/2.13.0...2.14.0) (2026-09-01)
 
 
