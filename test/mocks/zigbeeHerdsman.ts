@@ -10,11 +10,11 @@ import {DEFAULT_BIND_GROUP_ID} from "../../lib/util/utils";
 import type {EventHandler} from "./utils";
 
 type ZHConfiguredReporting = {
-    cluster: {name: string};
-    attribute: {name: string | undefined; ID?: number};
+    cluster: {name: string; ID?: number};
+    attribute: {name: string | undefined; ID?: number; manufacturerCode?: number};
     minimumReportInterval: number;
     maximumReportInterval: number;
-    reportableChange: number;
+    reportableChange: number | number[];
 };
 type ZHEndpointCluster = {
     ID?: number;
@@ -582,8 +582,8 @@ export const devices = {
                 {lightingColorCtrl: {colorCapabilities: 17}},
                 [
                     {
-                        cluster: {name: "genOnOff"},
-                        attribute: {name: "onOff"},
+                        cluster: {name: "genOnOff", ID: 6},
+                        attribute: {name: "onOff", ID: 0},
                         minimumReportInterval: 1,
                         maximumReportInterval: 10,
                         reportableChange: 20,
@@ -681,7 +681,7 @@ export const devices = {
         [
             new Endpoint(1, [0], [0, 3, 4, 6, 8, 5], "0x0017880104e45520", [], {}, [
                 {
-                    cluster: {name: "genOnOff"},
+                    cluster: {name: "genOnOff", ID: 6},
                     attribute: {name: undefined, ID: 1337},
                     minimumReportInterval: 1,
                     maximumReportInterval: 10,
