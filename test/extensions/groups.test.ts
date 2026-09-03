@@ -20,6 +20,9 @@ returnDevices.push(
     devices.bulb_2.ieeeAddr,
     devices.GLEDOPTO_2ID.ieeeAddr,
     devices.InovelliVZM31SN.ieeeAddr,
+    devices.J1.ieeeAddr,
+    devices.J1_cover.ieeeAddr,
+    devices.TS130F_DUAL_COVER_SWITCH.ieeeAddr,
 );
 
 describe("Extension: Groups", () => {
@@ -815,5 +818,186 @@ describe("Extension: Groups", () => {
             retain: true,
             qos: 0,
         });
+    });
+
+    it("Should aggregate position as average when covers in a group report different positions", async () => {
+        const device1 = devices.J1;
+        const device2 = devices.J1_cover;
+        const endpoint1 = device1.getEndpoint(1)!;
+        const endpoint2 = device2.getEndpoint(1)!;
+        const group = groups.group_1;
+        group.members.push(endpoint1);
+        group.members.push(endpoint2);
+
+        mockMQTTPublishAsync.mockClear();
+        await mockZHEvents.message({
+            data: {currentPositionLiftPercentage: 0},
+            cluster: "closuresWindowCovering",
+            device: device1,
+            endpoint: endpoint1,
+            type: "attributeReport",
+            linkquality: 10,
+        });
+        await flushPromises();
+
+        expect(mockMQTTPublishAsync).toHaveBeenCalledWith("zigbee2mqtt/group_1", expect.stringContaining('"position":100'), {retain: false, qos: 0});
+
+        mockMQTTPublishAsync.mockClear();
+        await mockZHEvents.message({
+            data: {currentPositionLiftPercentage: 100},
+            cluster: "closuresWindowCovering",
+            device: device2,
+            endpoint: endpoint2,
+            type: "attributeReport",
+            linkquality: 10,
+        });
+        await flushPromises();
+
+        expect(mockMQTTPublishAsync).toHaveBeenCalledWith("zigbee2mqtt/group_1", expect.stringContaining('"position":50'), {retain: false, qos: 0});
+    });
+
+    it("Should only propagate position to members that support it", async () => {
+        const device1 = devices.J1;
+        const device2 = devices.bulb_color;
+        const endpoint1 = device1.getEndpoint(1)!;
+        const endpoint2 = device2.getEndpoint(1)!;
+        const group = groups.group_1;
+        group.members.push(endpoint1);
+        group.members.push(endpoint2);
+
+        mockMQTTPublishAsync.mockClear();
+        await mockMQTTEvents.message("zigbee2mqtt/group_1/set", stringify({position: 50}));
+        await flushPromises();
+
+        // Only device1 (a cover) should receive the position; bulb_color should not
+        expect(mockMQTTPublishAsync).toHaveBeenCalledWith("zigbee2mqtt/j1", stringify({position: 50}), {retain: false, qos: 0});
+        expect(mockMQTTPublishAsync).not.toHaveBeenCalledWith("zigbee2mqtt/bulb_color", expect.stringContaining("position"), expect.anything());
+    });
+
+    it("Should use endpoint-specific key when aggregating position for multiEndpoint cover devices", async () => {
+        const device = devices.TS130F_DUAL_COVER_SWITCH;
+        const endpoint1 = device.getEndpoint(1)!;
+        const endpoint2 = device.getEndpoint(2)!;
+        const group = groups.group_1;
+        group.members.push(endpoint1);
+        group.members.push(endpoint2);
+
+        mockMQTTPublishAsync.mockClear();
+        await mockZHEvents.message({
+            data: {currentPositionLiftPercentage: 100},
+            cluster: "closuresWindowCovering",
+            device,
+            endpoint: endpoint1,
+            type: "attributeReport",
+            linkquality: 10,
+        });
+        await flushPromises();
+
+        expect(mockMQTTPublishAsync).toHaveBeenCalledWith("zigbee2mqtt/group_1", expect.stringContaining('"position":100'), {retain: false, qos: 0});
+
+        mockMQTTPublishAsync.mockClear();
+        await mockZHEvents.message({
+            data: {currentPositionLiftPercentage: 0},
+            cluster: "closuresWindowCovering",
+            device,
+            endpoint: endpoint2,
+            type: "attributeReport",
+            linkquality: 10,
+        });
+        await flushPromises();
+
+        // endpoint1 -> position_left: 100, endpoint2 -> position_right: 0
+        // Average (100 + 0) / 2 = 50, computed via the multiEndpoint stateKey branch
+        expect(mockMQTTPublishAsync).toHaveBeenCalledWith("zigbee2mqtt/group_1", expect.stringContaining('"position":50'), {retain: false, qos: 0});
+    });
+
+    it("Should not suffix key when prop is in multiEndpointSkip", async () => {
+        const device = devices.TS130F_DUAL_COVER_SWITCH;
+        const resolvedDevice = controller.zigbee.resolveEntity(device)!;
+        const originalMeta = resolvedDevice.definition?.meta;
+
+        resolvedDevice.definition!.meta = {...originalMeta, multiEndpointSkip: ["position"]};
+
+        try {
+            const endpoint1 = device.getEndpoint(1)!;
+            const endpoint2 = device.getEndpoint(2)!;
+            const group = groups.group_1;
+            group.members.push(endpoint1);
+            group.members.push(endpoint2);
+
+            mockMQTTPublishAsync.mockClear();
+            await mockZHEvents.message({
+                data: {currentPositionLiftPercentage: 42},
+                cluster: "closuresWindowCovering",
+                device,
+                endpoint: endpoint1,
+                type: "attributeReport",
+                linkquality: 10,
+            });
+            await flushPromises();
+
+            expect(mockMQTTPublishAsync).toHaveBeenCalledWith("zigbee2mqtt/group_1", expect.stringContaining('"position":42'), {
+                retain: false,
+                qos: 0,
+            });
+        } finally {
+            resolvedDevice.definition!.meta = originalMeta;
+        }
+    });
+
+    it("Should aggregate tilt as average when covers in a group report different tilt values", async () => {
+        const device1 = devices.J1;
+        const device2 = devices.J1_cover;
+        const endpoint1 = device1.getEndpoint(1)!;
+        const endpoint2 = device2.getEndpoint(1)!;
+        const group = groups.group_1;
+        group.members.push(endpoint1);
+        group.members.push(endpoint2);
+
+        mockMQTTPublishAsync.mockClear();
+        await mockZHEvents.message({
+            data: {currentPositionTiltPercentage: 80},
+            cluster: "closuresWindowCovering",
+            device: device1,
+            endpoint: endpoint1,
+            type: "attributeReport",
+            linkquality: 10,
+        });
+        await flushPromises();
+
+        // Only device1 has reported so far, tilt = 100 - 80 = 20
+        expect(mockMQTTPublishAsync).toHaveBeenCalledWith("zigbee2mqtt/group_1", expect.stringContaining('"tilt":20'), {retain: false, qos: 0});
+
+        mockMQTTPublishAsync.mockClear();
+        await mockZHEvents.message({
+            data: {currentPositionTiltPercentage: 20},
+            cluster: "closuresWindowCovering",
+            device: device2,
+            endpoint: endpoint2,
+            type: "attributeReport",
+            linkquality: 10,
+        });
+        await flushPromises();
+
+        // device1 tilt = 20, device2 tilt = 100 - 20 = 80, average = 50
+        expect(mockMQTTPublishAsync).toHaveBeenCalledWith("zigbee2mqtt/group_1", expect.stringContaining('"tilt":50'), {retain: false, qos: 0});
+    });
+
+    it("Should only propagate tilt to members that support it", async () => {
+        const device1 = devices.J1;
+        const device2 = devices.bulb_color;
+        const endpoint1 = device1.getEndpoint(1)!;
+        const endpoint2 = device2.getEndpoint(1)!;
+        const group = groups.group_1;
+        group.members.push(endpoint1);
+        group.members.push(endpoint2);
+
+        mockMQTTPublishAsync.mockClear();
+        await mockMQTTEvents.message("zigbee2mqtt/group_1/set", stringify({tilt: 50}));
+        await flushPromises();
+
+        // Only device1 (a cover) should receive the tilt; bulb_color should not
+        expect(mockMQTTPublishAsync).toHaveBeenCalledWith("zigbee2mqtt/j1", stringify({tilt: 50}), {retain: false, qos: 0});
+        expect(mockMQTTPublishAsync).not.toHaveBeenCalledWith("zigbee2mqtt/bulb_color", expect.stringContaining("tilt"), expect.anything());
     });
 });
