@@ -1433,14 +1433,10 @@ describe("Extension: HomeAssistant", () => {
             value_template: '{{ value_json["analog_output_2"] }}',
         };
 
-        expect(mockMQTTPublishAsync).toHaveBeenCalledWith(
-            "homeassistant/number/0x0017880104e45518/analog_output_2/config",
-            stringify(payload),
-            {
-                qos: 1,
-                retain: true,
-            },
-        );
+        expect(mockMQTTPublishAsync).toHaveBeenCalledWith("homeassistant/number/0x0017880104e45518/analog_output_2/config", stringify(payload), {
+            qos: 1,
+            retain: true,
+        });
     });
 
     it("Should apply user configuration after converter compatibility mapping", async () => {
