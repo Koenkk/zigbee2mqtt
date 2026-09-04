@@ -1645,6 +1645,8 @@ describe("Extension: HomeAssistant", () => {
     });
 
     it("Should discover dual cover devices", () => {
+        const coverValueTemplate =
+            '{% set motor = value_json["moving"] | default(none) %}{% set position = value_json["position"] | default(none) %}{% set state = value_json["state"] | default(none) %}{% if (motor == "UP" and position != 100) or (motor == "DOWN" and position != 0) %}{{ motor }}{% elif position == 0 %}CLOSE{% elif position == 100 %}OPEN{% elif motor == "STOP" and position is not none %}OPEN{% elif state in ["OPEN", "CLOSE"] %}{{ state }}{% else %}STOP{% endif %}';
         const payload_left = {
             availability: [
                 {
@@ -1676,8 +1678,7 @@ describe("Extension: HomeAssistant", () => {
             state_stopped: "STOP",
             state_topic: "zigbee2mqtt/0xa4c138018cf95021/left",
             unique_id: "0xa4c138018cf95021_cover_left_zigbee2mqtt",
-            value_template:
-                '{% if "position" in value_json and value_json["position"] == 0 and "state" in value_json and value_json["state"] == "CLOSE" %}CLOSE{% elif "position" in value_json and value_json["position"] == 100 and "state" in value_json and value_json["state"] == "OPEN" %}OPEN{% elif "moving" in value_json and value_json["moving"] == "UP" %}UP{% elif "moving" in value_json and value_json["moving"] == "DOWN" %}DOWN{% elif "moving" in value_json and value_json["moving"] == "STOP" and "position" in value_json %}{% if value_json["position"] == 0 %}CLOSE{% else %}OPEN{% endif %}{% elif "state" in value_json and value_json["state"] == "OPEN" %}OPEN{% elif "state" in value_json and value_json["state"] == "CLOSE" %}CLOSE{% else %}STOP{% endif %}',
+            value_template: coverValueTemplate,
         };
         const payload_right = {
             availability: [
@@ -1710,8 +1711,7 @@ describe("Extension: HomeAssistant", () => {
             state_stopped: "STOP",
             state_topic: "zigbee2mqtt/0xa4c138018cf95021/right",
             unique_id: "0xa4c138018cf95021_cover_right_zigbee2mqtt",
-            value_template:
-                '{% if "position" in value_json and value_json["position"] == 0 and "state" in value_json and value_json["state"] == "CLOSE" %}CLOSE{% elif "position" in value_json and value_json["position"] == 100 and "state" in value_json and value_json["state"] == "OPEN" %}OPEN{% elif "moving" in value_json and value_json["moving"] == "UP" %}UP{% elif "moving" in value_json and value_json["moving"] == "DOWN" %}DOWN{% elif "moving" in value_json and value_json["moving"] == "STOP" and "position" in value_json %}{% if value_json["position"] == 0 %}CLOSE{% else %}OPEN{% endif %}{% elif "state" in value_json and value_json["state"] == "OPEN" %}OPEN{% elif "state" in value_json and value_json["state"] == "CLOSE" %}CLOSE{% else %}STOP{% endif %}',
+            value_template: coverValueTemplate,
         };
 
         const coverLeftCalls = mockMQTTPublishAsync.mock.calls.filter(
@@ -1732,7 +1732,7 @@ describe("Extension: HomeAssistant", () => {
         });
     });
 
-    it("Should derive stopped cover state from position for motor_state covers", () => {
+    it("Should derive direction-aware cover state from position for motor_state covers", () => {
         const coverExpose = new zhc.Cover().withPosition();
         const motorStateExpose = new zhc.Enum("motor_state", zhc.access.STATE, ["opening", "closing", "stopped"]);
         const device = {
@@ -1756,7 +1756,7 @@ describe("Extension: HomeAssistant", () => {
             state_closed: "CLOSE",
             state_stopped: "stopped",
             value_template:
-                '{% if "position" in value_json and value_json["position"] == 0 and "state" in value_json and value_json["state"] == "CLOSE" %}CLOSE{% elif "position" in value_json and value_json["position"] == 100 and "state" in value_json and value_json["state"] == "OPEN" %}OPEN{% elif "motor_state" in value_json and value_json["motor_state"] == "opening" %}opening{% elif "motor_state" in value_json and value_json["motor_state"] == "closing" %}closing{% elif "motor_state" in value_json and value_json["motor_state"] == "stopped" and "position" in value_json %}{% if value_json["position"] == 0 %}CLOSE{% else %}OPEN{% endif %}{% elif "state" in value_json and value_json["state"] == "OPEN" %}OPEN{% elif "state" in value_json and value_json["state"] == "CLOSE" %}CLOSE{% else %}stopped{% endif %}',
+                '{% set motor = value_json["motor_state"] | default(none) %}{% set position = value_json["position"] | default(none) %}{% set state = value_json["state"] | default(none) %}{% if (motor == "opening" and position != 100) or (motor == "closing" and position != 0) %}{{ motor }}{% elif position == 0 %}CLOSE{% elif position == 100 %}OPEN{% elif motor == "stopped" and position is not none %}OPEN{% elif state in ["OPEN", "CLOSE"] %}{{ state }}{% else %}stopped{% endif %}',
         });
     });
 
@@ -1784,7 +1784,7 @@ describe("Extension: HomeAssistant", () => {
             state_closed: "CLOSE",
             state_stopped: "stopped",
             value_template:
-                '{% if "motor_state" in value_json and value_json["motor_state"] == "opening" %}opening{% elif "motor_state" in value_json and value_json["motor_state"] == "closing" %}closing{% elif "state" in value_json and value_json["state"] == "OPEN" %}OPEN{% elif "state" in value_json and value_json["state"] == "CLOSE" %}CLOSE{% else %}stopped{% endif %}',
+                '{% set motor = value_json["motor_state"] | default(none) %}{% set position = none %}{% set state = value_json["state"] | default(none) %}{% if (motor == "opening" and position != 100) or (motor == "closing" and position != 0) %}{{ motor }}{% elif position == 0 %}CLOSE{% elif position == 100 %}OPEN{% elif motor == "stopped" and position is not none %}OPEN{% elif state in ["OPEN", "CLOSE"] %}{{ state }}{% else %}stopped{% endif %}',
         });
     });
 
