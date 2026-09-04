@@ -632,13 +632,6 @@ export class HomeAssistant extends Extension {
                 const hasColorTemp = (exposes as zhc.Light[]).find((expose) => expose.features.find((e) => e.name === "color_temp"));
                 const state = (firstExpose as zhc.Light).features.find((f) => f.name === "state");
                 assert(state, `Light expose must have a 'state'`);
-                // Prefer HS over XY when at least one of the lights in the group prefers HS over XY.
-                // A light prefers HS over XY when HS is earlier in the feature array than HS.
-                const preferHS =
-                    (exposes as zhc.Light[])
-                        .map((e) => [e.features.findIndex((ee) => ee.name === "color_xy"), e.features.findIndex((ee) => ee.name === "color_hs")])
-                        .filter((d) => d[0] !== -1 && d[1] !== -1 && d[1] < d[0]).length !== 0;
-
                 const discoveryEntry: DiscoveryEntry = {
                     type: "light",
                     object_id: endpointName ? `light_${endpointName}` : "light",
@@ -654,11 +647,16 @@ export class HomeAssistant extends Extension {
                     },
                 };
 
-                const colorModes = [
-                    hasColorXY && !preferHS ? "xy" : null,
-                    (!hasColorXY || preferHS) && hasColorHS ? "hs" : null,
-                    hasColorTemp ? "color_temp" : null,
-                ].filter((c) => c);
+                /**
+                 * Advertise every color mode the light exposes. When both `xy` and `hs` are supported,
+                 * Home Assistant sends `hs` for rgb/hs requests and passes explicit `xy_color` requests
+                 * through as `xy`; the published state carries `color_mode` so HA knows which one was
+                 * used. Advertising only one of them made HA convert everything to that mode, which
+                 * causes out-of-gamut colors to be clamped by the bulb when that mode is `xy`.
+                 * https://github.com/Koenkk/zigbee2mqtt/issues/6402
+                 * https://github.com/Koenkk/zigbee2mqtt/issues/22905
+                 */
+                const colorModes = [hasColorXY ? "xy" : null, hasColorHS ? "hs" : null, hasColorTemp ? "color_temp" : null].filter((c) => c);
 
                 if (colorModes.length) {
                     discoveryEntry.discovery_payload.supported_color_modes = colorModes;
