@@ -1002,30 +1002,18 @@ export class HomeAssistant extends Extension {
                         discoveryEntry.discovery_payload.state_open = "OPEN";
                         discoveryEntry.discovery_payload.state_closed = "CLOSE";
                         discoveryEntry.discovery_payload.state_stopped = stoppedState;
-                        // A movement value can remain stale after the cover reaches an endpoint. Prefer a terminal position when `state` agrees.
-                        const terminalPositionTemplate = positionProperty
-                            ? `{% if "${positionProperty}" in value_json and value_json["${positionProperty}"] == 0 and "${stateProperty}" in value_json and value_json["${stateProperty}"] == "CLOSE" %}` +
-                              "CLOSE" +
-                              `{% elif "${positionProperty}" in value_json and value_json["${positionProperty}"] == 100 and "${stateProperty}" in value_json and value_json["${stateProperty}"] == "OPEN" %}` +
-                              "OPEN"
-                            : "";
+                        const positionValue = positionProperty ? `value_json["${positionProperty}"] | default(none)` : "none";
                         discoveryEntry.discovery_payload.value_template =
-                            terminalPositionTemplate +
-                            `${positionProperty ? "{% elif" : "{% if"} "${motorStateProperty}" in value_json and value_json["${motorStateProperty}"] == "${openingState}" %}` +
-                            `${openingState}` +
-                            `{% elif "${motorStateProperty}" in value_json and value_json["${motorStateProperty}"] == "${closingState}" %}` +
-                            `${closingState}` +
-                            (positionProperty
-                                ? `{% elif "${motorStateProperty}" in value_json and value_json["${motorStateProperty}"] == "${stoppedState}" and "${positionProperty}" in value_json %}` +
-                                  `{% if value_json["${positionProperty}"] == 0 %}CLOSE{% else %}OPEN{% endif %}`
-                                : "") +
-                            `{% elif "${stateProperty}" in value_json and value_json["${stateProperty}"] == "OPEN" %}` +
-                            "OPEN" +
-                            `{% elif "${stateProperty}" in value_json and value_json["${stateProperty}"] == "CLOSE" %}` +
-                            "CLOSE" +
-                            "{% else %}" +
-                            `${stoppedState}` +
-                            "{% endif %}";
+                            `{% set motor = value_json["${motorStateProperty}"] | default(none) %}` +
+                            `{% set position = ${positionValue} %}` +
+                            `{% set state = value_json["${stateProperty}"] | default(none) %}` +
+                            `{% if (motor == "${openingState}" and position != 100) or (motor == "${closingState}" and position != 0) %}` +
+                            "{{ motor }}" +
+                            "{% elif position == 0 %}CLOSE" +
+                            "{% elif position == 100 %}OPEN" +
+                            `{% elif motor == "${stoppedState}" and position is not none %}OPEN` +
+                            '{% elif state in ["OPEN", "CLOSE"] %}{{ state }}' +
+                            `{% else %}${stoppedState}{% endif %}`;
                     }
                 }
 
