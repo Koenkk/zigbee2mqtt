@@ -2201,8 +2201,75 @@ export class HomeAssistant extends Extension {
             }
         }
 
+        this.coerceUnsupportedColorMode(entity, message);
+
         if (entity.isDevice() && entity.definition?.ota && message.update?.latest_version == null) {
             message.update = {...message.update, installed_version: -1, latest_version: -1};
+        }
+    }
+
+    /**
+     * Lights with no color support at all - `supported_color_modes` has exactly one entry, one of
+     * `color_temp`, `brightness`, or `onoff` - sometimes report a stray/unsupported `color_mode`
+     * (e.g. `xy` right after power-on, or a bogus value left over in cached state); Home Assistant's
+     * MQTT JSON light schema then logs `Invalid color mode 'x' received` and ignores the whole
+     * update. For those lights only, drop the (now invalid) `color` object and coerce `color_mode`
+     * to the light's one supported mode - using `color_temp` solely when a `color_temp` value is
+     * present in the same message, otherwise dropping `color_mode` entirely so Home Assistant just
+     * leaves color alone instead of logging "Invalid or incomplete color value received" for the
+     * missing value. Lights that do support `xy`/`hs` are left fully untouched, even when reporting
+     * the other one of the two - that is the shape of
+     * https://github.com/Koenkk/zigbee2mqtt/issues/28757 (a full-color light z2m's `preferHS`
+     * discovered to Home Assistant as `xy`-only while actively displaying a saturated `hs` color) -
+     * because forcing such a light to `color_temp` would misrepresent it as white; that variant
+     * needs an `hs` <-> `xy` conversion (or discovering both modes), which is out of scope here.
+     * https://github.com/Koenkk/zigbee2mqtt/issues/25052
+     * https://github.com/Koenkk/zigbee2mqtt/issues/21710
+     * https://github.com/Koenkk/zigbee2mqtt/issues/32799
+     * https://github.com/Koenkk/zigbee2mqtt/issues/26545
+     * https://github.com/Koenkk/zigbee-herdsman-converters/pull/12943
+     */
+    private coerceUnsupportedColorMode(entity: Device | Group | Bridge, message: KeyValue): void {
+        const discovered = this.getDiscovered(entity);
+
+        for (const topic in discovered.messages) {
+            const topicMatch = topic.match(this.discoveryRegexWoTopic);
+            const lightMatch = topicMatch && topicMatch[1] === "light" ? /^light(?:_(.+))?$/.exec(topicMatch[3]) : null;
+
+            if (!lightMatch) {
+                continue;
+            }
+
+            const endpoint = lightMatch[1];
+            const colorModeKey = endpoint ? `color_mode_${endpoint}` : "color_mode";
+            const colorMode = message[colorModeKey];
+
+            if (typeof colorMode !== "string") {
+                continue;
+            }
+
+            const supportedColorModes: string[] | undefined = JSON.parse(discovered.messages[topic].payload).supported_color_modes;
+
+            if (!supportedColorModes || supportedColorModes.includes(colorMode)) {
+                continue;
+            }
+
+            const onlySupportedMode = supportedColorModes.length === 1 ? supportedColorModes[0] : undefined;
+
+            if (!onlySupportedMode || !["color_temp", "brightness", "onoff"].includes(onlySupportedMode)) {
+                // Multi-mode or color-capable (xy/hs) light: leave untouched, see #28757 above.
+                continue;
+            }
+
+            delete message[endpoint ? `color_${endpoint}` : "color"];
+
+            if (onlySupportedMode !== "color_temp") {
+                message[colorModeKey] = onlySupportedMode;
+            } else if (message[endpoint ? `color_temp_${endpoint}` : "color_temp"] !== undefined) {
+                message[colorModeKey] = "color_temp";
+            } else {
+                delete message[colorModeKey];
+            }
         }
     }
 
