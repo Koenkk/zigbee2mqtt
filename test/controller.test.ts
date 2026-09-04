@@ -763,7 +763,7 @@ describe("Controller", () => {
         await controller.start();
         mockLogger.debug.mockClear();
         await mockMQTTEvents.message("dummytopic", "dummymessage");
-        expect(spyEventbusEmitMQTTMessage).toHaveBeenCalledWith({topic: "dummytopic", message: "dummymessage"});
+        expect(spyEventbusEmitMQTTMessage).toHaveBeenCalledWith({topic: "dummytopic", message: "dummymessage", qos: 0});
         expect(mockLogger.log).toHaveBeenCalledWith("debug", "Received MQTT message on 'dummytopic' with data 'dummymessage'", LOG_MQTT_NS);
     });
 
@@ -773,7 +773,7 @@ describe("Controller", () => {
         await controller.start();
         mockLogger.debug.mockClear();
         await mockMQTTEvents.message("zigbee2mqtt/skip-this-topic", "skipped");
-        expect(spyEventbusEmitMQTTMessage).toHaveBeenCalledWith({topic: "zigbee2mqtt/skip-this-topic", message: "skipped"});
+        expect(spyEventbusEmitMQTTMessage).toHaveBeenCalledWith({topic: "zigbee2mqtt/skip-this-topic", message: "skipped", qos: 0});
         mockLogger.debug.mockClear();
         await controller.mqtt.publish("skip-this-topic", "", {});
         await mockMQTTEvents.message("zigbee2mqtt/skip-this-topic", "skipped");

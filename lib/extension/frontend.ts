@@ -6,6 +6,7 @@ import {createServer as createSecureServer} from "node:https";
 import type {Socket} from "node:net";
 import {posix} from "node:path";
 import bind from "bind-decorator";
+import type {IPublishPacket} from "mqtt";
 import WebSocket from "ws";
 import data from "../util/data";
 import logger from "../util/logger";
@@ -164,7 +165,7 @@ export class Frontend extends Extension {
             if (!isBinary && data) {
                 const message = data.toString();
                 const {topic, payload} = JSON.parse(message);
-                this.mqtt.onMessage(`${this.mqttBaseTopic}/${topic}`, Buffer.from(stringify(payload)));
+                this.mqtt.onMessage(`${this.mqttBaseTopic}/${topic}`, Buffer.from(stringify(payload)), {qos: 0} as IPublishPacket);
             }
         });
 
