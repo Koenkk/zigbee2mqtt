@@ -1368,6 +1368,77 @@ describe("Extension: HomeAssistant", () => {
         });
     });
 
+    it("Should discover analog input on unsupported devices with device class and name", () => {
+        const payload = {
+            availability: [
+                {
+                    topic: "zigbee2mqtt/bridge/state",
+                    value_template: "{{ value_json.state }}",
+                },
+            ],
+            default_entity_id: "sensor.0x0017880104e45518_analog_in_temperature_1",
+            device: {
+                identifiers: ["zigbee2mqtt_0x0017880104e45518"],
+                manufacturer: "notSupportedMfg",
+                model: "Automatically generated definition",
+                model_id: "notSupportedModelID",
+                name: "0x0017880104e45518",
+                via_device: "zigbee2mqtt_bridge_0x00124b00120144ae",
+            },
+            device_class: "temperature",
+            enabled_by_default: true,
+            name: "my_sensor_name",
+            object_id: "0x0017880104e45518_analog_in_temperature_1",
+            origin: origin,
+            state_class: "measurement",
+            state_topic: "zigbee2mqtt/0x0017880104e45518",
+            unique_id: "0x0017880104e45518_analog_in_temperature_1_zigbee2mqtt",
+            unit_of_measurement: "°C",
+            value_template: '{{ value_json["analog_in_temperature_1"] }}',
+        };
+
+        expect(mockMQTTPublishAsync).toHaveBeenCalledWith(
+            "homeassistant/sensor/0x0017880104e45518/analog_in_temperature_1/config",
+            stringify(payload),
+            {
+                retain: true,
+                qos: 1,
+            },
+        );
+    });
+
+    it("Should discover analog output on unsupported devices", () => {
+        const payload = {
+            availability: [
+                {
+                    topic: "zigbee2mqtt/bridge/state",
+                    value_template: "{{ value_json.state }}",
+                },
+            ],
+            command_topic: "zigbee2mqtt/0x0017880104e45518/2/set/analog_output_2",
+            default_entity_id: "number.0x0017880104e45518_analog_output_2",
+            device: {
+                identifiers: ["zigbee2mqtt_0x0017880104e45518"],
+                manufacturer: "notSupportedMfg",
+                model: "Automatically generated definition",
+                model_id: "notSupportedModelID",
+                name: "0x0017880104e45518",
+                via_device: "zigbee2mqtt_bridge_0x00124b00120144ae",
+            },
+            name: "my_number_name",
+            object_id: "0x0017880104e45518_analog_output_2",
+            origin: origin,
+            state_topic: "zigbee2mqtt/0x0017880104e45518",
+            unique_id: "0x0017880104e45518_analog_output_2_zigbee2mqtt",
+            value_template: '{{ value_json["analog_output_2"] }}',
+        };
+
+        expect(mockMQTTPublishAsync).toHaveBeenCalledWith("homeassistant/number/0x0017880104e45518/analog_output_2/config", stringify(payload), {
+            qos: 1,
+            retain: true,
+        });
+    });
+
     it("Should apply user configuration after converter compatibility mapping", async () => {
         settings.set(["devices", "0x18fc2600000d7ae2", "homeassistant", "climate"], {
             modes: ["off", "heat", "auto"],
