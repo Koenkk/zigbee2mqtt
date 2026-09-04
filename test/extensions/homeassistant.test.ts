@@ -1720,6 +1720,8 @@ describe("Extension: HomeAssistant", () => {
     });
 
     it("Should discover dual cover devices", () => {
+        const coverValueTemplate =
+            '{% set motor = value_json["moving"] | default(none) %}{% set position = value_json["position"] | default(none) %}{% set state = value_json["state"] | default(none) %}{% if (motor == "UP" and position != 100) or (motor == "DOWN" and position != 0) %}{{ motor }}{% elif position == 0 %}CLOSE{% elif position == 100 %}OPEN{% elif motor == "STOP" and position is not none %}OPEN{% elif state in ["OPEN", "CLOSE"] %}{{ state }}{% else %}STOP{% endif %}';
         const payload_left = {
             availability: [
                 {
@@ -1751,8 +1753,7 @@ describe("Extension: HomeAssistant", () => {
             state_stopped: "STOP",
             state_topic: "zigbee2mqtt/0xa4c138018cf95021/left",
             unique_id: "0xa4c138018cf95021_cover_left_zigbee2mqtt",
-            value_template:
-                '{% if "moving" in value_json and value_json["moving"] == "UP" %}UP{% elif "moving" in value_json and value_json["moving"] == "DOWN" %}DOWN{% elif "state" in value_json %}{{ value_json["state"] }}{% else %}STOP{% endif %}',
+            value_template: coverValueTemplate,
         };
         const payload_right = {
             availability: [
@@ -1785,8 +1786,7 @@ describe("Extension: HomeAssistant", () => {
             state_stopped: "STOP",
             state_topic: "zigbee2mqtt/0xa4c138018cf95021/right",
             unique_id: "0xa4c138018cf95021_cover_right_zigbee2mqtt",
-            value_template:
-                '{% if "moving" in value_json and value_json["moving"] == "UP" %}UP{% elif "moving" in value_json and value_json["moving"] == "DOWN" %}DOWN{% elif "state" in value_json %}{{ value_json["state"] }}{% else %}STOP{% endif %}',
+            value_template: coverValueTemplate,
         };
 
         const coverLeftCalls = mockMQTTPublishAsync.mock.calls.filter(
@@ -1804,6 +1804,62 @@ describe("Extension: HomeAssistant", () => {
         expect(mockMQTTPublishAsync).toHaveBeenCalledWith("homeassistant/cover/0xa4c138018cf95021/cover_right/config", stringify(payload_right), {
             retain: true,
             qos: 1,
+        });
+    });
+
+    it("Should derive direction-aware cover state from position for motor_state covers", () => {
+        const coverExpose = new zhc.Cover().withPosition();
+        const motorStateExpose = new zhc.Enum("motor_state", zhc.access.STATE, ["opening", "closing", "stopped"]);
+        const device = {
+            definition: {},
+            isDevice: (): boolean => true,
+            isGroup: (): boolean => false,
+            endpoint: () => undefined,
+            options: {},
+            exposes: (): zhc.Expose[] => [coverExpose, motorStateExpose],
+            zh: {endpoints: []},
+        } as Device;
+
+        // @ts-expect-error private
+        const configs = extension.getConfigs(device);
+        const cover = configs.find((c) => c.type === "cover");
+        expect(cover).toBeDefined();
+        expect(cover!.discovery_payload).toMatchObject({
+            state_opening: "opening",
+            state_closing: "closing",
+            state_open: "OPEN",
+            state_closed: "CLOSE",
+            state_stopped: "stopped",
+            value_template:
+                '{% set motor = value_json["motor_state"] | default(none) %}{% set position = value_json["position"] | default(none) %}{% set state = value_json["state"] | default(none) %}{% if (motor == "opening" and position != 100) or (motor == "closing" and position != 0) %}{{ motor }}{% elif position == 0 %}CLOSE{% elif position == 100 %}OPEN{% elif motor == "stopped" and position is not none %}OPEN{% elif state in ["OPEN", "CLOSE"] %}{{ state }}{% else %}stopped{% endif %}',
+        });
+    });
+
+    it("Should preserve motor_state and state fallback for covers without position", () => {
+        const coverExpose = new zhc.Cover();
+        const motorStateExpose = new zhc.Enum("motor_state", zhc.access.STATE, ["opening", "closing", "stopped"]);
+        const device = {
+            definition: {},
+            isDevice: (): boolean => true,
+            isGroup: (): boolean => false,
+            endpoint: () => undefined,
+            options: {},
+            exposes: (): zhc.Expose[] => [coverExpose, motorStateExpose],
+            zh: {endpoints: []},
+        } as Device;
+
+        // @ts-expect-error private
+        const configs = extension.getConfigs(device);
+        const cover = configs.find((c) => c.type === "cover");
+        expect(cover).toBeDefined();
+        expect(cover!.discovery_payload).toMatchObject({
+            state_opening: "opening",
+            state_closing: "closing",
+            state_open: "OPEN",
+            state_closed: "CLOSE",
+            state_stopped: "stopped",
+            value_template:
+                '{% set motor = value_json["motor_state"] | default(none) %}{% set position = none %}{% set state = value_json["state"] | default(none) %}{% if (motor == "opening" and position != 100) or (motor == "closing" and position != 0) %}{{ motor }}{% elif position == 0 %}CLOSE{% elif position == 100 %}OPEN{% elif motor == "stopped" and position is not none %}OPEN{% elif state in ["OPEN", "CLOSE"] %}{{ state }}{% else %}stopped{% endif %}',
         });
     });
 

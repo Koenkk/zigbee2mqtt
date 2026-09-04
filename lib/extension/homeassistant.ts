@@ -211,6 +211,7 @@ const NUMERIC_DISCOVERY_LOOKUP: {[s: string]: KeyValue} = {
     external_humidity: {device_class: "humidity", icon: "mdi:water-percent", state_class: "measurement"},
     fading_time: {entity_category: "config", icon: "mdi:timer"},
     formaldehyd: {state_class: "measurement"},
+    formaldehyde: {state_class: "measurement"},
     flow: {device_class: "volume_flow_rate", state_class: "measurement"},
     frequency: {device_class: "frequency", state_class: "measurement"},
     gas: {device_class: "gas", state_class: "total_increasing", icon: "mdi:meter-gas"},
@@ -992,6 +993,7 @@ export class HomeAssistant extends Extension {
                 if (motorState) {
                     const motorStateProperty = featurePropertyWithoutEndpoint(motorState);
                     const stateProperty = featurePropertyWithoutEndpoint(state);
+                    const positionProperty = position ? featurePropertyWithoutEndpoint(position) : undefined;
 
                     const openingState = motorState.values.find((s) => COVER_OPENING_LOOKUP.includes(s.toString().toLowerCase()));
                     const closingState = motorState.values.find((s) => COVER_CLOSING_LOOKUP.includes(s.toString().toLowerCase()));
@@ -1003,16 +1005,18 @@ export class HomeAssistant extends Extension {
                         discoveryEntry.discovery_payload.state_open = "OPEN";
                         discoveryEntry.discovery_payload.state_closed = "CLOSE";
                         discoveryEntry.discovery_payload.state_stopped = stoppedState;
+                        const positionValue = positionProperty ? `value_json["${positionProperty}"] | default(none)` : "none";
                         discoveryEntry.discovery_payload.value_template =
-                            `{% if "${motorStateProperty}" in value_json and value_json["${motorStateProperty}"] == "${openingState}" %}` +
-                            `${openingState}` +
-                            `{% elif "${motorStateProperty}" in value_json and value_json["${motorStateProperty}"] == "${closingState}" %}` +
-                            `${closingState}` +
-                            `{% elif "${stateProperty}" in value_json %}` +
-                            `{{ value_json["${stateProperty}"] }}` +
-                            "{% else %}" +
-                            `${stoppedState}` +
-                            "{% endif %}";
+                            `{% set motor = value_json["${motorStateProperty}"] | default(none) %}` +
+                            `{% set position = ${positionValue} %}` +
+                            `{% set state = value_json["${stateProperty}"] | default(none) %}` +
+                            `{% if (motor == "${openingState}" and position != 100) or (motor == "${closingState}" and position != 0) %}` +
+                            "{{ motor }}" +
+                            "{% elif position == 0 %}CLOSE" +
+                            "{% elif position == 100 %}OPEN" +
+                            `{% elif motor == "${stoppedState}" and position is not none %}OPEN` +
+                            '{% elif state in ["OPEN", "CLOSE"] %}{{ state }}' +
+                            `{% else %}${stoppedState}{% endif %}`;
                     }
                 }
 
