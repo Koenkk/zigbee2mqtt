@@ -613,9 +613,13 @@ export default class Bind extends Extension {
                         continue;
                     }
 
-                    let readAttrs = poll.read.attributes;
-
-                    if (poll.read.attributesForEndpoint) {
+                    let readAttrs: TClusterAttributeKeys<string> = poll.read.attributes;
+                    let readCluster: ClusterName = poll.read.cluster;
+                    // For devices that have hue_native_control enabled, read state attribute from manuSpecificPhilips2 cluster instead
+                    if (endpoint.meta?.options?.hue_native_control === true) {
+                        readCluster = "manuSpecificPhilips2" as ClusterName;
+                        readAttrs = ["state"] as TClusterAttributeKeys<"manuSpecificPhilips2">;
+                    } else if (poll.read.attributesForEndpoint) {
                         const attrsForEndpoint = await poll.read.attributesForEndpoint(endpoint);
                         readAttrs = [...poll.read.attributes, ...attrsForEndpoint];
                     }
@@ -625,7 +629,7 @@ export default class Bind extends Extension {
                     if (!this.pollDebouncers[key]) {
                         this.pollDebouncers[key] = debounce(async () => {
                             try {
-                                await endpoint.read(poll.read.cluster, readAttrs);
+                                await endpoint.read(readCluster, readAttrs);
                             } catch (error) {
                                 // biome-ignore lint/style/noNonNullAssertion: TODO: biome migration: ???
                                 const resolvedDevice = this.zigbee.resolveEntity(device)!;
