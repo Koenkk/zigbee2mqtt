@@ -281,6 +281,44 @@ describe("Extension: HomeAssistant", () => {
         expect(configs.find((config) => config.object_id === "voltage")?.discovery_payload).not.toHaveProperty("type");
     });
 
+    it("Should advertise every color mode a light exposes", () => {
+        // https://github.com/Koenkk/zigbee2mqtt/issues/6402
+        // https://github.com/Koenkk/zigbee2mqtt/issues/22905
+        const createDevice = (exposes: zhc.Expose[]): Device =>
+            ({
+                definition: {},
+                isDevice: (): boolean => true,
+                isGroup: (): boolean => false,
+                endpoint: () => undefined,
+                options: {},
+                exposes: (): zhc.Expose[] => exposes,
+                zh: {endpoints: []},
+            }) as Device;
+        const supportedColorModes = (light: zhc.Light): string[] => {
+            // @ts-expect-error private
+            const configs = extension.getConfigs(createDevice([light]));
+            return configs.find((config) => config.object_id === "light")?.discovery_payload.supported_color_modes;
+        };
+
+        // Both xy and hs are advertised when both are exposed, regardless of the order in the expose.
+        expect(supportedColorModes(new zhc.Light().withBrightness().withColorTemp([150, 500]).withColor(["xy", "hs"]))).toStrictEqual([
+            "xy",
+            "hs",
+            "color_temp",
+        ]);
+        expect(supportedColorModes(new zhc.Light().withBrightness().withColorTemp([150, 500]).withColor(["hs", "xy"]))).toStrictEqual([
+            "xy",
+            "hs",
+            "color_temp",
+        ]);
+        expect(supportedColorModes(new zhc.Light().withBrightness().withColor(["hs", "xy"]))).toStrictEqual(["xy", "hs"]);
+        // Single-mode lights are unchanged.
+        expect(supportedColorModes(new zhc.Light().withBrightness().withColor(["xy"]))).toStrictEqual(["xy"]);
+        expect(supportedColorModes(new zhc.Light().withBrightness().withColor(["hs"]))).toStrictEqual(["hs"]);
+        expect(supportedColorModes(new zhc.Light().withBrightness().withColorTemp([150, 500]))).toStrictEqual(["color_temp"]);
+        expect(supportedColorModes(new zhc.Light().withBrightness())).toStrictEqual(["brightness"]);
+    });
+
     it("Should set discovery name to null when expose specifies homeassistant name null", () => {
         const createDevice = (exposes: zhc.Expose[]): Device =>
             ({
@@ -326,7 +364,7 @@ describe("Extension: HomeAssistant", () => {
             name: null,
             schema: "json",
             state_topic: "zigbee2mqtt/ha_discovery_group",
-            supported_color_modes: ["xy", "color_temp"],
+            supported_color_modes: ["xy", "hs", "color_temp"],
             effect: true,
             effect_list: [
                 "blink",
@@ -2350,7 +2388,7 @@ describe("Extension: HomeAssistant", () => {
             name: null,
             schema: "json",
             state_topic: "zigbee2mqtt/ha_discovery_group_new",
-            supported_color_modes: ["xy", "color_temp"],
+            supported_color_modes: ["xy", "hs", "color_temp"],
             effect: true,
             effect_list: [
                 "blink",
@@ -2831,7 +2869,7 @@ describe("Extension: HomeAssistant", () => {
             name: null,
             schema: "json",
             state_topic: "zigbee2mqtt/ha_discovery_group",
-            supported_color_modes: ["xy", "color_temp"],
+            supported_color_modes: ["xy", "hs", "color_temp"],
             effect: true,
             effect_list: [
                 "blink",
@@ -2887,7 +2925,7 @@ describe("Extension: HomeAssistant", () => {
             name: null,
             schema: "json",
             state_topic: "zigbee2mqtt/ha_discovery_group",
-            supported_color_modes: ["xy", "color_temp"],
+            supported_color_modes: ["xy", "hs", "color_temp"],
             effect: true,
             effect_list: [
                 "blink",
