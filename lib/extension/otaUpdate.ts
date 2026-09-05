@@ -53,8 +53,24 @@ export default class OTAUpdate extends Extension {
         `^${settings.get().mqtt.base_topic}/bridge/request/device/ota_update/(update|check|schedule|unschedule)/?(downgrade|abort)?`,
         "i",
     );
-    #inProgress = new Set<string>();
+    // Manual MQTT-initiated ops (check/update/schedule/unschedule): keyed by bare ieeeAddr
+    #inProgressManual = new Set<string>();
+    // Auto-check ops from Zigbee events: keyed by `${ieeeAddr}_${imageType}`
+    #inProgressAuto = new Set<string>();
+    // Per-device count of running auto-checks — enables O(1) #hasInProgress lookup without iterating #inProgressAuto
+    #inProgressAutoCount = new Map<string, number>();
+    // Throttling per imageType: keyed by `${ieeeAddr}_${imageType}`
     #lastChecked = new Map<string, number>();
+    // Cache of pending queryNextImageRequest payloads for devices where auto-check detected an available update.
+    // Keyed by bare ieeeAddr. Used to retry a manual update when the wrong MCU responds first (race condition).
+    #pendingAvailableRequests = new Map<
+        string,
+        {
+            payload: Zcl.ClustersTypes.TClusterCommandPayload<"genOta", "queryNextImageRequest">;
+            endpoint: zh.Endpoint;
+            ts: number;
+        }
+    >();
 
     // biome-ignore lint/suspicious/useAwait: API
     override async start(): Promise<void> {
@@ -76,8 +92,32 @@ export default class OTAUpdate extends Extension {
 
     // mostly intended for testing
     clearState(): void {
-        this.#inProgress.clear();
+        this.#inProgressManual.clear();
+        this.#inProgressAuto.clear();
+        this.#inProgressAutoCount.clear();
         this.#lastChecked.clear();
+        this.#pendingAvailableRequests.clear();
+    }
+
+    // O(1)×2: checks both manual (bare ieeeAddr) and auto (per-device count)
+    #hasInProgress(ieeeAddr: string): boolean {
+        return this.#inProgressManual.has(ieeeAddr) || this.#inProgressAutoCount.has(ieeeAddr);
+    }
+
+    #addAutoInProgress(ieeeAddr: string, imageType: number): void {
+        this.#inProgressAuto.add(`${ieeeAddr}_${imageType}`);
+        this.#inProgressAutoCount.set(ieeeAddr, (this.#inProgressAutoCount.get(ieeeAddr) ?? 0) + 1);
+    }
+
+    #deleteAutoInProgress(ieeeAddr: string, imageType: number): void {
+        this.#inProgressAuto.delete(`${ieeeAddr}_${imageType}`);
+        const count = (this.#inProgressAutoCount.get(ieeeAddr) ?? /* v8 ignore next */ 1) - 1;
+
+        if (count <= 0) {
+            this.#inProgressAutoCount.delete(ieeeAddr);
+        } else {
+            this.#inProgressAutoCount.set(ieeeAddr, count);
+        }
     }
 
     #removeProgressAndRemainingFromState(device: Device): void {
@@ -90,7 +130,14 @@ export default class OTAUpdate extends Extension {
     }
 
     @bind private async onZigbeeEvent(data: eventdata.DeviceMessage): Promise<void> {
-        if (data.type !== "commandQueryNextImageRequest" || !data.device.definition || this.#inProgress.has(data.device.ieeeAddr)) {
+        if (data.type !== "commandQueryNextImageRequest" || !data.device.definition) {
+            return;
+        }
+
+        const requestPayload = data.data as Zcl.ClustersTypes.TClusterCommandPayload<"genOta", "queryNextImageRequest">;
+        const inProgressKey = `${data.device.ieeeAddr}_${requestPayload.imageType}`;
+
+        if (this.#inProgressAuto.has(inProgressKey) || this.#inProgressManual.has(data.device.ieeeAddr)) {
             return;
         }
 
@@ -105,7 +152,7 @@ export default class OTAUpdate extends Extension {
         if (data.device.zh.scheduledOta) {
             // allow custom source to override check for definition `ota`
             if (data.device.zh.scheduledOta?.url !== undefined || data.device.definition.ota) {
-                this.#inProgress.add(data.device.ieeeAddr);
+                this.#addAutoInProgress(data.device.ieeeAddr, requestPayload.imageType);
 
                 logger.info(`Updating '${data.device.name}' to latest firmware`);
 
@@ -114,7 +161,7 @@ export default class OTAUpdate extends Extension {
                     const [, toVersion] = await this.#update(
                         undefined, // uses internally registered schedule
                         data.device,
-                        data.data as Zcl.ClustersTypes.TClusterCommandPayload<"genOta", "queryNextImageRequest">,
+                        requestPayload,
                         data.meta.zclTransactionSequenceNumber,
                         {
                             // fallbacks are only to satisfy typing, should always be defined from settings defaults
@@ -123,6 +170,7 @@ export default class OTAUpdate extends Extension {
                             baseSize: otaSettings.default_maximum_data_size ?? /* v8 ignore next */ 50,
                         },
                         data.endpoint,
+                        requestPayload.imageType,
                     );
 
                     if (toVersion === undefined) {
@@ -135,7 +183,7 @@ export default class OTAUpdate extends Extension {
                     await this.publishEntityState(data.device, this.#getEntityPublishPayload(data.device, "scheduled"));
                 }
 
-                this.#inProgress.delete(data.device.ieeeAddr);
+                this.#deleteAutoInProgress(data.device.ieeeAddr, requestPayload.imageType);
 
                 return; // we're done
             }
@@ -147,25 +195,20 @@ export default class OTAUpdate extends Extension {
                 // with only 10 - 60 seconds inbetween. It doesn't make sense to check for a new update
                 // each time, so this interval can be set by the user. The default is 1,440 minutes (one day).
                 const updateCheckInterval = settings.get().ota.update_check_interval * 1000 * 60;
-                const deviceLastChecked = this.#lastChecked.get(data.device.ieeeAddr);
+                const deviceLastChecked = this.#lastChecked.get(inProgressKey);
                 const check = deviceLastChecked !== undefined ? Date.now() - deviceLastChecked > updateCheckInterval : true;
 
                 if (!check) {
                     return;
                 }
 
-                this.#inProgress.add(data.device.ieeeAddr);
-                this.#lastChecked.set(data.device.ieeeAddr, Date.now());
+                this.#addAutoInProgress(data.device.ieeeAddr, requestPayload.imageType);
+                this.#lastChecked.set(inProgressKey, Date.now());
                 let availableResult: OtaUpdateAvailableResult | undefined;
 
                 try {
                     // auto-check defaults to zigbee-OTA + potential local index, and never `downgrade`
-                    availableResult = await data.device.zh.checkOta(
-                        {downgrade: false},
-                        data.data as Zcl.ClustersTypes.TClusterCommandPayload<"genOta", "queryNextImageRequest">,
-                        data.device.otaExtraMetas,
-                        data.endpoint,
-                    );
+                    availableResult = await data.device.zh.checkOta({downgrade: false}, requestPayload, data.device.otaExtraMetas, data.endpoint);
                 } catch (error) {
                     logger.debug(`Failed to check if OTA update available for '${data.device.name}' (${error})`);
                 }
@@ -174,7 +217,15 @@ export default class OTAUpdate extends Extension {
 
                 if (availableResult?.available) {
                     logger.info(`OTA update available for '${data.device.name}'`);
+                    // Cache the pending request so a manual update can retry if the wrong MCU responds first
+                    this.#pendingAvailableRequests.set(data.device.ieeeAddr, {
+                        payload: requestPayload,
+                        endpoint: data.endpoint,
+                        ts: Date.now(),
+                    });
                 }
+
+                this.#deleteAutoInProgress(data.device.ieeeAddr, requestPayload.imageType);
             }
         }
 
@@ -187,7 +238,6 @@ export default class OTAUpdate extends Extension {
             data.meta.zclTransactionSequenceNumber,
         );
         logger.debug(`Responded to OTA request of '${data.device.name}' with 'NO_IMAGE_AVAILABLE'`);
-        this.#inProgress.delete(data.device.ieeeAddr);
     }
 
     async #readSoftwareBuildIDAndDateCode(
@@ -269,10 +319,10 @@ export default class OTAUpdate extends Extension {
 
         if (!(device instanceof Device)) {
             error = `Device '${id}' does not exist`;
-        } else if (this.#inProgress.has(device.ieeeAddr)) {
+        } else if (this.#hasInProgress(device.ieeeAddr)) {
             if (abort) {
                 device.zh.abortOta();
-                this.#inProgress.delete(device.ieeeAddr);
+                this.#inProgressManual.delete(device.ieeeAddr);
                 // cleanup same as a fail
                 this.#removeProgressAndRemainingFromState(device);
                 await this.publishEntityState(device, this.#getEntityPublishPayload(device, "available"));
@@ -287,7 +337,7 @@ export default class OTAUpdate extends Extension {
         } else {
             switch (type) {
                 case "check": {
-                    this.#inProgress.add(device.ieeeAddr);
+                    this.#inProgressManual.add(device.ieeeAddr);
 
                     const source: OtaSource = {downgrade};
 
@@ -315,7 +365,7 @@ export default class OTAUpdate extends Extension {
                         logger.info(`${availableResult.available ? "" : "No "}OTA update available for '${device.name}'`);
 
                         await this.publishEntityState(device, this.#getEntityPublishPayload(device, availableResult));
-                        this.#lastChecked.set(device.ieeeAddr, Date.now());
+                        this.#lastChecked.set(`${device.ieeeAddr}_${availableResult.current.imageType}`, Date.now());
 
                         const response = utils.getResponse<"bridge/response/device/ota_update/check">(message, {
                             id,
@@ -340,7 +390,7 @@ export default class OTAUpdate extends Extension {
                         break;
                     }
 
-                    this.#inProgress.add(device.ieeeAddr);
+                    this.#inProgressManual.add(device.ieeeAddr);
 
                     const otaSettings = settings.get().ota;
                     const source: OtaSource = {downgrade};
@@ -388,7 +438,18 @@ export default class OTAUpdate extends Extension {
 
                     try {
                         const firmwareFrom = await this.#readSoftwareBuildIDAndDateCode(device, "immediate");
-                        const [fromVersion, toVersion] = await this.#update(source, device, undefined, undefined, dataSettings);
+                        let [fromVersion, toVersion] = await this.#update(source, device, undefined, undefined, dataSettings);
+
+                        if (toVersion === undefined) {
+                            // Check if there's a recent pending request from auto-check (TTL 5 min).
+                            // This handles the race where a different MCU responds first to the imageNotify.
+                            const pending = this.#pendingAvailableRequests.get(device.ieeeAddr);
+
+                            if (pending !== undefined && Date.now() - pending.ts < 5 * 60 * 1000) {
+                                this.#pendingAvailableRequests.delete(device.ieeeAddr);
+                                [, toVersion] = await this.#update(source, device, pending.payload, undefined, dataSettings, pending.endpoint);
+                            }
+                        }
 
                         if (toVersion === undefined) {
                             error = `Update of '${device.name}' failed (No image currently available)`;
@@ -469,7 +530,7 @@ export default class OTAUpdate extends Extension {
                 }
             }
 
-            this.#inProgress.delete(device.ieeeAddr);
+            this.#inProgressManual.delete(device.ieeeAddr);
         }
 
         if (error) {
@@ -488,6 +549,9 @@ export default class OTAUpdate extends Extension {
      * Do the bulk of the update work (hand over to zigbee-herdsman, then re-interview).
      *
      * `dataSettings` object may be mutated by zigbee-herdsman to fit request (e.g. known manuf quirk)
+     *
+     * `autoImageType` is defined when called from the scheduled/auto-check path (Zigbee event). Used to
+     * skip re-interview when other imageTypes of the same device are still being updated concurrently.
      */
     async #update(
         source: OtaSource | undefined,
@@ -496,6 +560,7 @@ export default class OTAUpdate extends Extension {
         requestTsn: number | undefined,
         dataSettings: OtaDataSettings,
         endpoint?: zh.Endpoint,
+        autoImageType?: number,
     ): Promise<[from: number, to: number | undefined]> {
         const [from, to] = await device.zh.updateOta(
             source,
@@ -523,6 +588,16 @@ export default class OTAUpdate extends Extension {
 
         logger.info(() => `Device '${device.name}' was OTA updated from '${from.fileVersion}' to '${to.fileVersion}'`);
 
+        // Reset #lastChecked for all imageTypes of this device so siblings can be auto-checked immediately
+        for (const key of this.#lastChecked.keys()) {
+            if (key.startsWith(`${device.ieeeAddr}_`)) {
+                this.#lastChecked.delete(key);
+            }
+        }
+
+        // Clear any stale pending request — device will repopulate if still needed
+        this.#pendingAvailableRequests.delete(device.ieeeAddr);
+
         // OTA update can bring new features & co, force full re-interview and re-configure, same as a "device joined"
         if (device.zh.meta.configured !== undefined) {
             delete device.zh.meta.configured;
@@ -530,11 +605,18 @@ export default class OTAUpdate extends Extension {
             device.zh.save();
         }
 
-        setTimeout(() => {
-            device.reInterview(this.eventBus).catch((error) => {
-                logger.error(`${error.message}. Re-try manually after some time.`);
-            });
-        }, 5000);
+        // For concurrent auto-checks (e.g. two-firmware devices): re-interview only after the last update.
+        // autoImageType is defined when called from the auto-check path; the count includes the current
+        // in-progress entry (not yet deleted by the caller), so > 1 means other imageTypes still running.
+        const otherAutoRunning = autoImageType !== undefined && (this.#inProgressAutoCount.get(device.ieeeAddr) ?? /* v8 ignore next */ 0) > 1;
+
+        if (!otherAutoRunning) {
+            setTimeout(() => {
+                device.reInterview(this.eventBus).catch((error) => {
+                    logger.error(`${error.message}. Re-try manually after some time.`);
+                });
+            }, 5000);
+        }
 
         return [from.fileVersion, to.fileVersion];
     }
