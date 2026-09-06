@@ -36,11 +36,11 @@ interface ActionData {
 }
 
 const ACTION_PATTERNS: string[] = [
-    "^(?<button>(?:button_)?[a-z0-9]+)_(?<action>(?:press|hold)(?:_release)?)$",
-    "^(?<action>recall|scene)_(?<scene>[0-2][0-9]{0,2})$",
+    "^(?<button>(?:button_)?[a-z0-9]+)_(?<action>(?:press|hold|single|double)(?:_release)?)$",
+    "^(?<action>recall|scene)_(?<scene>[0-9]+)$",
     "^(?<actionPrefix>region_)(?<region>[1-9]|10)_(?<action>enter|leave|occupied|unoccupied)$",
     "^(?<action>dial_rotate)_(?<direction>left|right)_(?<speed>step|slow|fast)$",
-    "^(?<action>brightness_step)(?:_(?<direction>up|down))?$",
+    "^(?<action>brightness_step|color_temperature_step|color_saturation_step|color_hue_step)(?:_(?<direction>up|down))?$",
 ];
 const ACCESS_STATE = 0b001;
 const ACCESS_SET = 0b010;
