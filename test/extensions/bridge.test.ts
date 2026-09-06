@@ -4584,6 +4584,24 @@ describe("Extension: Bridge", () => {
         expect(payload.icon).toBe("_------_-._Z-NC-Z02-LM_");
     });
 
+    it("Applies definition option defaults without overriding configured options", () => {
+        const device = controller.zigbee.resolveEntity(devices.bulb.ieeeAddr);
+        assert(device && "definition" in device);
+        const definitionOptions = device.definition?.options;
+        // @ts-expect-error default is provided by the converter option schema
+        device.definition!.options = [{name: "query_on_announce", default: true}];
+
+        expect(device.options.query_on_announce).toBe(true);
+
+        settings.set(["device_options", "query_on_announce"], false);
+        expect(device.options.query_on_announce).toBe(false);
+
+        settings.set(["devices", devices.bulb.ieeeAddr, "query_on_announce"], true);
+        expect(device.options.query_on_announce).toBe(true);
+
+        device.definition!.options = definitionOptions;
+    });
+
     it("Should publish bridge info, devices and definitions when a device with custom_clusters joined", async () => {
         mockMQTTPublishAsync.mockClear();
         await mockZHEvents.deviceJoined({device: devices.bulb_custom_cluster});

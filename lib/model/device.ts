@@ -29,7 +29,12 @@ export default class Device {
     }
     get options(): DeviceOptionsWithId {
         const deviceOptions = settings.getDevice(this.ieeeAddr) ?? {friendly_name: this.ieeeAddr, ID: this.ieeeAddr};
-        return {...settings.get().device_options, ...deviceOptions};
+        const definitionDefaults = Object.fromEntries(
+            (this.definition?.options ?? [])
+                .map((option) => [option.name, (option as zhc.Option & {default?: unknown}).default] as const)
+                .filter(([, value]) => value !== undefined),
+        );
+        return {...definitionDefaults, ...settings.get().device_options, ...deviceOptions};
     }
     get name(): string {
         return this.zh.type === "Coordinator" ? "Coordinator" : this.options?.friendly_name;
