@@ -2069,7 +2069,8 @@ describe("Extension: Bridge", () => {
                             },
                             {
                                 access: 2,
-                                description: "Inverts the cover position and state, false: open=100,close=0, true: open=0,close=100 (default false).",
+                                description:
+                                    "Inverts the reported cover position and the state derived from it, false: open=100,close=0, true: open=0,close=100 (default false).",
                                 label: "Invert cover",
                                 name: "invert_cover",
                                 property: "invert_cover",
