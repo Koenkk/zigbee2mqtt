@@ -59,6 +59,17 @@ describe("Extension: HomeAssistant", () => {
         return controller.zigbee.resolveEntity(zhDeviceOrGroup)!;
     };
 
+    const createDevice = (exposes: zhc.Expose[], definition: object = {}): Device =>
+        ({
+            definition,
+            isDevice: (): boolean => true,
+            isGroup: (): boolean => false,
+            endpoint: () => undefined,
+            options: {},
+            exposes: (): zhc.Expose[] => exposes,
+            zh: {endpoints: []},
+        }) as Device;
+
     beforeAll(async () => {
         const {getZigbee2MQTTVersion} = await import("../../lib/util/utils.js");
         z2m_version = (await getZigbee2MQTTVersion()).version;
@@ -126,6 +137,118 @@ describe("Extension: HomeAssistant", () => {
         }
 
         expect(duplicated).toStrictEqual([]);
+    });
+
+    /**
+     * Home Assistant logs `Template variable warning: 'dict object' has no attribute '<property>'`
+     * when a `value_template` reads a property which isn't in the payload, reported since 2021 in
+     * #30086, #20949, #20494, #16571, #24386, #15116, #12825, #11848, #7361, #7139, #7073 and #6987.
+     * Guards must check presence, not truthiness: `0`, `false` and `null` are falsy in Jinja, so
+     * `{% if value_json["x"] %}` and `default('', True)` would drop a legitimate `0`.
+     */
+    describe("value_json guards", () => {
+        const findUnguardedReads = (template: string): string[] => {
+            const reads = /value_json(?:\[["']([^"'\]]+)["']\]|\.([A-Za-z_]\w*))/g;
+            const unguarded = new Set<string>();
+
+            for (const match of template.matchAll(reads)) {
+                const property = match[1] ?? match[2];
+                // `default(...)` also guards: Jinja's filter type-checks the `Undefined` instead of
+                // stringifying it, so it doesn't log either. Only counts for the expression it's in,
+                // so a second unguarded read elsewhere in the same template is still reported.
+                const expression = template.slice(template.lastIndexOf("{", match.index), template.indexOf("}", match.index));
+
+                if (!template.includes(`"${property}" in value_json`) && !expression.includes("default(")) {
+                    unguarded.add(property);
+                }
+            }
+
+            return [...unguarded];
+        };
+
+        // One walk over every zigbee-herdsman-converters definition, shared by the checks below.
+        type GeneratedConfig = {type: string; object_id: string; discovery_payload: KeyValueAny};
+        let generatedConfigs: GeneratedConfig[] | undefined;
+
+        const getGeneratedConfigs = async (): Promise<GeneratedConfig[]> => {
+            if (!generatedConfigs) {
+                settings.set(["advanced", "last_seen"], "ISO_8601");
+                generatedConfigs = [];
+
+                for (const baseDefinition of await getZhcBaseDefinitions()) {
+                    const d = zhc.prepareDefinition(baseDefinition);
+                    const exposes = typeof d.exposes === "function" ? d.exposes({isDummyDevice: true}, {}) : d.exposes;
+                    // @ts-expect-error private
+                    generatedConfigs.push(...(extension.getConfigs(createDevice(exposes, d)) as GeneratedConfig[]));
+                }
+            }
+
+            return generatedConfigs;
+        };
+
+        const templatesOf = function* (config: GeneratedConfig): Generator<[string, string]> {
+            for (const [key, value] of Object.entries(config.discovery_payload)) {
+                if (key.endsWith("_template") && typeof value === "string") yield [key, value];
+            }
+        };
+
+        it("Should guard every generated state template against a missing property", async () => {
+            const offenders = new Set<string>();
+
+            for (const config of await getGeneratedConfigs()) {
+                // The `update` entity builds JSON out of nested `value_json['update'][...]` reads.
+                if (config.type === "update") continue;
+
+                for (const [key, value] of templatesOf(config)) {
+                    for (const property of findUnguardedReads(value)) {
+                        // Carried on the expose by zigbee-herdsman-converters (`lib/zosung.js`), not built here.
+                        if (property === "learned_ir_timings") continue;
+
+                        offenders.add(`${config.type}/${config.object_id} ${key} reads '${property}': ${value}`);
+                    }
+                }
+            }
+
+            expect([...offenders]).toStrictEqual([]);
+        });
+
+        it("Should guard the number entity built from a numeric expose with SET access", () => {
+            const exposes = [new zhc.Numeric("effect_speed", zhc.access.ALL).withLabel("Effect speed").withValueMin(0).withValueMax(255)];
+            // @ts-expect-error private
+            const configs = extension.getConfigs(createDevice(exposes));
+            const number = configs.find((config: {type: string}) => config.type === "number");
+
+            assert(number);
+            expect(number.discovery_payload.value_template).toStrictEqual(
+                '{% if "effect_speed" in value_json %}{{ value_json["effect_speed"] }}{% endif %}',
+            );
+        });
+
+        it("Should not guard with a form that drops a legitimate 0, false or null", async () => {
+            const falsySensitive = new Set<string>();
+
+            for (const config of await getGeneratedConfigs()) {
+                for (const [key, value] of templatesOf(config)) {
+                    // `default(x, True)` is falsy-sensitive, except on the truncating
+                    // text/list/composite template, which only carries strings.
+                    // https://github.com/Koenkk/zigbee2mqtt/issues/23199
+                    if (/default\([^)]*,\s*True\)/.test(value) && !value.includes("truncate(")) {
+                        falsySensitive.add(`${config.type}/${config.object_id} ${key}: ${value}`);
+                    }
+
+                    // A bare `{% if value_json["x"] %}` tests truthiness; a comparison such as
+                    // `{% if value_json["position"] == 0 %}` doesn't, hence the closing `%}`.
+                    // Intended for a binary expose, but only once presence is established.
+                    for (const match of value.matchAll(/\{%-?\s*if\s+value_json\["([^"\]]+)"\]\s*-?%\}/g)) {
+                        if (!value.includes(`"${match[1]}" in value_json`)) {
+                            falsySensitive.add(`${config.type}/${config.object_id} ${key}: ${value}`);
+                        }
+                    }
+                }
+            }
+
+            expect([...falsySensitive]).toStrictEqual([]);
+        });
     });
 
     it("Should mark thermostat configuration toggles as config entities", () => {
@@ -248,17 +371,6 @@ describe("Extension: HomeAssistant", () => {
     });
 
     it("Should apply expose-level Home Assistant discovery metadata", () => {
-        const createDevice = (exposes: zhc.Expose[]): Device =>
-            ({
-                definition: {},
-                isDevice: (): boolean => true,
-                isGroup: (): boolean => false,
-                endpoint: () => undefined,
-                options: {},
-                exposes: (): zhc.Expose[] => exposes,
-                zh: {endpoints: []},
-            }) as Device;
-
         const voltageExpose = new zhc.Numeric("voltage", zhc.access.STATE).withUnit("V");
         Object.assign(voltageExpose, {
             homeassistant: {
@@ -282,17 +394,6 @@ describe("Extension: HomeAssistant", () => {
     });
 
     it("Should set discovery name to null when expose specifies homeassistant name null", () => {
-        const createDevice = (exposes: zhc.Expose[]): Device =>
-            ({
-                definition: {},
-                isDevice: (): boolean => true,
-                isGroup: (): boolean => false,
-                endpoint: () => undefined,
-                options: {},
-                exposes: (): zhc.Expose[] => exposes,
-                zh: {endpoints: []},
-            }) as Device;
-
         const contactExpose = new zhc.Binary("contact", zhc.access.STATE, false, true).withHomeAssistant({name: null});
 
         // @ts-expect-error private
