@@ -43,7 +43,7 @@
     "homepage": "https://koenkk.github.io/zigbee2mqtt",
     "dependencies": {
         "zigbee-herdsman": "10.9.3",
-        "zigbee-herdsman-converters": "26.108.0"
+        "zigbee-herdsman-converters": "26.108.1"
     },
     "devDependencies": {},
     "pnpm": {
