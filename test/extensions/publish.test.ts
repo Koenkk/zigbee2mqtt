@@ -481,7 +481,7 @@ describe("Extension: Publish", () => {
         expect(group.command).toHaveBeenCalledWith("genOnOff", "on", {}, {});
         expect(mockMQTTPublishAsync).toHaveBeenCalledTimes(2); // 'zigbee2mqtt/bulb_color' + below
         expect(mockMQTTPublishAsync.mock.calls[1][0]).toStrictEqual("zigbee2mqtt/group_1");
-        expect(JSON.parse(mockMQTTPublishAsync.mock.calls[1][1])).toStrictEqual({state: "ON"});
+        expect(JSON.parse(mockMQTTPublishAsync.mock.calls[1][1])).toStrictEqual({state: "ON", group_state: "ON"});
         group.members.pop();
     });
 
@@ -499,7 +499,7 @@ describe("Extension: Publish", () => {
         );
         expect(mockMQTTPublishAsync).toHaveBeenCalledTimes(2); // 'zigbee2mqtt/bulb_color' + below
         expect(mockMQTTPublishAsync.mock.calls[1][0]).toStrictEqual("zigbee2mqtt/group_1");
-        expect(JSON.parse(mockMQTTPublishAsync.mock.calls[1][1])).toStrictEqual({state: "ON", brightness: 128});
+        expect(JSON.parse(mockMQTTPublishAsync.mock.calls[1][1])).toStrictEqual({state: "ON", brightness: 128, group_state: "ON"});
         group.members.pop();
     });
 
@@ -526,7 +526,7 @@ describe("Extension: Publish", () => {
         expect(group.command).toHaveBeenCalledWith("genOnOff", "on", {}, {});
         expect(mockMQTTPublishAsync).toHaveBeenCalledTimes(2);
         expect(mockMQTTPublishAsync.mock.calls[1][0]).toStrictEqual("zigbee2mqtt/hue_twilight_group");
-        expect(JSON.parse(mockMQTTPublishAsync.mock.calls[1][1])).toStrictEqual({state: "ON"});
+        expect(JSON.parse(mockMQTTPublishAsync.mock.calls[1][1])).toStrictEqual({state: "ON", group_state: "ON"});
     });
 
     it("Should publish messages to groups with on and brightness", async () => {
@@ -543,7 +543,7 @@ describe("Extension: Publish", () => {
         );
         expect(mockMQTTPublishAsync).toHaveBeenCalledTimes(2); // 'zigbee2mqtt/bulb_color' + below
         expect(mockMQTTPublishAsync.mock.calls[1][0]).toStrictEqual("zigbee2mqtt/group_1");
-        expect(JSON.parse(mockMQTTPublishAsync.mock.calls[1][1])).toStrictEqual({state: "ON", brightness: 50});
+        expect(JSON.parse(mockMQTTPublishAsync.mock.calls[1][1])).toStrictEqual({state: "ON", brightness: 50, group_state: "ON"});
         group.members.pop();
     });
 
@@ -556,7 +556,7 @@ describe("Extension: Publish", () => {
         expect(group.command).toHaveBeenCalledWith("genOnOff", "off", {}, {});
         expect(mockMQTTPublishAsync).toHaveBeenCalledTimes(2); // 'zigbee2mqtt/bulb_color' + below
         expect(mockMQTTPublishAsync.mock.calls[1][0]).toStrictEqual("zigbee2mqtt/group_1");
-        expect(JSON.parse(mockMQTTPublishAsync.mock.calls[1][1])).toStrictEqual({state: "OFF"});
+        expect(JSON.parse(mockMQTTPublishAsync.mock.calls[1][1])).toStrictEqual({state: "OFF", group_state: "OFF"});
         group.members.pop();
     });
 
@@ -937,7 +937,7 @@ describe("Extension: Publish", () => {
             {},
         );
         expect(group.command).toHaveBeenCalledWith("genOnOff", "on", {}, {});
-        expect(mockMQTTPublishAsync).toHaveBeenCalledWith("zigbee2mqtt/switch_group", stringify({state: "ON", brightness: 100}), {
+        expect(mockMQTTPublishAsync).toHaveBeenCalledWith("zigbee2mqtt/switch_group", stringify({state: "ON", brightness: 100, group_state: "ON"}), {
             retain: false,
             qos: 0,
         });
@@ -948,10 +948,14 @@ describe("Extension: Publish", () => {
         await flushPromises();
         expect(group.command).toHaveBeenCalledTimes(1);
         expect(group.command).toHaveBeenCalledWith("genOnOff", "off", {}, {});
-        expect(mockMQTTPublishAsync).toHaveBeenCalledWith("zigbee2mqtt/switch_group", stringify({state: "OFF", brightness: 100}), {
-            retain: false,
-            qos: 0,
-        });
+        expect(mockMQTTPublishAsync).toHaveBeenCalledWith(
+            "zigbee2mqtt/switch_group",
+            stringify({state: "OFF", brightness: 100, group_state: "OFF"}),
+            {
+                retain: false,
+                qos: 0,
+            },
+        );
     });
 
     it("Should use transition when brightness with group", async () => {
@@ -969,7 +973,7 @@ describe("Extension: Publish", () => {
         );
         expect(mockMQTTPublishAsync).toHaveBeenCalledTimes(2); // zigbee2mqtt/bulb_color + below
         expect(mockMQTTPublishAsync.mock.calls[1][0]).toStrictEqual("zigbee2mqtt/group_1");
-        expect(JSON.parse(mockMQTTPublishAsync.mock.calls[1][1])).toStrictEqual({state: "ON", brightness: 100});
+        expect(JSON.parse(mockMQTTPublishAsync.mock.calls[1][1])).toStrictEqual({state: "ON", brightness: 100, group_state: "ON"});
         group.members.pop();
     });
 
@@ -1946,7 +1950,7 @@ describe("Extension: Publish", () => {
         expect(mockMQTTPublishAsync).toHaveBeenNthCalledWith(
             1,
             "zigbee2mqtt/group_tradfri_remote",
-            stringify({brightness: 50, color_temp: 290, state: "ON", color_mode: "color_temp"}),
+            stringify({brightness: 50, color_temp: 290, state: "ON", color_mode: "color_temp", group_state: "ON"}),
             {retain: false, qos: 0},
         );
         expect(mockMQTTPublishAsync).toHaveBeenNthCalledWith(
@@ -1958,13 +1962,13 @@ describe("Extension: Publish", () => {
         expect(mockMQTTPublishAsync).toHaveBeenNthCalledWith(
             3,
             "zigbee2mqtt/ha_discovery_group",
-            stringify({brightness: 50, color_mode: "color_temp", color_temp: 290, state: "ON"}),
+            stringify({brightness: 50, color_mode: "color_temp", color_temp: 290, state: "ON", group_state: "ON"}),
             {retain: false, qos: 0},
         );
         expect(mockMQTTPublishAsync).toHaveBeenNthCalledWith(
             4,
             "zigbee2mqtt/group_tradfri_remote",
-            stringify({brightness: 100, color_temp: 290, state: "ON", color_mode: "color_temp"}),
+            stringify({brightness: 100, color_temp: 290, state: "ON", color_mode: "color_temp", group_state: "ON"}),
             {retain: false, qos: 0},
         );
         expect(mockMQTTPublishAsync).toHaveBeenNthCalledWith(
@@ -1976,19 +1980,19 @@ describe("Extension: Publish", () => {
         expect(mockMQTTPublishAsync).toHaveBeenNthCalledWith(
             6,
             "zigbee2mqtt/group_with_tradfri",
-            stringify({brightness: 100, color_mode: "color_temp", color_temp: 290, state: "ON"}),
+            stringify({brightness: 100, color_mode: "color_temp", color_temp: 290, state: "ON", group_state: "ON"}),
             {retain: false, qos: 0},
         );
         expect(mockMQTTPublishAsync).toHaveBeenNthCalledWith(
             7,
             "zigbee2mqtt/switch_group",
-            stringify({brightness: 100, color_mode: "color_temp", color_temp: 290, state: "ON"}),
+            stringify({brightness: 100, color_mode: "color_temp", color_temp: 290, state: "ON", group_state: "ON"}),
             {retain: false, qos: 0},
         );
         expect(mockMQTTPublishAsync).toHaveBeenNthCalledWith(
             8,
             "zigbee2mqtt/ha_discovery_group",
-            stringify({brightness: 100, color_mode: "color_temp", color_temp: 290, state: "ON"}),
+            stringify({brightness: 100, color_mode: "color_temp", color_temp: 290, state: "ON", group_state: "ON"}),
             {retain: false, qos: 0},
         );
     });

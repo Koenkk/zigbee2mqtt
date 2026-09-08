@@ -641,7 +641,10 @@ describe("Extension: Receive", () => {
         await flushPromises();
         expect(mockMQTTPublishAsync).toHaveBeenCalledTimes(2);
         expect(mockMQTTPublishAsync).toHaveBeenCalledWith("zigbee2mqtt/power_plug", stringify({state: "ON"}), {retain: false, qos: 0});
-        expect(mockMQTTPublishAsync).toHaveBeenCalledWith("zigbee2mqtt/switch_group", stringify({state: "ON"}), {retain: false, qos: 0});
+        expect(mockMQTTPublishAsync).toHaveBeenCalledWith("zigbee2mqtt/switch_group", stringify({state: "ON", group_state: "ON"}), {
+            retain: false,
+            qos: 0,
+        });
     });
 
     it("Should not handle messages from coordinator", async () => {

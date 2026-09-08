@@ -35,9 +35,14 @@ interface ParsedMQTTMessage {
     skipDisableReporting: boolean;
 }
 
+type ActiveState = "ON" | "OPEN";
+type InactiveState = "OFF" | "CLOSE";
+type GroupState = ActiveState | InactiveState | "PARTIAL";
+
 export default class Groups extends Extension {
     #topicRegex = new RegExp(`^${settings.get().mqtt.base_topic}/bridge/request/group/members/(remove|add|remove_all)$`);
     private lastOptimisticState: {[s: string]: KeyValue} = {};
+    private lastGroupState: {[s: string]: GroupState} = {};
 
     // biome-ignore lint/suspicious/useAwait: API
     override async start(): Promise<void> {
@@ -87,14 +92,14 @@ export default class Groups extends Extension {
 
                 if (endpoint) {
                     for (const group of groups) {
-                        if (
-                            group.zh.hasMember(endpoint) &&
-                            !equals(this.lastOptimisticState[group.ID], payload) &&
-                            this.shouldPublishPayloadForGroup(group, payload)
-                        ) {
-                            this.lastOptimisticState[group.ID] = payload;
+                        if (group.zh.hasMember(endpoint)) {
+                            if (!equals(this.lastOptimisticState[group.ID], payload) && this.shouldPublishPayloadForGroup(group, payload)) {
+                                this.lastOptimisticState[group.ID] = payload;
 
-                            await this.publishEntityState(group, payload, reason);
+                                await this.publishEntityState(group, payload, reason);
+                            } else {
+                                await this.publishGroupStateIfChanged(group, reason);
+                            }
                         }
                     }
                 }
@@ -103,6 +108,7 @@ export default class Groups extends Extension {
                 delete this.lastOptimisticState[entity.ID];
 
                 const groupsToPublish = new Set<Group>();
+                const memberStatePublishes: Promise<void>[] = [];
 
                 for (const member of entity.zh.members) {
                     const device = this.zigbee.resolveEntity(member.getDevice()) as Device;
@@ -129,56 +135,102 @@ export default class Groups extends Extension {
                         }
                     }
 
-                    await this.publishEntityState(device, memberPayload, reason);
+                    memberStatePublishes.push(this.publishEntityState(device, memberPayload, reason));
 
                     for (const zigbeeGroup of groups) {
-                        if (zigbeeGroup.zh.hasMember(member) && this.shouldPublishPayloadForGroup(zigbeeGroup, payload)) {
+                        if (zigbeeGroup.zh.hasMember(member)) {
                             groupsToPublish.add(zigbeeGroup);
                         }
                     }
                 }
 
+                // All publishEntityState calls must start before this await: they update the
+                // state cache synchronously, ensuring group_state sees all updated members.
+                await Promise.all(memberStatePublishes);
+
                 groupsToPublish.delete(entity);
 
                 for (const group of groupsToPublish) {
-                    await this.publishEntityState(group, payload, reason);
+                    if (this.shouldPublishPayloadForGroup(group, payload)) {
+                        await this.publishEntityState(group, payload, reason);
+                    } else {
+                        await this.publishGroupStateIfChanged(group, reason);
+                    }
                 }
+            }
+        }
+    }
+
+    private async publishGroupStateIfChanged(group: Group, reason: StateChangeReason): Promise<void> {
+        const groupState = this.getGroupState(group);
+
+        if (groupState && this.lastGroupState[group.ID] !== groupState) {
+            await this.publishEntityState(group, {}, reason);
+        }
+    }
+
+    override adjustMessageBeforePublish(entity: Group | Device, message: KeyValue): void {
+        if (entity instanceof Group) {
+            const groupState = this.getGroupState(entity);
+
+            if (groupState) {
+                message.group_state = groupState;
+                this.lastGroupState[entity.ID] = groupState;
             }
         }
     }
 
     private shouldPublishPayloadForGroup(group: Group, payload: KeyValue): boolean {
-        return (
-            group.options.off_state === "last_member_state" ||
-            !payload ||
-            (payload.state !== "OFF" && payload.state !== "CLOSE") ||
-            this.areAllMembersOffOrClosed(group)
-        );
+        if (group.options.off_state === "last_member_state" || !payload || (payload.state !== "OFF" && payload.state !== "CLOSE")) {
+            return true;
+        }
+
+        const groupState = this.getGroupState(group);
+        return groupState === undefined || groupState === "OFF" || groupState === "CLOSE";
     }
 
-    private areAllMembersOffOrClosed(group: Group): boolean {
-        for (const member of group.zh.members) {
-            // biome-ignore lint/style/noNonNullAssertion: TODO: biome migration: valid from loop?
-            const device = this.zigbee.resolveEntity(member.getDevice())!;
+    private getGroupState(group: Group): GroupState | undefined {
+        let activeState: ActiveState | undefined;
+        let inactiveState: InactiveState | undefined;
 
-            if (this.state.exists(device)) {
+        for (const member of group.zh.members) {
+            const device = this.zigbee.resolveEntity(member.getDevice());
+
+            if (device?.isDevice() && this.state.exists(device)) {
                 const state = this.state.get(device);
-                const endpointNames = device.isDevice() && device.getEndpointNames();
+                const endpointName = device.endpointName(member);
                 const stateKey =
-                    endpointNames &&
-                    endpointNames.length >= member.ID &&
-                    device.definition?.meta?.multiEndpoint &&
-                    !device.definition.meta.multiEndpointSkip?.includes("state")
-                        ? `state_${endpointNames[member.ID - 1]}`
+                    endpointName &&
+                    !device.definition?.meta?.multiEndpointSkip?.includes("state") &&
+                    (device.definition?.meta?.multiEndpoint || state.state === undefined)
+                        ? `state_${endpointName}`
                         : "state";
 
-                if (state[stateKey] === "ON" || state[stateKey] === "OPEN") {
-                    return false;
+                const memberState = state[stateKey];
+
+                if (memberState === "ON" || memberState === "OPEN") {
+                    activeState = memberState;
+                } else if (memberState === "OFF" || memberState === "CLOSE") {
+                    inactiveState = memberState;
+                }
+
+                if (activeState && inactiveState) {
+                    return "PARTIAL";
                 }
             }
         }
 
-        return true;
+        const state = this.state.exists(group) ? this.state.get(group).state : undefined;
+
+        if (activeState) {
+            return state === "ON" || state === "OPEN" ? state : activeState;
+        }
+
+        if (inactiveState) {
+            return state === "OFF" || state === "CLOSE" ? state : inactiveState;
+        }
+
+        return undefined;
     }
 
     private parseMQTTMessage(
