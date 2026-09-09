@@ -10,6 +10,7 @@ RUN apk add --no-cache tzdata eudev tini nodejs
 FROM base AS deps
 
 COPY package.json pnpm-lock.yaml ./
+COPY patches ./patches
 
 # Make and such are needed to compile serialport for riscv64
 # Install pnpm, configure a tmp-based store, then use it under a cache mount so each arch gets its own store

@@ -82,7 +82,10 @@
             "@serialport/bindings-cpp",
             "esbuild",
             "unix-dgram"
-        ]
+        ],
+        "patchedDependencies": {
+            "@serialport/bindings-cpp@13.0.1": "patches/@serialport__bindings-cpp@13.0.1.patch"
+        }
     },
     "bin": {
         "zigbee2mqtt": "cli.js"

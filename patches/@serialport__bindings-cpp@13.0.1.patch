@@ -1,0 +1,142 @@
+diff --git a/package.json b/package.json
+index 373d6ca3b342d169e5092ac6017b18ee8ca98e65..669b016f2271de2584688a3758256b93bdab2efb 100644
+--- a/package.json
++++ b/package.json
+@@ -56,7 +56,7 @@
+   },
+   "scripts": {
+     "build": "rm -rf dist && tsc -p tsconfig-build.json",
+-    "install": "node-gyp-build",
++    "install": "node -e \"process.env.npm_config_build_from_source = 'true'; require('node-gyp-build/bin.js')\"",
+     "prebuildify": "prebuildify --napi --target 20.0.0 --force --strip --verbose",
+     "prebuildify-cross": "prebuildify-cross --napi --target 20.0.0 --force --strip --verbose",
+     "rebuild": "node-gyp rebuild",
+diff --git a/src/poller.cpp b/src/poller.cpp
+index 0b0469266622035c21a059035effa5c2e1c355dd..6a86af21776565b9814622dade0ac572e4658067 100644
+--- a/src/poller.cpp
++++ b/src/poller.cpp
+@@ -2,7 +2,8 @@
+ #include <uv.h>
+ #include "./poller.h"
+ 
+-Poller::Poller (const Napi::CallbackInfo &info) : Napi::ObjectWrap<Poller>(info)
++Poller::Poller (const Napi::CallbackInfo &info) : Napi::ObjectWrap<Poller>(info),
++  async_context(info.Env(), "serialport:Poller")
+   {
+   Napi::Env env = info.Env();
+   Napi::HandleScope scope(env);
+@@ -81,13 +82,16 @@ void Poller::onData(uv_poll_t* handle, int status, int events) {
+   if (0 != status) {
+     // fprintf(stdout, "OnData Error status=%s events=%d\n", uv_strerror(status), events);
+     obj->_stop(); // doesn't matter if this errors
+-    obj->callback.Call({Napi::Error::New(env, uv_strerror(status)).Value(), env.Undefined()});
++    obj->callback.MakeCallback(env.Global(),
++      {Napi::Error::New(env, uv_strerror(status)).Value(), env.Undefined()}, obj->async_context);
+   } else {
+     // fprintf(stdout, "OnData status=%d events=%d subscribed=%d\n", status, events, obj->events);
+     // remove triggered events from the poll
+     int newEvents = obj->events & ~events;
+     obj->poll(env, newEvents);
+-    obj->callback.Call({env.Null(), Napi::Number::New(env, events)});
++    // uv_poll invokes us outside Node's callback scopes. MakeCallback drains
++    // nextTick and Promise continuations before the event loop waits again.
++    obj->callback.MakeCallback(env.Global(), {env.Null(), Napi::Number::New(env, events)}, obj->async_context);
+   }
+ 
+ }
+diff --git a/src/poller.h b/src/poller.h
+index c15a2e9f23ff20998213ec1b4f9cbf2f60b0e89e..c9cfec22ef7f0c3ba1c8ab8b8b843652eac21a2a 100644
+--- a/src/poller.h
++++ b/src/poller.h
+@@ -17,6 +17,7 @@ class Poller : public Napi::ObjectWrap<Poller> {
+   int fd;
+   uv_poll_t* poll_handle = nullptr;
+ 	Napi::FunctionReference callback;
++  Napi::AsyncContext async_context;
+   bool uv_poll_init_success = false;
+ 
+   // can this be read off of poll_handle?
+diff --git a/src/serialport_win.cpp b/src/serialport_win.cpp
+index 7e79216a37635a41d1c2db030f4009ea5d0d24b2..e8aacd1cfca3337b058e890de6ce15857646b078 100644
+--- a/src/serialport_win.cpp
++++ b/src/serialport_win.cpp
+@@ -380,9 +380,9 @@ void EIO_AfterWrite(uv_async_t* req) {
+ 
+   v8::Local<v8::Value> argv[1];
+   if (baton->errorString[0]) {
+-    baton->callback.Call({Napi::Error::New(env, baton->errorString).Value()});
++    baton->callback.MakeCallback(env.Global(), {Napi::Error::New(env, baton->errorString).Value()}, baton->async_context);
+   } else {
+-    baton->callback.Call({env.Null()});
++    baton->callback.MakeCallback(env.Global(), {env.Null()}, baton->async_context);
+   }
+   baton->buffer.Reset();
+   delete baton;
+@@ -414,7 +414,7 @@ Napi::Value Write(const Napi::CallbackInfo& info) {
+     return env.Null();
+   }
+ 
+-  WriteBaton* baton = new WriteBaton();
++  WriteBaton* baton = new WriteBaton(env);
+   baton->callback = Napi::Persistent(info[2].As<Napi::Function>());
+   baton->fd = fd;
+   baton->buffer.Reset(buffer);
+@@ -552,9 +552,9 @@ void EIO_AfterRead(uv_async_t* req) {
+   uv_close(reinterpret_cast<uv_handle_t*>(req), AsyncCloseCallback);
+ 
+   if (baton->errorString[0]) {
+-    baton->callback.Call({Napi::Error::New(env, baton->errorString).Value(), env.Undefined()});
++    baton->callback.MakeCallback(env.Global(), {Napi::Error::New(env, baton->errorString).Value(), env.Undefined()}, baton->async_context);
+   } else {
+-    baton->callback.Call({env.Null(), Napi::Number::New(env, static_cast<int>(baton->bytesRead))});
++    baton->callback.MakeCallback(env.Global(), {env.Null(), Napi::Number::New(env, static_cast<int>(baton->bytesRead))}, baton->async_context);
+   }
+   delete baton;
+ }
+@@ -600,7 +600,7 @@ Napi::Value Read(const Napi::CallbackInfo& info) {
+     Napi::TypeError::New(env, "Fifth argument must be a function").ThrowAsJavaScriptException();
+     return env.Null();
+   }
+-  ReadBaton* baton = new ReadBaton();
++  ReadBaton* baton = new ReadBaton(env);
+   baton->callback = Napi::Persistent(info[4].As<Napi::Function>());
+   baton->fd = fd;
+   baton->offset = offset;
+diff --git a/src/serialport_win.h b/src/serialport_win.h
+index b5357373830f3705a892907c0e18e7e87bbb266a..53dc9120f1413943ea354340c164ce8a48c6a21a 100644
+--- a/src/serialport_win.h
++++ b/src/serialport_win.h
+@@ -13,7 +13,7 @@ static inline HANDLE int2handle(int ptr) {
+ }
+ 
+ struct WriteBaton {
+-   WriteBaton() :  bufferData(), errorString() {}
++  explicit WriteBaton(Napi::Env env) : bufferData(), async_context(env, "serialport:Write"), errorString() {}
+   int fd = 0;
+   char* bufferData = nullptr;
+   size_t bufferLength = 0;
+@@ -23,6 +23,7 @@ struct WriteBaton {
+   bool complete = false;
+   Napi::ObjectReference buffer;
+ 	Napi::FunctionReference callback;
++  Napi::AsyncContext async_context;
+   int result = 0;
+   char errorString[ERROR_STRING_SIZE];
+ };
+@@ -30,7 +31,7 @@ struct WriteBaton {
+ Napi::Value Write(const Napi::CallbackInfo& info);
+ 
+ struct ReadBaton {
+-  ReadBaton() :  errorString() {}
++  explicit ReadBaton(Napi::Env env) : async_context(env, "serialport:Read"), errorString() {}
+   int fd = 0;
+   char* bufferData = nullptr;
+   size_t bufferLength = 0;
+@@ -39,6 +40,7 @@ struct ReadBaton {
+   size_t offset = 0;
+   void* hThread = nullptr;
+ 	Napi::FunctionReference callback;
++  Napi::AsyncContext async_context;
+   bool complete = false;
+   char errorString[ERROR_STRING_SIZE];
+ };

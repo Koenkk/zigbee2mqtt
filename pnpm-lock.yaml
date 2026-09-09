@@ -7,6 +7,11 @@ settings:
 overrides:
   zigbee-herdsman: 10.9.3
 
+patchedDependencies:
+  '@serialport/bindings-cpp@13.0.1':
+    hash: 6efa85b2ba9bee0132d40fe8db06148036fbdbf6e45a998d860e346f92fb19ef
+    path: patches/@serialport__bindings-cpp@13.0.1.patch
+
 importers:
 
   .:
@@ -1714,7 +1719,7 @@ snapshots:
   '@rollup/rollup-win32-x64-msvc@4.63.1':
     optional: true
 
-  '@serialport/bindings-cpp@13.0.1':
+  '@serialport/bindings-cpp@13.0.1(patch_hash=6efa85b2ba9bee0132d40fe8db06148036fbdbf6e45a998d860e346f92fb19ef)':
     dependencies:
       '@serialport/bindings-interface': 1.2.2
       '@serialport/parser-readline': 13.0.0
@@ -2672,7 +2677,7 @@ snapshots:
   zigbee-herdsman@10.9.3:
     dependencies:
       '@date-fns/tz': 1.5.0
-      '@serialport/bindings-cpp': 13.0.1
+      '@serialport/bindings-cpp': 13.0.1(patch_hash=6efa85b2ba9bee0132d40fe8db06148036fbdbf6e45a998d860e346f92fb19ef)
       '@serialport/parser-delimiter': 13.0.0
       '@serialport/stream': 13.0.0
       bonjour-service: 1.4.4
