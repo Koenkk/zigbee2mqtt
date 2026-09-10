@@ -4,7 +4,7 @@
     "description": "Zigbee to MQTT bridge using Zigbee-herdsman",
     "main": "index.js",
     "types": "dist/types/api.d.ts",
-    "packageManager": "pnpm@10.18.3",
+    "packageManager": "pnpm@11.26.0",
     "repository": {
         "type": "git",
         "url": "git+https://github.com/Koenkk/zigbee2mqtt.git"
@@ -46,19 +46,16 @@
         "zigbee-herdsman-converters": "26.108.1"
     },
     "devDependencies": {},
-    "pnpm": {
-        "overrides": {
-            "zigbee-herdsman": "$zigbee-herdsman"
-        },
-        "onlyBuiltDependencies": [
-            "@biomejs/biome",
-            "@serialport/bindings-cpp",
-            "esbuild",
-            "unix-dgram"
-        ]
-    },
     "bin": {
         "zigbee2mqtt": "cli.js"
     },
-    "optionalDependencies": {}
+    "optionalDependencies": {},
+    "files": [
+        "data/configuration.example.yaml",
+        "dist",
+        "cli.js",
+        "index.js",
+        "pnpm-workspace.yaml",
+        "CHANGELOG.md"
+    ]
 }
