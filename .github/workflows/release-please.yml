@@ -16,8 +16,6 @@ jobs:
             release_created: ${{ steps.release.outputs.release_created }}
             version: '${{steps.release.outputs.major}}.${{steps.release.outputs.minor}}.${{steps.release.outputs.patch}}'
         steps:
-            - uses: pnpm/action-setup@v6
-
             - uses: actions/setup-node@v7
               with:
                   node-version: 24
@@ -38,6 +36,10 @@ jobs:
                   repository: koenkk/zigbee2mqtt
                   path: ./z2m-master
                   ref: master
+
+            - uses: pnpm/action-setup@v6
+              with:
+                  package_json_file: z2m/package.json
 
             - name: Restore cache commit-user-lookup.json
               uses: actions/cache/restore@v6
