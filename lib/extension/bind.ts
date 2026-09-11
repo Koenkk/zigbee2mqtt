@@ -184,7 +184,8 @@ interface ParsedMQTTMessage {
 }
 
 export default class Bind extends Extension {
-    #topicRegex = new RegExp(`^${settings.get().mqtt.base_topic}/bridge/request/device/(bind|unbind|binds/clear)`);
+    // anchored, `binds/clear` is handled before this and other `binds/*` topics belong to other extensions
+    #topicRegex = new RegExp(`^${settings.get().mqtt.base_topic}/bridge/request/device/(bind|unbind)$`);
     private pollDebouncers: {[s: string]: () => void} = {};
 
     // biome-ignore lint/suspicious/useAwait: API
