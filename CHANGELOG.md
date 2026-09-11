@@ -1,5 +1,20 @@
 # Changelog
 
+## [2.14.2](https://github.com/Koenkk/zigbee2mqtt/compare/2.14.1...2.14.2) (2026-09-11)
+
+
+### Bug Fixes
+
+* Home Assistant: fix cover state reporting when moving from fully opened/closed state ([#33037](https://github.com/Koenkk/zigbee2mqtt/issues/33037)) ([74d97f1](https://github.com/Koenkk/zigbee2mqtt/commit/74d97f152973e35c88c5cdde142c63435188a61f))
+* Home Assistant: support more action events ([#33048](https://github.com/Koenkk/zigbee2mqtt/issues/33048)) ([7dc37e3](https://github.com/Koenkk/zigbee2mqtt/commit/7dc37e34c5cf14e3455720d0bcc73f5a4a312e9e))
+* **ignore:** update zigbee-herdsman to 10.9.3 ([#33039](https://github.com/Koenkk/zigbee2mqtt/issues/33039)) ([81e8ebb](https://github.com/Koenkk/zigbee2mqtt/commit/81e8ebbc3cc3f7364ade8524f58648102366891f))
+* **ignore:** update zigbee-herdsman-converters to 26.106.0 ([#33040](https://github.com/Koenkk/zigbee2mqtt/issues/33040)) ([ac09881](https://github.com/Koenkk/zigbee2mqtt/commit/ac098810a1b72a13c1f4f62f2511f4531ba40d4e))
+* **ignore:** update zigbee-herdsman-converters to 26.107.0 ([#33058](https://github.com/Koenkk/zigbee2mqtt/issues/33058)) ([9aa2eec](https://github.com/Koenkk/zigbee2mqtt/commit/9aa2eecc9954f7ffb200fd88e698195ed0220841))
+* **ignore:** update zigbee-herdsman-converters to 26.108.0 ([#33080](https://github.com/Koenkk/zigbee2mqtt/issues/33080)) ([d7f9e3d](https://github.com/Koenkk/zigbee2mqtt/commit/d7f9e3d69b52108c379c3e2593cf492b96b3116b))
+* **ignore:** update zigbee-herdsman-converters to 26.108.1 ([#33081](https://github.com/Koenkk/zigbee2mqtt/issues/33081)) ([62d9642](https://github.com/Koenkk/zigbee2mqtt/commit/62d96423a177bdac3c6cca3178932547924fadb5))
+* Preserve HA name if set in withHomeassistant and remove analog prefix ([#32654](https://github.com/Koenkk/zigbee2mqtt/issues/32654)) ([bba9c02](https://github.com/Koenkk/zigbee2mqtt/commit/bba9c027c56d97bb5f1fd1585354dbcd626ea400))
+* Prevent unhandled error within winston transports ([#33102](https://github.com/Koenkk/zigbee2mqtt/issues/33102)) ([44b5b6b](https://github.com/Koenkk/zigbee2mqtt/commit/44b5b6b12f81b23a0de1d7c8f5583e7048014e20))
+
 ## [2.14.1](https://github.com/Koenkk/zigbee2mqtt/compare/2.14.0...2.14.1) (2026-09-03)
 
 
