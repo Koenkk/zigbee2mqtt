@@ -724,6 +724,7 @@ describe("Extension: Bind", () => {
     });
 
     it("Should poll bounded Hue bulb when receiving message from Hue dimmer", async () => {
+        devices.bulb_color.getEndpoint(1)!.meta = {options: {hue_native_control: false}};
         const remote = devices.remote;
         const data = {button: 3, unknown1: 3145728, type: 2, unknown2: 0, time: 1};
         const payload = {
@@ -739,6 +740,26 @@ describe("Extension: Bind", () => {
         await flushPromises();
         expect(mockDebounce).toHaveBeenCalledTimes(1);
         expect(devices.bulb_color.getEndpoint(1)!.read).toHaveBeenCalledWith("genLevelCtrl", ["currentLevel"]);
+    });
+
+    it("Should poll manuSpecificPhilips2 of bounded Hue bulb when receiving message from Hue dimmer", async () => {
+        devices.bulb_color.getEndpoint(1)!.meta = {options: {hue_native_control: true}};
+        const remote = devices.remote;
+        const data = {button: 3, unknown1: 3145728, type: 2, unknown2: 0, time: 1};
+        const payload = {
+            data,
+            cluster: "manuSpecificPhilips",
+            device: remote,
+            endpoint: remote.getEndpoint(2)!,
+            type: "commandHueNotification",
+            linkquality: 10,
+            groupID: 0,
+        };
+        await mockZHEvents.message(payload);
+        await flushPromises();
+        expect(devices.bulb_color.getEndpoint(1)!.meta).toStrictEqual({options: {hue_native_control: true}});
+        expect(mockDebounce).toHaveBeenCalledTimes(1);
+        expect(devices.bulb_color.getEndpoint(1)!.read).toHaveBeenCalledWith("manuSpecificPhilips2", ["state"]);
     });
 
     it("Should poll bounded Hue bulb when receiving message from scene controller", async () => {
