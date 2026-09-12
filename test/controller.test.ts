@@ -105,7 +105,7 @@ describe("Controller", () => {
             backupPath: path.join(data.mockDir, "coordinator_backup.json"),
             acceptJoiningDeviceHandler: expect.any(Function),
             adapter: {concurrent: undefined, delay: undefined, disableLED: false, transmitPower: 14},
-            serialPort: {baudRate: undefined, rtscts: undefined, path: "/dev/dummy"},
+            transport: {baudRate: undefined, rtscts: undefined, path: "/dev/dummy"},
         });
         expect(mockZHController.start).toHaveBeenCalledTimes(1);
         expect(mockLogger.info).toHaveBeenCalledWith(`Currently ${Object.values(devices).length - 1} devices are joined.`);
