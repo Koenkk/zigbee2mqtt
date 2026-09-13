@@ -399,6 +399,16 @@ const featurePropertyWithoutEndpoint = (feature: zhc.Feature): string => {
 
 const cleanName = (name: string): string => name.replace(/^(?:analog_in_|analog_out_)/, "");
 
+/**
+ * Reads `property` from the state payload, guarded against it being absent, which otherwise logs
+ * `Template variable warning: 'dict object' has no attribute '<property>'`. Renders an empty string
+ * when absent, which the MQTT platforms ignore.
+ * Check presence, not truthiness: `0`, `false` and `null` are falsy in Jinja.
+ * https://github.com/Koenkk/zigbee2mqtt/issues/30086
+ */
+const stateValueTemplate = (property: string, body = `{{ value_json["${property}"] }}`): string =>
+    `{% if "${property}" in value_json %}${body}{% endif %}`;
+
 const applyHomeAssistantExposeMetadata = (payload: DiscoveryEntry, homeAssistant: zhc.Expose["homeassistant"]): void => {
     if (!homeAssistant) {
         return;
@@ -712,7 +722,7 @@ export class HomeAssistant extends Extension {
                         name: endpointName ? utils.capitalize(endpointName) : null,
                         payload_off: state.value_off,
                         payload_on: state.value_on,
-                        value_template: `{{ value_json["${property}"] }}`,
+                        value_template: stateValueTemplate(property),
                         command_topic: true,
                         command_topic_prefix: endpointName,
                     },
@@ -759,7 +769,7 @@ export class HomeAssistant extends Extension {
                         max_temp: primarySetpoint.value_max.toString(),
                         // Temperature
                         current_temperature_topic: true,
-                        current_temperature_template: `{{ value_json["${temperature.property}"] }}`,
+                        current_temperature_template: stateValueTemplate(temperature.property),
                         command_topic_prefix: endpointName,
                     },
                 };
@@ -773,7 +783,7 @@ export class HomeAssistant extends Extension {
                         mode.values.splice(mode.values.indexOf("sleep"), 1);
                     }
                     discoveryEntry.discovery_payload.mode_state_topic = true;
-                    discoveryEntry.discovery_payload.mode_state_template = `{{ value_json["${mode.property}"] }}`;
+                    discoveryEntry.discovery_payload.mode_state_template = stateValueTemplate(mode.property);
                     discoveryEntry.discovery_payload.modes = mode.values;
                     discoveryEntry.discovery_payload.mode_command_topic = true;
                 }
@@ -782,19 +792,22 @@ export class HomeAssistant extends Extension {
                 if (state) {
                     discoveryEntry.mockProperties.push({property: state.property, value: null});
                     discoveryEntry.discovery_payload.action_topic = true;
-                    discoveryEntry.discovery_payload.action_template = `{% set values = {None:None,'idle':'idle','heat':'heating','cool':'cooling','fan_only':'fan'} %}{{ values[value_json["${state.property}"]] }}`;
+                    discoveryEntry.discovery_payload.action_template = stateValueTemplate(
+                        state.property,
+                        `{% set values = {None:None,'idle':'idle','heat':'heating','cool':'cooling','fan_only':'fan'} %}{{ values[value_json["${state.property}"]] }}`,
+                    );
                 }
 
                 if (heatingSetpoint && coolingSetpoint) {
                     discoveryEntry.discovery_payload.temperature_low_command_topic = heatingSetpoint.name;
-                    discoveryEntry.discovery_payload.temperature_low_state_template = `{{ value_json["${heatingSetpoint.property}"] }}`;
+                    discoveryEntry.discovery_payload.temperature_low_state_template = stateValueTemplate(heatingSetpoint.property);
                     discoveryEntry.discovery_payload.temperature_low_state_topic = true;
                     discoveryEntry.discovery_payload.temperature_high_command_topic = coolingSetpoint.name;
-                    discoveryEntry.discovery_payload.temperature_high_state_template = `{{ value_json["${coolingSetpoint.property}"] }}`;
+                    discoveryEntry.discovery_payload.temperature_high_state_template = stateValueTemplate(coolingSetpoint.property);
                     discoveryEntry.discovery_payload.temperature_high_state_topic = true;
                 } else {
                     discoveryEntry.discovery_payload.temperature_command_topic = primarySetpoint.name;
-                    discoveryEntry.discovery_payload.temperature_state_template = `{{ value_json["${primarySetpoint.property}"] }}`;
+                    discoveryEntry.discovery_payload.temperature_state_template = stateValueTemplate(primarySetpoint.property);
                     discoveryEntry.discovery_payload.temperature_state_topic = true;
                 }
 
@@ -802,7 +815,7 @@ export class HomeAssistant extends Extension {
                 if (fanMode) {
                     discoveryEntry.discovery_payload.fan_modes = fanMode.values;
                     discoveryEntry.discovery_payload.fan_mode_command_topic = true;
-                    discoveryEntry.discovery_payload.fan_mode_state_template = `{{ value_json["${fanMode.property}"] }}`;
+                    discoveryEntry.discovery_payload.fan_mode_state_template = stateValueTemplate(fanMode.property);
                     discoveryEntry.discovery_payload.fan_mode_state_topic = true;
                 }
 
@@ -810,7 +823,7 @@ export class HomeAssistant extends Extension {
                 if (swingMode) {
                     discoveryEntry.discovery_payload.swing_modes = swingMode.values;
                     discoveryEntry.discovery_payload.swing_mode_command_topic = true;
-                    discoveryEntry.discovery_payload.swing_mode_state_template = `{{ value_json["${swingMode.property}"] }}`;
+                    discoveryEntry.discovery_payload.swing_mode_state_template = stateValueTemplate(swingMode.property);
                     discoveryEntry.discovery_payload.swing_mode_state_topic = true;
                 }
 
@@ -818,7 +831,7 @@ export class HomeAssistant extends Extension {
                 if (preset) {
                     discoveryEntry.discovery_payload.preset_modes = preset.values;
                     discoveryEntry.discovery_payload.preset_mode_command_topic = "preset";
-                    discoveryEntry.discovery_payload.preset_mode_value_template = `{{ value_json["${preset.property}"] }}`;
+                    discoveryEntry.discovery_payload.preset_mode_value_template = stateValueTemplate(preset.property);
                     discoveryEntry.discovery_payload.preset_mode_state_topic = true;
                 }
 
@@ -832,7 +845,7 @@ export class HomeAssistant extends Extension {
                         mockProperties: [{property: tempCalibration.property, value: null}],
                         discovery_payload: {
                             name: endpointName ? `${tempCalibration.label} ${endpointName}` : tempCalibration.label,
-                            value_template: `{{ value_json["${tempCalibration.property}"] }}`,
+                            value_template: stateValueTemplate(tempCalibration.property),
                             command_topic: true,
                             command_topic_prefix: endpointName,
                             command_topic_postfix: tempCalibration.property,
@@ -857,7 +870,7 @@ export class HomeAssistant extends Extension {
                         mockProperties: [{property: piHeatingDemand.property, value: null}],
                         discovery_payload: {
                             name: endpointName ? `${piHeatingDemand.label} ${endpointName}` : piHeatingDemand.label,
-                            value_template: `{{ value_json["${piHeatingDemand.property}"] }}`,
+                            value_template: stateValueTemplate(piHeatingDemand.property),
                             ...(piHeatingDemand.unit && {unit_of_measurement: piHeatingDemand.unit}),
                             icon: "mdi:radiator",
                         },
@@ -888,7 +901,7 @@ export class HomeAssistant extends Extension {
                         mockProperties: [{property: piCoolingDemand.property, value: null}],
                         discovery_payload: {
                             name: endpointName ? /* v8 ignore next */ `${piCoolingDemand.label} ${endpointName}` : piCoolingDemand.label,
-                            value_template: `{{ value_json["${piCoolingDemand.property}"] }}`,
+                            value_template: stateValueTemplate(piCoolingDemand.property),
                             ...(piCoolingDemand.unit && {unit_of_measurement: piCoolingDemand.unit}),
                             entity_category: "diagnostic",
                             icon: "mdi:air-conditioner",
@@ -910,7 +923,7 @@ export class HomeAssistant extends Extension {
                         mockProperties: [{property: localTemperature.property, value: null}],
                         discovery_payload: {
                             name: endpointName ? `${localTemperature.label} ${endpointName}` : localTemperature.label,
-                            value_template: `{{ value_json["${localTemperature.property}"] }}`,
+                            value_template: stateValueTemplate(localTemperature.property),
                             ...(localTemperature.unit && {unit_of_measurement: localTemperature.unit}),
                             device_class: "temperature",
                             state_class: "measurement",
@@ -922,7 +935,7 @@ export class HomeAssistant extends Extension {
 
                 const currentHumidity = allExposes?.filter(isNumericExpose).find((e) => e.name === "humidity" && e.access & ACCESS_STATE);
                 if (currentHumidity) {
-                    discoveryEntry.discovery_payload.current_humidity_template = `{{ value_json["${currentHumidity.property}"] }}`;
+                    discoveryEntry.discovery_payload.current_humidity_template = stateValueTemplate(currentHumidity.property);
                     discoveryEntry.discovery_payload.current_humidity_topic = true;
                 }
 
@@ -942,7 +955,7 @@ export class HomeAssistant extends Extension {
                         name: endpointName ? utils.capitalize(endpointName) : null,
                         command_topic_prefix: endpointName,
                         command_topic: true,
-                        value_template: `{{ value_json["${state.property}"] }}`,
+                        value_template: stateValueTemplate(state.property),
                         state_locked: state.value_on,
                         state_unlocked: state.value_off,
                         /* v8 ignore next */
@@ -985,7 +998,9 @@ export class HomeAssistant extends Extension {
                 // The movement direction is calculated (assumed) in this case.
                 if (running) {
                     assert(position, `Cover must have 'position' when it has 'running'`);
-                    discoveryEntry.discovery_payload.value_template = `{% if "${featurePropertyWithoutEndpoint(running)}" in value_json and value_json["${featurePropertyWithoutEndpoint(running)}"] %} {% if value_json["${featurePropertyWithoutEndpoint(position)}"] > 0 %} closing {% else %} opening {% endif %} {% else %} stopped {% endif %}`;
+                    const runningProperty = featurePropertyWithoutEndpoint(running);
+                    const positionProperty = featurePropertyWithoutEndpoint(position);
+                    discoveryEntry.discovery_payload.value_template = `{% if "${runningProperty}" in value_json and value_json["${runningProperty}"] and "${positionProperty}" in value_json %} {% if value_json["${positionProperty}"] > 0 %} closing {% else %} opening {% endif %} {% else %} stopped {% endif %}`;
                 }
 
                 // If curtains have `motor_state` or `moving` property, lookup for possible
@@ -1022,7 +1037,7 @@ export class HomeAssistant extends Extension {
 
                 // If curtains do not have `running`, `motor_state` or `moving` properties.
                 if (!discoveryEntry.discovery_payload.value_template) {
-                    discoveryEntry.discovery_payload.value_template = `{{ value_json["${featurePropertyWithoutEndpoint(state)}"] }}`;
+                    discoveryEntry.discovery_payload.value_template = stateValueTemplate(featurePropertyWithoutEndpoint(state));
                     discoveryEntry.discovery_payload.state_open = "OPEN";
                     discoveryEntry.discovery_payload.state_closed = "CLOSE";
                     discoveryEntry.discovery_payload.state_stopped = "STOP";
@@ -1037,7 +1052,7 @@ export class HomeAssistant extends Extension {
                 if (position) {
                     discoveryEntry.discovery_payload = {
                         ...discoveryEntry.discovery_payload,
-                        position_template: `{{ value_json["${featurePropertyWithoutEndpoint(position)}"] }}`,
+                        position_template: stateValueTemplate(featurePropertyWithoutEndpoint(position)),
                         set_position_template: `{ "${getProperty(position)}": {{ position }} }`,
                         set_position_topic: true,
                         position_topic: true,
@@ -1049,7 +1064,7 @@ export class HomeAssistant extends Extension {
                         ...discoveryEntry.discovery_payload,
                         tilt_command_topic: true,
                         tilt_status_topic: true,
-                        tilt_status_template: `{{ value_json["${featurePropertyWithoutEndpoint(tilt)}"] }}`,
+                        tilt_status_template: stateValueTemplate(featurePropertyWithoutEndpoint(tilt)),
                     };
                 }
 
@@ -1125,7 +1140,7 @@ export class HomeAssistant extends Extension {
                     discoveryEntry.discovery_payload.preset_modes = presets;
 
                     // Emulate state based on mode
-                    discoveryEntry.discovery_payload.state_value_template = "{{ value_json.fan_state }}";
+                    discoveryEntry.discovery_payload.state_value_template = stateValueTemplate("fan_state");
                     discoveryEntry.discovery_payload.command_topic_postfix = "fan_state";
                 } else if (nativeSpeed) {
                     discoveryEntry.discovery_payload.percentage_state_topic = true;
@@ -1136,7 +1151,7 @@ export class HomeAssistant extends Extension {
                     discoveryEntry.discovery_payload.speed_range_max = nativeSpeed.value_max;
 
                     // Speed-controlled fans generally have an onOff cluster, use that for state
-                    discoveryEntry.discovery_payload.state_value_template = "{{ value_json.state }}";
+                    discoveryEntry.discovery_payload.state_value_template = stateValueTemplate("state");
                     discoveryEntry.discovery_payload.command_topic_postfix = "state";
                 }
 
@@ -1158,10 +1173,12 @@ export class HomeAssistant extends Extension {
                         object_id: endpointName ? `switch_${firstExpose.name}_${endpointName}` : `switch_${firstExpose.name}`,
                         discovery_payload: {
                             name: endpointName ? /* v8 ignore next */ `${firstExpose.label} ${endpointName}` : firstExpose.label,
-                            value_template:
+                            value_template: stateValueTemplate(
+                                firstExpose.property,
                                 typeof firstExpose.value_on === "boolean"
                                     ? `{% if value_json["${firstExpose.property}"] %}true{% else %}false{% endif %}`
-                                    : `{{ value_json["${firstExpose.property}"] }}`,
+                                    : undefined,
+                            ),
                             payload_on: firstExpose.value_on.toString(),
                             payload_off: firstExpose.value_off.toString(),
                             command_topic: true,
@@ -1179,7 +1196,7 @@ export class HomeAssistant extends Extension {
                         mockProperties: [{property: firstExpose.property, value: null}],
                         discovery_payload: {
                             name: endpointName ? /* v8 ignore next */ `${firstExpose.label} ${endpointName}` : firstExpose.label,
-                            value_template: `{{ value_json["${firstExpose.property}"] }}`,
+                            value_template: stateValueTemplate(firstExpose.property),
                             payload_on: firstExpose.value_on,
                             payload_off: firstExpose.value_off,
                             ...(BINARY_DISCOVERY_LOOKUP[firstExpose.name] || {}),
@@ -1204,7 +1221,7 @@ export class HomeAssistant extends Extension {
                         mockProperties: [{property: firstExpose.property, value: null}],
                         discovery_payload: {
                             name: endpointName ? `${firstExpose.label} ${endpointName}` : firstExpose.label,
-                            value_template: `{{ value_json["${firstExpose.property}"] }}`,
+                            value_template: stateValueTemplate(firstExpose.property),
                             command_topic: true,
                             command_topic_prefix: endpointName,
                             command_topic_postfix: firstExpose.property,
@@ -1255,7 +1272,7 @@ export class HomeAssistant extends Extension {
                     mockProperties: [{property: firstExpose.property, value: null}],
                     discovery_payload: {
                         name: endpointName ? `${firstExpose.label} ${endpointName}` : firstExpose.label,
-                        value_template: `{{ value_json["${firstExpose.property}"] }}`,
+                        value_template: stateValueTemplate(firstExpose.property),
                         enabled_by_default: !allowsSet,
                         ...(firstExpose.unit && {unit_of_measurement: firstExpose.unit}),
                         ...NUMERIC_DISCOVERY_LOOKUP[key],
@@ -1309,7 +1326,7 @@ export class HomeAssistant extends Extension {
                     }
                 }
 
-                const valueTemplate = firstExpose.access & ACCESS_STATE ? `{{ value_json["${firstExpose.property}"] }}` : undefined;
+                const valueTemplate = firstExpose.access & ACCESS_STATE ? stateValueTemplate(firstExpose.property) : undefined;
 
                 /**
                  * If enum has only one item and has SET access then expose as BUTTON entity.
@@ -1439,7 +1456,7 @@ export class HomeAssistant extends Extension {
                         discovery_payload: {
                             name: endpointName ? `${firstExposeTyped.label} ${endpointName}` : firstExposeTyped.label,
                             state_topic: firstExposeTyped.access & ACCESS_STATE,
-                            value_template: `{{ value_json["${firstExposeTyped.property}"] }}`,
+                            value_template: stateValueTemplate(firstExposeTyped.property),
                             command_topic_prefix: endpointName,
                             command_topic: true,
                             command_topic_postfix: firstExposeTyped.property,
@@ -1669,7 +1686,7 @@ export class HomeAssistant extends Extension {
                 mockProperties: [{property: "last_seen", value: null}],
                 discovery_payload: {
                     name: "Last seen",
-                    value_template: "{{ value_json.last_seen }}",
+                    value_template: stateValueTemplate("last_seen"),
                     icon: "mdi:clock",
                     enabled_by_default: false,
                     entity_category: "diagnostic",
