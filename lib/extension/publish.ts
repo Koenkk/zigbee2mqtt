@@ -192,8 +192,8 @@ export default class Publish extends Extension {
         const propertyEndpointRegex = new RegExp(`^(.*?)_(${endpointNames.join("|")})$`);
         let scenesChanged = false;
         const responseData: KeyValue = {};
-        const supersededKeys: string[] = [];
-        const failedKeys: string[] = [];
+        const errorDetails: Record<string, string> = {};
+        const converterErrors = new Map<zhc.Tz.Converter, string>();
 
         // Future: send responses per attribute as each settles, rather than waiting for all.
         // Currently, multi-attribute requests to sleepy devices block sequentially per attribute.
@@ -226,6 +226,12 @@ export default class Publish extends Extension {
             if (parsedTopic.type === "set" && converter && usedConverters[endpointOrGroupID].includes(converter)) {
                 // Use a converter for set only once
                 // (e.g. light_onoff_brightness converters can convert state and brightness)
+                if (parsedTopic.isRequest) {
+                    // The earlier call already applied this key, so it shares that call's outcome
+                    const converterError = converterErrors.get(converter);
+                    if (converterError !== undefined) errorDetails[originalKey] = converterError;
+                    else responseData[originalKey] = value;
+                }
                 continue;
             }
 
@@ -305,12 +311,13 @@ export default class Publish extends Extension {
                 // biome-ignore lint/style/noNonNullAssertion: always Error
                 logger.debug((error as Error).stack!);
                 if (parsedTopic.isRequest) {
-                    ((error as Error).message?.includes("Request superseded") ? supersededKeys : failedKeys).push(originalKey);
+                    errorDetails[originalKey] = (error as Error).message;
+                    converterErrors.set(converter, (error as Error).message);
                 }
             }
 
             // Track result for response (set echoes requested value; get returns status only)
-            if (parsedTopic.isRequest && parsedTopic.type === "set" && !failedKeys.includes(originalKey) && !supersededKeys.includes(originalKey)) {
+            if (parsedTopic.isRequest && parsedTopic.type === "set" && !(originalKey in errorDetails)) {
                 responseData[originalKey] = value;
             }
 
@@ -322,11 +329,16 @@ export default class Publish extends Extension {
         }
 
         if (parsedTopic.isRequest) {
-            const errorParts: string[] = [];
-            if (supersededKeys.length > 0) errorParts.push(`superseded:${supersededKeys.join(",")}`);
-            if (failedKeys.length > 0) errorParts.push(`failed:${failedKeys.join(",")}`);
+            const failedKeys = Object.keys(errorDetails);
             const response: KeyValue =
-                errorParts.length > 0 ? {data: responseData, status: "error", error: errorParts.join("|")} : {data: responseData, status: "ok"};
+                failedKeys.length > 0
+                    ? {
+                          data: responseData,
+                          status: "error",
+                          error: `Failed to ${parsedTopic.type} ${failedKeys.map((k) => `'${k}'`).join(", ")}: ${utils.arrayUnique(Object.values(errorDetails)).join("; ")}`,
+                          error_details: errorDetails,
+                      }
+                    : {data: responseData, status: "ok"};
             if (z2mTransaction !== undefined) response.z2m_transaction = z2mTransaction;
             await this.mqtt.publish(`${re.name}/response/${parsedTopic.type}`, stringify(response), {
                 clientOptions: {qos: /* v8 ignore next */ data.qos ?? 0, retain: false},
