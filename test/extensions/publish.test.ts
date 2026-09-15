@@ -2074,19 +2074,103 @@ describe("Extension: Publish", () => {
             await flushPromises();
             expect(mockMQTTPublishAsync).toHaveBeenCalledWith(
                 "zigbee2mqtt/bulb_color/response/set",
-                stringify({data: {}, error: "failed:brightness", status: "error", z2m_transaction: "tx2"}),
+                stringify({
+                    data: {},
+                    error: "Failed to set 'brightness': Zigbee error",
+                    error_details: {brightness: "Zigbee error"},
+                    status: "error",
+                    z2m_transaction: "tx2",
+                }),
                 {qos: 0, retain: false},
             );
         });
 
-        it("Should respond with superseded error when herdsman reports Request superseded", async () => {
+        it("Should pass the original error message through when herdsman reports Request superseded", async () => {
             const endpoint = devices.bulb_color.getEndpoint(1)!;
             endpoint.command.mockRejectedValueOnce(new Error("Request superseded"));
             await mockMQTTEvents.message("zigbee2mqtt/bulb_color/request/set", stringify({brightness: "200", z2m_transaction: "tx3"}));
             await flushPromises();
             expect(mockMQTTPublishAsync).toHaveBeenCalledWith(
                 "zigbee2mqtt/bulb_color/response/set",
-                stringify({data: {}, error: "superseded:brightness", status: "error", z2m_transaction: "tx3"}),
+                stringify({
+                    data: {},
+                    error: "Failed to set 'brightness': Request superseded",
+                    error_details: {brightness: "Request superseded"},
+                    status: "error",
+                    z2m_transaction: "tx3",
+                }),
+                {qos: 0, retain: false},
+            );
+        });
+
+        it("Should report partial success with per-attribute error details", async () => {
+            const endpoint = devices.bulb_color.getEndpoint(1)!;
+            endpoint.command.mockRejectedValueOnce(new Error("Request superseded"));
+            await mockMQTTEvents.message(
+                "zigbee2mqtt/bulb_color/request/set",
+                stringify({brightness: "200", color_temp_startup: 300, z2m_transaction: "tx4"}),
+            );
+            await flushPromises();
+            expect(endpoint.command).toHaveBeenCalledTimes(1);
+            expect(endpoint.write).toHaveBeenCalledTimes(1);
+            expect(mockMQTTPublishAsync).toHaveBeenCalledWith(
+                "zigbee2mqtt/bulb_color/response/set",
+                stringify({
+                    data: {color_temp_startup: 300},
+                    error: "Failed to set 'brightness': Request superseded",
+                    error_details: {brightness: "Request superseded"},
+                    status: "error",
+                    z2m_transaction: "tx4",
+                }),
+                {qos: 0, retain: false},
+            );
+        });
+
+        it("Should list every failed attribute in error and error_details", async () => {
+            const endpoint = devices.bulb_color.getEndpoint(1)!;
+            endpoint.command.mockRejectedValueOnce(new Error("Request superseded"));
+            endpoint.write.mockRejectedValueOnce(new Error("Zigbee error"));
+            await mockMQTTEvents.message(
+                "zigbee2mqtt/bulb_color/request/set",
+                stringify({brightness: "200", color_temp_startup: 300, z2m_transaction: "tx5"}),
+            );
+            await flushPromises();
+            expect(mockMQTTPublishAsync).toHaveBeenCalledWith(
+                "zigbee2mqtt/bulb_color/response/set",
+                stringify({
+                    data: {},
+                    error: "Failed to set 'brightness', 'color_temp_startup': Request superseded; Zigbee error",
+                    error_details: {brightness: "Request superseded", color_temp_startup: "Zigbee error"},
+                    status: "error",
+                    z2m_transaction: "tx5",
+                }),
+                {qos: 0, retain: false},
+            );
+        });
+
+        it("Should report keys handled by a shared converter with that converter's outcome", async () => {
+            const endpoint = devices.bulb_color.getEndpoint(1)!;
+            // state, brightness and color_temp share one light converter; it runs once for the first key
+            await mockMQTTEvents.message("zigbee2mqtt/bulb_color/request/set", stringify({brightness: "200", color_temp: 300}));
+            await flushPromises();
+            expect(mockMQTTPublishAsync).toHaveBeenCalledWith(
+                "zigbee2mqtt/bulb_color/response/set",
+                stringify({data: {brightness: "200", color_temp: 300}, status: "ok"}),
+                {qos: 0, retain: false},
+            );
+
+            mockMQTTPublishAsync.mockClear();
+            endpoint.command.mockRejectedValueOnce(new Error("Request superseded"));
+            await mockMQTTEvents.message("zigbee2mqtt/bulb_color/request/set", stringify({brightness: "200", color_temp: 300}));
+            await flushPromises();
+            expect(mockMQTTPublishAsync).toHaveBeenCalledWith(
+                "zigbee2mqtt/bulb_color/response/set",
+                stringify({
+                    data: {},
+                    error: "Failed to set 'brightness', 'color_temp': Request superseded",
+                    error_details: {brightness: "Request superseded", color_temp: "Request superseded"},
+                    status: "error",
+                }),
                 {qos: 0, retain: false},
             );
         });
