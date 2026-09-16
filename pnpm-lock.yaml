@@ -36,8 +36,8 @@ importers:
         specifier: ^7.8.5
         version: 7.8.5
       srvx:
-        specifier: ^0.12.7
-        version: 0.12.7
+        specifier: ^1.0.4
+        version: 1.0.4
       throttleit:
         specifier: ^3.0.0
         version: 3.0.0
@@ -1217,8 +1217,8 @@ packages:
     resolution: {integrity: sha512-UcjcJOWknrNkF6PLX83qcHM6KHgVKNkV62Y8a5uYDVv9ydGQVwAHMKqHdJje1VTWpljG0WYpCDhrCdAOYH4TWg==}
     engines: {node: '>= 10.x'}
 
-  srvx@0.12.7:
-    resolution: {integrity: sha512-PIaq1pDGg3EU2OGSN3pzRfYVu9MJDzLdojlGN6E3lvhAdxqn/lNMJFMA1xGA38jYkBb0V9xw02QEVVMDb0PExA==}
+  srvx@1.0.4:
+    resolution: {integrity: sha512-eZmYaxUfZSo7/8m8UdsHRJNmTLSCTPPom9d7a60vMmuVeZvwhbvflRR+00/CxTCjMOFa5+H8tgBeNDVZ+w7AAQ==}
     engines: {node: '>=20.16.0'}
     hasBin: true
 
@@ -2413,7 +2413,7 @@ snapshots:
 
   split2@4.2.0: {}
 
-  srvx@0.12.7: {}
+  srvx@1.0.4: {}
 
   stack-trace@0.0.10: {}
 
