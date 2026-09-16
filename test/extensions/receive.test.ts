@@ -688,9 +688,12 @@ describe("Extension: Receive", () => {
         settings.set(["advanced", "elapsed"], true);
         const device = devices.E1743;
         const payload = {data: {}, cluster: "genLevelCtrl", device, endpoint: device.getEndpoint(1), type: "commandStopWithOnOff"};
-        vi.spyOn(Date, "now").mockReturnValueOnce(150).mockReturnValueOnce(200);
+        // Advance the (faked) clock instead of mocking `Date.now`, zigbee-herdsman-converters calls it too while converting.
+        const start = Date.now();
+        vi.setSystemTime(start + 150);
         await mockZHEvents.message({...payload, meta: {zclTransactionSequenceNumber: 2}});
         await flushPromises();
+        vi.setSystemTime(start + 200);
         await mockZHEvents.message({...payload, meta: {zclTransactionSequenceNumber: 3}});
         await flushPromises();
         expect(mockMQTTPublishAsync).toHaveBeenCalledTimes(2);
