@@ -8,7 +8,7 @@ import type {Zigbee2MQTTAPI, Zigbee2MQTTResponseEndpoints} from "../types/api";
 import logger from "../util/logger";
 import * as settings from "../util/settings";
 import {stringify} from "../util/stringify";
-import utils, {isLightExpose} from "../util/utils";
+import utils, {isCoverExpose, isLightExpose} from "../util/utils";
 import Extension from "./extension";
 
 const STATE_PROPERTIES: Readonly<Record<string, (value: string, exposes: zhc.Expose[]) => boolean>> = {
@@ -22,6 +22,8 @@ const STATE_PROPERTIES: Readonly<Record<string, (value: string, exposes: zhc.Exp
                 isLightExpose(e) &&
                 (e.features.some((f) => f.name === `color_${value}`) || (value === "color_temp" && e.features.some((f) => f.name === "color_temp"))),
         ),
+    position: (_value, exposes) => exposes.some((e) => isCoverExpose(e) && e.features.some((f) => f.name === "position")),
+    tilt: (_value, exposes) => exposes.some((e) => isCoverExpose(e) && e.features.some((f) => f.name === "tilt")),
 };
 
 interface ParsedMQTTMessage {
@@ -87,14 +89,25 @@ export default class Groups extends Extension {
 
                 if (endpoint) {
                     for (const group of groups) {
-                        if (
-                            group.zh.hasMember(endpoint) &&
-                            !equals(this.lastOptimisticState[group.ID], payload) &&
-                            this.shouldPublishPayloadForGroup(group, payload)
-                        ) {
-                            this.lastOptimisticState[group.ID] = payload;
+                        if (group.zh.hasMember(endpoint) && !equals(this.lastOptimisticState[group.ID], payload)) {
+                            const aggregatableKeys = ["position", "tilt"].filter((k) => k in payload);
+                            let aggregatedPayload: KeyValue | undefined;
 
-                            await this.publishEntityState(group, payload, reason);
+                            if (aggregatableKeys.length > 0) {
+                                aggregatedPayload = {};
+                                for (const key of aggregatableKeys) {
+                                    const avg = this.aggregateGroupValue(group, key);
+                                    if (avg !== undefined) aggregatedPayload[key] = avg;
+                                }
+                            }
+
+                            if (this.shouldPublishPayloadForGroup(group, payload)) {
+                                const groupPayload = aggregatedPayload ? {...payload, ...aggregatedPayload} : payload;
+                                this.lastOptimisticState[group.ID] = groupPayload;
+                                await this.publishEntityState(group, groupPayload, reason);
+                            } else if (aggregatedPayload) {
+                                await this.publishEntityState(group, aggregatedPayload, reason);
+                            }
                         }
                     }
                 }
@@ -179,6 +192,37 @@ export default class Groups extends Extension {
         }
 
         return true;
+    }
+
+    private aggregateGroupValue(group: Group, prop: string): number | undefined {
+        const values: number[] = [];
+
+        for (const member of group.zh.members) {
+            const device = this.zigbee.resolveEntity(member.getDevice());
+
+            if (device && this.state.exists(device)) {
+                const memberState = this.state.get(device);
+                const endpointNames = device.isDevice() && device.getEndpointNames();
+                const stateKey =
+                    endpointNames &&
+                    endpointNames.length >= member.ID &&
+                    device.definition?.meta?.multiEndpoint &&
+                    !device.definition.meta.multiEndpointSkip?.includes(prop)
+                        ? `${prop}_${endpointNames[member.ID - 1]}`
+                        : prop;
+
+                const value = memberState[stateKey];
+
+                if (typeof value === "number") {
+                    values.push(value);
+                }
+            }
+        }
+
+        /* v8 ignore next */
+        if (values.length === 0) return undefined;
+
+        return Math.round(values.reduce((a, b) => a + b, 0) / values.length);
     }
 
     private parseMQTTMessage(
