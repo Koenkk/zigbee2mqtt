@@ -7,6 +7,7 @@ import {
     mockMQTTEndAsync,
     events as mockMQTTEvents,
     mockMQTTPublishAsync,
+    mockMQTTReconnect,
     mockMQTTSubscribeAsync,
     mockMQTTUnsubscribeAsync,
 } from "./mocks/mqtt";
@@ -43,6 +44,7 @@ const mocksClear = [
     mockMQTTUnsubscribeAsync,
     mockMQTTEndAsync,
     mockMQTTConnectAsync,
+    mockMQTTReconnect,
     devices.bulb_color.removeFromNetwork,
     devices.bulb.removeFromNetwork,
     mockLogger.log,
@@ -273,6 +275,20 @@ describe("Controller", () => {
         expect(mockLogger.error).toHaveBeenCalledWith("Not connected to MQTT server!");
         // @ts-expect-error private
         controller.mqtt.client.reconnecting = false;
+    });
+
+    it("Forces reconnect when MQTT client is stuck disconnecting", async () => {
+        await controller.start();
+        await flushPromises();
+        // @ts-expect-error private
+        controller.mqtt.client.disconnecting = true;
+
+        await vi.advanceTimersByTimeAsync(11 * 1000);
+
+        expect(mockLogger.warning).toHaveBeenCalledWith("Forcing reconnect to MQTT server");
+        expect(mockMQTTReconnect).toHaveBeenCalledTimes(1);
+        // @ts-expect-error private
+        expect(controller.mqtt.client.disconnecting).toBe(false);
     });
 
     it("Dont publish to mqtt when client is unavailable", async () => {

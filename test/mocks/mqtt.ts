@@ -8,12 +8,14 @@ export const mockMQTTPublishAsync = vi.fn(async (_topic: string, _message: strin
 export const mockMQTTEndAsync = vi.fn(async (): Promise<void> => {});
 export const mockMQTTSubscribeAsync = vi.fn(async (_topicObject: string): Promise<void> => {});
 export const mockMQTTUnsubscribeAsync = vi.fn(async (_topic: string): Promise<void> => {});
+export const mockMQTTReconnect = vi.fn((): void => {});
 
 export const mockMQTTConnectAsync = vi.fn(() => ({
     reconnecting: false,
     disconnecting: false,
     disconnected: false,
     publishAsync: mockMQTTPublishAsync,
+    reconnect: mockMQTTReconnect,
     endAsync: mockMQTTEndAsync,
     subscribeAsync: mockMQTTSubscribeAsync,
     unsubscribeAsync: mockMQTTUnsubscribeAsync,

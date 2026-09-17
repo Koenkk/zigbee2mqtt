@@ -147,6 +147,16 @@ export default class Mqtt {
         this.connectionTimer = setInterval(() => {
             if (!this.isConnected()) {
                 logger.error("Not connected to MQTT server!");
+
+                // `mqtt` leaves `disconnecting` set when its internal `end()` never completes, which happens when
+                // it waits for an ack that can no longer arrive. It then stops reconnecting for good, and since
+                // `reconnect()` defers itself while the flag is set, it has to be cleared first.
+                if (this.client.disconnecting) {
+                    logger.warning("Forcing reconnect to MQTT server");
+
+                    this.client.disconnecting = false;
+                    this.client.reconnect();
+                }
             }
         }, utils.seconds(10));
     }
