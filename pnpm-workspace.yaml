@@ -1,0 +1,12 @@
+verifyDepsBeforeRun: false
+
+allowBuilds:
+  "@serialport/bindings-cpp": true
+  esbuild: true
+  unix-dgram: true
+
+minimumReleaseAgeExclude:
+  - zigbee-herdsman
+  - zigbee-herdsman-converters
+  - zigbee2mqtt-windfront
+  - zigbee2mqtt-frontend

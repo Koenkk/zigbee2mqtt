@@ -664,7 +664,7 @@ describe("Extension: HomeAssistant", () => {
             unique_id: "0x0017880104e45520_action_zigbee2mqtt",
             // Needs to be updated whenever one of the ACTION_*_PATTERN constants changes.
             value_template:
-                "{% set patterns = [\n{\"pattern\": '^(?P<button>(?:button_)?[a-z0-9]+)_(?P<action>(?:press|hold)(?:_release)?)$', \"groups\": [\"button\", \"action\"]},\n{\"pattern\": '^(?P<action>recall|scene)_(?P<scene>[0-2][0-9]{0,2})$', \"groups\": [\"action\", \"scene\"]},\n{\"pattern\": '^(?P<actionPrefix>region_)(?P<region>[1-9]|10)_(?P<action>enter|leave|occupied|unoccupied)$', \"groups\": [\"actionPrefix\", \"region\", \"action\"]},\n{\"pattern\": '^(?P<action>dial_rotate)_(?P<direction>left|right)_(?P<speed>step|slow|fast)$', \"groups\": [\"action\", \"direction\", \"speed\"]},\n{\"pattern\": '^(?P<action>brightness_step)(?:_(?P<direction>up|down))?$', \"groups\": [\"action\", \"direction\"]}\n] %}\n{% set action_value = value_json.action|default('') %}\n{% set ns = namespace(r=[('action', action_value)]) %}\n{% for p in patterns %}\n  {% set m = action_value|regex_findall(p.pattern) %}\n  {% if m[0] is undefined %}{% continue %}{% endif %}\n  {% for key, value in zip(p.groups, m[0]) %}\n    {% set ns.r = ns.r|rejectattr(0, 'eq', key)|list + [(key, value)] %}\n  {% endfor %}\n{% endfor %}\n{% if (ns.r|selectattr(0, 'eq', 'actionPrefix')|first) is defined %}\n  {% set ns.r = ns.r|rejectattr(0, 'eq', 'action')|list + [('action', ns.r|selectattr(0, 'eq', 'actionPrefix')|map(attribute=1)|first + ns.r|selectattr(0, 'eq', 'action')|map(attribute=1)|first)] %}\n{% endif %}\n{% set ns.r = ns.r + [('event_type', ns.r|selectattr(0, 'eq', 'action')|map(attribute=1)|first)] %}\n{{dict.from_keys(ns.r|rejectattr(0, 'in', ('action', 'actionPrefix'))|reject('eq', ('event_type', None))|reject('eq', ('event_type', '')))|to_json}}",
+                "{% set patterns = [\n{\"pattern\": '^(?P<button>(?:button_)?[a-z0-9]+)_(?P<action>(?:press|hold|single|double)(?:_release)?)$', \"groups\": [\"button\", \"action\"]},\n{\"pattern\": '^(?P<action>recall|scene)_(?P<scene>[0-9]+)$', \"groups\": [\"action\", \"scene\"]},\n{\"pattern\": '^(?P<actionPrefix>region_)(?P<region>[1-9]|10)_(?P<action>enter|leave|occupied|unoccupied)$', \"groups\": [\"actionPrefix\", \"region\", \"action\"]},\n{\"pattern\": '^(?P<action>dial_rotate)_(?P<direction>left|right)_(?P<speed>step|slow|fast)$', \"groups\": [\"action\", \"direction\", \"speed\"]},\n{\"pattern\": '^(?P<action>brightness_step|color_temperature_step|color_saturation_step|color_hue_step)(?:_(?P<direction>up|down))?$', \"groups\": [\"action\", \"direction\"]}\n] %}\n{% set action_value = value_json.action|default('') %}\n{% set ns = namespace(r=[('action', action_value)]) %}\n{% for p in patterns %}\n  {% set m = action_value|regex_findall(p.pattern) %}\n  {% if m[0] is undefined %}{% continue %}{% endif %}\n  {% for key, value in zip(p.groups, m[0]) %}\n    {% set ns.r = ns.r|rejectattr(0, 'eq', key)|list + [(key, value)] %}\n  {% endfor %}\n{% endfor %}\n{% if (ns.r|selectattr(0, 'eq', 'actionPrefix')|first) is defined %}\n  {% set ns.r = ns.r|rejectattr(0, 'eq', 'action')|list + [('action', ns.r|selectattr(0, 'eq', 'actionPrefix')|map(attribute=1)|first + ns.r|selectattr(0, 'eq', 'action')|map(attribute=1)|first)] %}\n{% endif %}\n{% set ns.r = ns.r + [('event_type', ns.r|selectattr(0, 'eq', 'action')|map(attribute=1)|first)] %}\n{{dict.from_keys(ns.r|rejectattr(0, 'in', ('action', 'actionPrefix'))|reject('eq', ('event_type', None))|reject('eq', ('event_type', '')))|to_json}}",
         };
 
         expect(mockMQTTPublishAsync).toHaveBeenCalledWith("homeassistant/event/0x0017880104e45520/action/config", stringify(payload), {
@@ -689,13 +689,23 @@ describe("Extension: HomeAssistant", () => {
         ["region_*_leave", {action: "region_leave", region: "wildcard"}],
         ["left_press", {action: "press", button: "left"}],
         ["left_press_release", {action: "press_release", button: "left"}],
+        ["1_single", {action: "single", button: "1"}],
+        ["2_single", {action: "single", button: "2"}],
+        ["1_double", {action: "double", button: "1"}],
+        ["1_hold", {action: "hold", button: "1"}],
         ["right_hold", {action: "hold", button: "right"}],
         ["right_hold_release", {action: "hold_release", button: "right"}],
         ["button_4_hold_release", {action: "hold_release", button: "button_4"}],
+        ["scene_1", {action: "scene", scene: "1"}],
+        ["scene_10", {action: "scene", scene: "10"}],
+        ["scene_4", {action: "scene", scene: "4"}],
         ["dial_rotate_left_step", {action: "dial_rotate", direction: "left", speed: "step"}],
         ["dial_rotate_right_fast", {action: "dial_rotate", direction: "right", speed: "fast"}],
         ["brightness_step_up", {action: "brightness_step", direction: "up"}],
         ["brightness_stop", {action: "brightness_stop"}],
+        ["color_temperature_step_up", {action: "color_temperature_step", direction: "up"}],
+        ["color_saturation_step_up", {action: "color_saturation_step", direction: "up"}],
+        ["color_hue_step_up", {action: "color_hue_step", direction: "up"}],
     ])("Should parse action names correctly", (action, expected) => {
         expect(extension.parseActionValue(action)).toStrictEqual(expected);
     });
@@ -1368,6 +1378,77 @@ describe("Extension: HomeAssistant", () => {
         });
     });
 
+    it("Should discover analog input on unsupported devices with device class and name", () => {
+        const payload = {
+            availability: [
+                {
+                    topic: "zigbee2mqtt/bridge/state",
+                    value_template: "{{ value_json.state }}",
+                },
+            ],
+            default_entity_id: "sensor.0x0017880104e45518_analog_in_temperature_1",
+            device: {
+                identifiers: ["zigbee2mqtt_0x0017880104e45518"],
+                manufacturer: "notSupportedMfg",
+                model: "Automatically generated definition",
+                model_id: "notSupportedModelID",
+                name: "0x0017880104e45518",
+                via_device: "zigbee2mqtt_bridge_0x00124b00120144ae",
+            },
+            device_class: "temperature",
+            enabled_by_default: true,
+            name: "my_sensor_name",
+            object_id: "0x0017880104e45518_analog_in_temperature_1",
+            origin: origin,
+            state_class: "measurement",
+            state_topic: "zigbee2mqtt/0x0017880104e45518",
+            unique_id: "0x0017880104e45518_analog_in_temperature_1_zigbee2mqtt",
+            unit_of_measurement: "°C",
+            value_template: '{{ value_json["analog_in_temperature_1"] }}',
+        };
+
+        expect(mockMQTTPublishAsync).toHaveBeenCalledWith(
+            "homeassistant/sensor/0x0017880104e45518/analog_in_temperature_1/config",
+            stringify(payload),
+            {
+                retain: true,
+                qos: 1,
+            },
+        );
+    });
+
+    it("Should discover analog output on unsupported devices", () => {
+        const payload = {
+            availability: [
+                {
+                    topic: "zigbee2mqtt/bridge/state",
+                    value_template: "{{ value_json.state }}",
+                },
+            ],
+            command_topic: "zigbee2mqtt/0x0017880104e45518/2/set/analog_output_2",
+            default_entity_id: "number.0x0017880104e45518_analog_output_2",
+            device: {
+                identifiers: ["zigbee2mqtt_0x0017880104e45518"],
+                manufacturer: "notSupportedMfg",
+                model: "Automatically generated definition",
+                model_id: "notSupportedModelID",
+                name: "0x0017880104e45518",
+                via_device: "zigbee2mqtt_bridge_0x00124b00120144ae",
+            },
+            name: "my_number_name",
+            object_id: "0x0017880104e45518_analog_output_2",
+            origin: origin,
+            state_topic: "zigbee2mqtt/0x0017880104e45518",
+            unique_id: "0x0017880104e45518_analog_output_2_zigbee2mqtt",
+            value_template: '{{ value_json["analog_output_2"] }}',
+        };
+
+        expect(mockMQTTPublishAsync).toHaveBeenCalledWith("homeassistant/number/0x0017880104e45518/analog_output_2/config", stringify(payload), {
+            qos: 1,
+            retain: true,
+        });
+    });
+
     it("Should apply user configuration after converter compatibility mapping", async () => {
         settings.set(["devices", "0x18fc2600000d7ae2", "homeassistant", "climate"], {
             modes: ["off", "heat", "auto"],
@@ -1645,6 +1726,8 @@ describe("Extension: HomeAssistant", () => {
     });
 
     it("Should discover dual cover devices", () => {
+        const coverValueTemplate =
+            '{% set motor = value_json["moving"] | default(none) %}{% set position = value_json["position"] | default(none) %}{% set state = value_json["state"] | default(none) %}{% if (motor == "UP" and position != 100) or (motor == "DOWN" and position != 0) %}{{ motor }}{% elif position == 0 %}CLOSE{% elif position == 100 %}OPEN{% elif motor == "STOP" and position is not none %}OPEN{% elif state in ["OPEN", "CLOSE"] %}{{ state }}{% else %}STOP{% endif %}';
         const payload_left = {
             availability: [
                 {
@@ -1676,8 +1759,7 @@ describe("Extension: HomeAssistant", () => {
             state_stopped: "STOP",
             state_topic: "zigbee2mqtt/0xa4c138018cf95021/left",
             unique_id: "0xa4c138018cf95021_cover_left_zigbee2mqtt",
-            value_template:
-                '{% if "position" in value_json and value_json["position"] == 0 and "state" in value_json and value_json["state"] == "CLOSE" %}CLOSE{% elif "position" in value_json and value_json["position"] == 100 and "state" in value_json and value_json["state"] == "OPEN" %}OPEN{% elif "moving" in value_json and value_json["moving"] == "UP" %}UP{% elif "moving" in value_json and value_json["moving"] == "DOWN" %}DOWN{% elif "moving" in value_json and value_json["moving"] == "STOP" and "position" in value_json %}{% if value_json["position"] == 0 %}CLOSE{% else %}OPEN{% endif %}{% elif "state" in value_json and value_json["state"] == "OPEN" %}OPEN{% elif "state" in value_json and value_json["state"] == "CLOSE" %}CLOSE{% else %}STOP{% endif %}',
+            value_template: coverValueTemplate,
         };
         const payload_right = {
             availability: [
@@ -1710,8 +1792,7 @@ describe("Extension: HomeAssistant", () => {
             state_stopped: "STOP",
             state_topic: "zigbee2mqtt/0xa4c138018cf95021/right",
             unique_id: "0xa4c138018cf95021_cover_right_zigbee2mqtt",
-            value_template:
-                '{% if "position" in value_json and value_json["position"] == 0 and "state" in value_json and value_json["state"] == "CLOSE" %}CLOSE{% elif "position" in value_json and value_json["position"] == 100 and "state" in value_json and value_json["state"] == "OPEN" %}OPEN{% elif "moving" in value_json and value_json["moving"] == "UP" %}UP{% elif "moving" in value_json and value_json["moving"] == "DOWN" %}DOWN{% elif "moving" in value_json and value_json["moving"] == "STOP" and "position" in value_json %}{% if value_json["position"] == 0 %}CLOSE{% else %}OPEN{% endif %}{% elif "state" in value_json and value_json["state"] == "OPEN" %}OPEN{% elif "state" in value_json and value_json["state"] == "CLOSE" %}CLOSE{% else %}STOP{% endif %}',
+            value_template: coverValueTemplate,
         };
 
         const coverLeftCalls = mockMQTTPublishAsync.mock.calls.filter(
@@ -1732,7 +1813,7 @@ describe("Extension: HomeAssistant", () => {
         });
     });
 
-    it("Should derive stopped cover state from position for motor_state covers", () => {
+    it("Should derive direction-aware cover state from position for motor_state covers", () => {
         const coverExpose = new zhc.Cover().withPosition();
         const motorStateExpose = new zhc.Enum("motor_state", zhc.access.STATE, ["opening", "closing", "stopped"]);
         const device = {
@@ -1756,7 +1837,7 @@ describe("Extension: HomeAssistant", () => {
             state_closed: "CLOSE",
             state_stopped: "stopped",
             value_template:
-                '{% if "position" in value_json and value_json["position"] == 0 and "state" in value_json and value_json["state"] == "CLOSE" %}CLOSE{% elif "position" in value_json and value_json["position"] == 100 and "state" in value_json and value_json["state"] == "OPEN" %}OPEN{% elif "motor_state" in value_json and value_json["motor_state"] == "opening" %}opening{% elif "motor_state" in value_json and value_json["motor_state"] == "closing" %}closing{% elif "motor_state" in value_json and value_json["motor_state"] == "stopped" and "position" in value_json %}{% if value_json["position"] == 0 %}CLOSE{% else %}OPEN{% endif %}{% elif "state" in value_json and value_json["state"] == "OPEN" %}OPEN{% elif "state" in value_json and value_json["state"] == "CLOSE" %}CLOSE{% else %}stopped{% endif %}',
+                '{% set motor = value_json["motor_state"] | default(none) %}{% set position = value_json["position"] | default(none) %}{% set state = value_json["state"] | default(none) %}{% if (motor == "opening" and position != 100) or (motor == "closing" and position != 0) %}{{ motor }}{% elif position == 0 %}CLOSE{% elif position == 100 %}OPEN{% elif motor == "stopped" and position is not none %}OPEN{% elif state in ["OPEN", "CLOSE"] %}{{ state }}{% else %}stopped{% endif %}',
         });
     });
 
@@ -1784,7 +1865,7 @@ describe("Extension: HomeAssistant", () => {
             state_closed: "CLOSE",
             state_stopped: "stopped",
             value_template:
-                '{% if "motor_state" in value_json and value_json["motor_state"] == "opening" %}opening{% elif "motor_state" in value_json and value_json["motor_state"] == "closing" %}closing{% elif "state" in value_json and value_json["state"] == "OPEN" %}OPEN{% elif "state" in value_json and value_json["state"] == "CLOSE" %}CLOSE{% else %}stopped{% endif %}',
+                '{% set motor = value_json["motor_state"] | default(none) %}{% set position = none %}{% set state = value_json["state"] | default(none) %}{% if (motor == "opening" and position != 100) or (motor == "closing" and position != 0) %}{{ motor }}{% elif position == 0 %}CLOSE{% elif position == 100 %}OPEN{% elif motor == "stopped" and position is not none %}OPEN{% elif state in ["OPEN", "CLOSE"] %}{{ state }}{% else %}stopped{% endif %}',
         });
     });
 
@@ -2621,7 +2702,7 @@ describe("Extension: HomeAssistant", () => {
             unique_id: "0x0017880104e45520_action_zigbee2mqtt",
             // Needs to be updated whenever one of the ACTION_*_PATTERN constants changes.
             value_template:
-                "{% set patterns = [\n{\"pattern\": '^(?P<button>(?:button_)?[a-z0-9]+)_(?P<action>(?:press|hold)(?:_release)?)$', \"groups\": [\"button\", \"action\"]},\n{\"pattern\": '^(?P<action>recall|scene)_(?P<scene>[0-2][0-9]{0,2})$', \"groups\": [\"action\", \"scene\"]},\n{\"pattern\": '^(?P<actionPrefix>region_)(?P<region>[1-9]|10)_(?P<action>enter|leave|occupied|unoccupied)$', \"groups\": [\"actionPrefix\", \"region\", \"action\"]},\n{\"pattern\": '^(?P<action>dial_rotate)_(?P<direction>left|right)_(?P<speed>step|slow|fast)$', \"groups\": [\"action\", \"direction\", \"speed\"]},\n{\"pattern\": '^(?P<action>brightness_step)(?:_(?P<direction>up|down))?$', \"groups\": [\"action\", \"direction\"]}\n] %}\n{% set action_value = value_json.action|default('') %}\n{% set ns = namespace(r=[('action', action_value)]) %}\n{% for p in patterns %}\n  {% set m = action_value|regex_findall(p.pattern) %}\n  {% if m[0] is undefined %}{% continue %}{% endif %}\n  {% for key, value in zip(p.groups, m[0]) %}\n    {% set ns.r = ns.r|rejectattr(0, 'eq', key)|list + [(key, value)] %}\n  {% endfor %}\n{% endfor %}\n{% if (ns.r|selectattr(0, 'eq', 'actionPrefix')|first) is defined %}\n  {% set ns.r = ns.r|rejectattr(0, 'eq', 'action')|list + [('action', ns.r|selectattr(0, 'eq', 'actionPrefix')|map(attribute=1)|first + ns.r|selectattr(0, 'eq', 'action')|map(attribute=1)|first)] %}\n{% endif %}\n{% set ns.r = ns.r + [('event_type', ns.r|selectattr(0, 'eq', 'action')|map(attribute=1)|first)] %}\n{{dict.from_keys(ns.r|rejectattr(0, 'in', ('action', 'actionPrefix'))|reject('eq', ('event_type', None))|reject('eq', ('event_type', '')))|to_json}}",
+                "{% set patterns = [\n{\"pattern\": '^(?P<button>(?:button_)?[a-z0-9]+)_(?P<action>(?:press|hold|single|double)(?:_release)?)$', \"groups\": [\"button\", \"action\"]},\n{\"pattern\": '^(?P<action>recall|scene)_(?P<scene>[0-9]+)$', \"groups\": [\"action\", \"scene\"]},\n{\"pattern\": '^(?P<actionPrefix>region_)(?P<region>[1-9]|10)_(?P<action>enter|leave|occupied|unoccupied)$', \"groups\": [\"actionPrefix\", \"region\", \"action\"]},\n{\"pattern\": '^(?P<action>dial_rotate)_(?P<direction>left|right)_(?P<speed>step|slow|fast)$', \"groups\": [\"action\", \"direction\", \"speed\"]},\n{\"pattern\": '^(?P<action>brightness_step|color_temperature_step|color_saturation_step|color_hue_step)(?:_(?P<direction>up|down))?$', \"groups\": [\"action\", \"direction\"]}\n] %}\n{% set action_value = value_json.action|default('') %}\n{% set ns = namespace(r=[('action', action_value)]) %}\n{% for p in patterns %}\n  {% set m = action_value|regex_findall(p.pattern) %}\n  {% if m[0] is undefined %}{% continue %}{% endif %}\n  {% for key, value in zip(p.groups, m[0]) %}\n    {% set ns.r = ns.r|rejectattr(0, 'eq', key)|list + [(key, value)] %}\n  {% endfor %}\n{% endfor %}\n{% if (ns.r|selectattr(0, 'eq', 'actionPrefix')|first) is defined %}\n  {% set ns.r = ns.r|rejectattr(0, 'eq', 'action')|list + [('action', ns.r|selectattr(0, 'eq', 'actionPrefix')|map(attribute=1)|first + ns.r|selectattr(0, 'eq', 'action')|map(attribute=1)|first)] %}\n{% endif %}\n{% set ns.r = ns.r + [('event_type', ns.r|selectattr(0, 'eq', 'action')|map(attribute=1)|first)] %}\n{{dict.from_keys(ns.r|rejectattr(0, 'in', ('action', 'actionPrefix'))|reject('eq', ('event_type', None))|reject('eq', ('event_type', '')))|to_json}}",
         };
 
         expect(mockMQTTPublishAsync).toHaveBeenCalledWith("homeassistant/event/0x0017880104e45520/action/config", stringify(payload), {
