@@ -36,6 +36,7 @@ export default class Bridge extends Extension {
         "device/configure_reporting": this.deviceReportingConfigure,
         "device/reporting/configure": this.deviceReportingConfigure,
         "device/reporting/read": this.deviceReportingRead,
+        "device/binds/read": this.deviceBindsRead,
         "device/remove": this.deviceRemove,
         "device/interview": this.deviceInterview,
         "device/generate_external_definition": this.deviceGenerateExternalDefinition,
@@ -598,6 +599,55 @@ export default class Bridge extends Extension {
         return utils.getResponse(message, responseData);
     }
 
+    /**
+     * Read the binding table from the device itself, which reconciles the cached binds of every endpoint with it.
+     *
+     * Zigbee2MQTT otherwise never verifies its cache, so a device that silently dropped its bindings keeps looking
+     * correctly bound while it no longer reports anything.
+     */
+    @bind async deviceBindsRead(message: string | KeyValue): Promise<Zigbee2MQTTResponse<"bridge/response/device/binds/read">> {
+        if (typeof message !== "object" || message.id === undefined) {
+            throw new Error("Invalid payload");
+        }
+
+        const device = this.getEntity("device", message.id);
+
+        try {
+            await device.zh.bindingTable();
+        } catch (error) {
+            // support is optional, devices without a binding table fail here
+            throw new Error(`Failed to read the binding table of '${device.name}' (${(error as Error).message})`);
+        }
+
+        await this.publishDevices();
+
+        const endpoints: Zigbee2MQTTAPI["bridge/response/device/binds/read"]["endpoints"] = {};
+        const coordinatorEndpoint = this.zigbee.firstCoordinatorEndpoint();
+
+        for (const endpoint of device.zh.endpoints) {
+            const binds = endpoint.binds;
+            const boundClusters = new Set(binds.filter((b) => b.target === coordinatorEndpoint).map((b) => b.cluster.ID));
+            const missingBindings: string[] = [];
+
+            for (const reporting of endpoint.configuredReportings) {
+                if (!boundClusters.has(reporting.cluster.ID) && !missingBindings.includes(reporting.cluster.name)) {
+                    missingBindings.push(reporting.cluster.name);
+                }
+            }
+
+            if (missingBindings.length > 0) {
+                logger.warning(
+                    `Device '${device.name}' endpoint ${endpoint.ID} has configured reporting for ${missingBindings.join(", ")} ` +
+                        "but is not bound to the coordinator, so it cannot report. Reconfigure the device to restore reporting.",
+                );
+            }
+
+            endpoints[endpoint.ID] = {bindings: binds.map(utils.toEndpointBinding), missing_bindings: missingBindings};
+        }
+
+        return utils.getResponse(message, {id: message.id, endpoints});
+    }
+
     @bind async deviceInterview(message: string | KeyValue): Promise<Zigbee2MQTTResponse<"bridge/response/device/interview">> {
         if (typeof message !== "object" || message.id === undefined) {
             throw new Error("Invalid payload");
@@ -845,10 +895,7 @@ export default class Bridge extends Extension {
                 };
 
                 for (const bind of endpoint.binds) {
-                    const target = utils.isZHEndpoint(bind.target)
-                        ? {type: "endpoint" as const, ieee_address: bind.target.deviceIeeeAddress, endpoint: bind.target.ID}
-                        : {type: "group" as const, id: bind.target.groupID};
-                    data.bindings.push({cluster: bind.cluster.name, target});
+                    data.bindings.push(utils.toEndpointBinding(bind));
                 }
 
                 for (const configuredReporting of endpoint.configuredReportings) {
