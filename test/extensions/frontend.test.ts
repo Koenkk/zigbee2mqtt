@@ -101,7 +101,8 @@ vi.mock("zigbee2mqtt-windfront", () => ({
 vi.mock("ws", () => ({
     default: {
         OPEN: "open",
-        Server: vi.fn().mockImplementation(() => {
+        // biome-ignore lint/complexity/useArrowFunction: vitest 4 requires a constructable implementation for `new`
+        Server: vi.fn(function () {
             return mockWS;
         }),
     },
