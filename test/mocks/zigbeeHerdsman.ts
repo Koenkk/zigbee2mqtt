@@ -1278,5 +1278,8 @@ export const mockController = {
 
 vi.mock("zigbee-herdsman", async (importOriginal) => ({
     ...(await importOriginal()),
-    Controller: vi.fn().mockImplementation(() => mockController),
+    // biome-ignore lint/complexity/useArrowFunction: vitest 4 requires a constructable implementation for `new`
+    Controller: vi.fn(function () {
+        return mockController;
+    }),
 }));

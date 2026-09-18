@@ -203,7 +203,7 @@ export class Controller {
         }
 
         this.eventBus.onLastSeenChanged(this, (data) => {
-            utils.publishLastSeen(data, settings.get(), false, this.publishEntityState).catch(() => {});
+            utils.publishLastSeen(data, settings.get(), false, this.publishEntityState).catch(/* v8 ignore next */ () => {});
         });
 
         logger.info("Zigbee2MQTT started!");

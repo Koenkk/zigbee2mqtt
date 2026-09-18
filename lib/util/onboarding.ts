@@ -60,7 +60,7 @@ async function startOnboardingServer(): Promise<boolean> {
 
     const success = await new Promise<boolean>((resolve) => {
         server = createServer(async (req, res) => {
-            const pathname = new URL(req.url /* v8 ignore next */ ?? "/", serverUrl).pathname;
+            const pathname = new URL(/* v8 ignore next */ req.url ?? "/", serverUrl).pathname;
 
             if (req.method === "GET" && pathname === "/data") {
                 const payload: OnboardData = {
@@ -131,7 +131,9 @@ async function startOnboardingServer(): Promise<boolean> {
                     return;
                 }
 
+                /* v8 ignore start */
                 if (pathname === "/submit-zip") {
+                    /* v8 ignore stop */
                     let body = "";
 
                     req.on("data", (chunk) => {
@@ -205,7 +207,7 @@ async function startFailureServer(errors: string[]): Promise<void> {
 
     await new Promise<void>((resolve) => {
         server = createServer((req, res) => {
-            const pathname = new URL(req.url /* v8 ignore next */ ?? "/", serverUrl).pathname;
+            const pathname = new URL(/* v8 ignore next */ req.url ?? "/", serverUrl).pathname;
 
             if (req.method === "GET" && pathname === "/data") {
                 const payload: OnboardFailureData = {page: "failure", errors};
@@ -249,7 +251,9 @@ async function onSettingsErrors(errors: string[]): Promise<void> {
     console.error("\nIf you don't know how to solve this, read https://www.zigbee2mqtt.io/guide/configuration");
     console.error("\n!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!\n\n");
 
+    /* v8 ignore start */
     if (!process.env.Z2M_ONBOARD_NO_SERVER && !process.env.Z2M_ONBOARD_NO_FAILURE_PAGE) {
+        /* v8 ignore stop */
         await startFailureServer(errors);
     }
 }

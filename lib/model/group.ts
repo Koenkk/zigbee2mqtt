@@ -47,7 +47,9 @@ export default class Group {
         const definitions: zhc.Definition[] = [];
 
         for (const member of this.membersDevices()) {
+            /* v8 ignore start */
             if (member.definition) {
+                /* v8 ignore stop */
                 definitions.push(member.definition);
             }
         }

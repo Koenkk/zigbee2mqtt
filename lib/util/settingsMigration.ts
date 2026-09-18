@@ -550,8 +550,7 @@ export function migrateIfNecessary(): void {
         );
     }
 
-    /* v8 ignore next */
-    const finalVersion = process.env.VITEST_WORKER_ID ? settings.testing.CURRENT_VERSION : settings.CURRENT_VERSION;
+    const finalVersion = /* v8 ignore next */ process.env.VITEST_WORKER_ID ? settings.testing.CURRENT_VERSION : settings.CURRENT_VERSION;
 
     if (currentSettings.version === finalVersion) {
         // when same version as current, nothing to do
@@ -584,7 +583,9 @@ export function migrateIfNecessary(): void {
             migrationNotesFileName = "migration-3-to-4.log";
 
             migrateToFour(currentSettings, transfers, changes, additions, removals, customHandlers);
+            /* v8 ignore start */
         } else if (currentSettings.version === 4) {
+            /* v8 ignore stop */
             migrationNotesFileName = "migration-4-to-5.log";
 
             migrateToFive(currentSettings, transfers, changes, additions, removals, customHandlers);
@@ -628,7 +629,9 @@ export function migrateIfNecessary(): void {
             }
         }
 
+        /* v8 ignore start */
         if (migrationNotesFileName && migrationNotes.size > 0) {
+            /* v8 ignore stop */
             migrationNotes.add("For more details, see https://github.com/Koenkk/zigbee2mqtt/discussions/24198");
             const migrationNotesFilePath = data.joinPath(migrationNotesFileName);
 

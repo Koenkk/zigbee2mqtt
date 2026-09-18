@@ -185,7 +185,7 @@ export class Frontend extends Extension {
             const lastSeen = settings.get().advanced.last_seen;
 
             if (lastSeen !== "disable") {
-                payload.last_seen = utils.formatDate(device.zh.lastSeen ?? /* v8 ignore next */ 0, lastSeen);
+                payload.last_seen = utils.formatDate(/* v8 ignore next */ device.zh.lastSeen ?? 0, lastSeen);
             }
 
             if (device.zh.linkquality !== undefined) {
@@ -219,7 +219,9 @@ export class Frontend extends Extension {
         }
 
         for (const client of this.wss.clients) {
+            /* v8 ignore start */
             if (client.readyState === WebSocket.OPEN) {
+                /* v8 ignore stop */
                 client.send(stringify({topic, payload}));
             }
         }

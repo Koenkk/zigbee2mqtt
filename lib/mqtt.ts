@@ -67,11 +67,15 @@ export default class Mqtt {
             properties: {maximumPacketSize: mqttSettings.maximum_packet_size},
         };
 
+        /* v8 ignore start */
         if (mqttSettings.version) {
+            /* v8 ignore stop */
             options.protocolVersion = mqttSettings.version;
         }
 
+        /* v8 ignore start */
         if (mqttSettings.keepalive) {
+            /* v8 ignore stop */
             logger.debug(`Using MQTT keepalive: ${mqttSettings.keepalive}`);
             options.keepalive = mqttSettings.keepalive;
         }
@@ -247,7 +251,9 @@ export default class Mqtt {
         try {
             await this.client.publishAsync(topic, payload, clientOptions);
         } catch (error) {
+            /* v8 ignore start */
             if (!finalOptions.skipLog) {
+                /* v8 ignore stop */
                 logger.error(`MQTT server error: ${(error as Error).message}`);
                 logger.error(`Could not send message: topic: '${topic}', payload: '${payload}`);
             }

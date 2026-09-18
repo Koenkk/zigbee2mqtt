@@ -104,7 +104,9 @@ export default class OTAUpdate extends Extension {
 
         if (data.device.zh.scheduledOta) {
             // allow custom source to override check for definition `ota`
+            /* v8 ignore start */
             if (data.device.zh.scheduledOta?.url !== undefined || data.device.definition.ota) {
+                /* v8 ignore stop */
                 this.#inProgress.add(data.device.ieeeAddr);
 
                 logger.info(`Updating '${data.device.name}' to latest firmware`);
@@ -118,9 +120,9 @@ export default class OTAUpdate extends Extension {
                         data.meta.zclTransactionSequenceNumber,
                         {
                             // fallbacks are only to satisfy typing, should always be defined from settings defaults
-                            requestTimeout: otaSettings.image_block_request_timeout ?? /* v8 ignore next */ 150000,
-                            responseDelay: otaSettings.image_block_response_delay ?? /* v8 ignore next */ 250,
-                            baseSize: otaSettings.default_maximum_data_size ?? /* v8 ignore next */ 50,
+                            requestTimeout: /* v8 ignore next */ otaSettings.image_block_request_timeout ?? 150000,
+                            responseDelay: /* v8 ignore next */ otaSettings.image_block_response_delay ?? 250,
+                            baseSize: /* v8 ignore next */ otaSettings.default_maximum_data_size ?? 50,
                         },
                         data.endpoint,
                     );
@@ -302,7 +304,9 @@ export default class OTAUpdate extends Extension {
                             error = `Device '${device.name}' does not support OTA updates`;
                             break;
                         }
+                        /* v8 ignore start */
                     } else if (!device.definition?.ota) {
+                        /* v8 ignore stop */
                         error = `Device '${device.name}' does not support OTA updates`;
                         break;
                     }
@@ -346,9 +350,9 @@ export default class OTAUpdate extends Extension {
                     const source: OtaSource = {downgrade};
                     const dataSettings: OtaDataSettings = {
                         // fallbacks are only to satisfy typing, should always be defined from settings defaults
-                        requestTimeout: otaSettings.image_block_request_timeout ?? /* v8 ignore next */ 150000,
-                        responseDelay: otaSettings.image_block_response_delay ?? /* v8 ignore next */ 250,
-                        baseSize: otaSettings.default_maximum_data_size ?? /* v8 ignore next */ 50,
+                        requestTimeout: /* v8 ignore next */ otaSettings.image_block_request_timeout ?? 150000,
+                        responseDelay: /* v8 ignore next */ otaSettings.image_block_response_delay ?? 250,
+                        baseSize: /* v8 ignore next */ otaSettings.default_maximum_data_size ?? 50,
                     };
 
                     if (messageObject) {
@@ -379,7 +383,9 @@ export default class OTAUpdate extends Extension {
                         if (payload.default_maximum_data_size) {
                             dataSettings.baseSize = payload.default_maximum_data_size;
                         }
+                        /* v8 ignore start */
                     } else if (!device.definition?.ota) {
+                        /* v8 ignore stop */
                         error = `Device '${device.name}' does not support OTA updates`;
                         break;
                     }

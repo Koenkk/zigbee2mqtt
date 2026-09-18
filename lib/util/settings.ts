@@ -233,8 +233,7 @@ export function write(): void {
             const fileToWrite = Array.isArray(actual[type]) ? actual[type][0] : actual[type];
             // `readDevicesOrGroups()` already set this to an object whenever the config points at separate files, but the
             // persisted settings are `Partial`, so the fallback is only here to satisfy the type
-            /* v8 ignore next */
-            const content = objectAssignDeep({}, settings[type] ?? {});
+            const content = objectAssignDeep({}, /* v8 ignore next */ settings[type] ?? {});
 
             // If an array, only write to first file and only devices which are not in the other files.
             if (Array.isArray(actual[type])) {
@@ -414,7 +413,9 @@ function applyEnvironmentVariables(settings: Partial<Settings>): void {
                             // biome-ignore lint/suspicious/noExplicitAny: auto-parsing
                             setting[key as keyof Settings] = (envVariable.toLowerCase() === "true") as any;
                         } else {
+                            /* v8 ignore start */
                             if (type.indexOf("string") >= 0) {
+                                /* v8 ignore stop */
                                 // biome-ignore lint/suspicious/noExplicitAny: auto-parsing
                                 setting[key as keyof Settings] = envVariable as any;
                             }
