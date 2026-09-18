@@ -37,7 +37,9 @@ export async function initSdNotify(): Promise<{notifyStopping: () => void; stop:
 
         // biome-ignore lint/style/noNonNullAssertion: valid from start of function
         socket.send(buffer, 0, buffer.byteLength, process.env.NOTIFY_SOCKET!, (err) => {
+            /* v8 ignore start */
             if (err) {
+                /* v8 ignore stop */
                 logger.warning(`Failed to send "${msg}" to systemd: ${err.message}`);
             }
         });

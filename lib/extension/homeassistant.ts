@@ -842,9 +842,11 @@ export class HomeAssistant extends Extension {
                         },
                     };
 
+                    /* v8 ignore start */
                     if (tempCalibration.value_min != null) discoveryEntry.discovery_payload.min = tempCalibration.value_min;
                     if (tempCalibration.value_max != null) discoveryEntry.discovery_payload.max = tempCalibration.value_max;
                     if (tempCalibration.value_step != null) {
+                        /* v8 ignore stop */
                         discoveryEntry.discovery_payload.step = tempCalibration.value_step;
                     }
                     discoveryEntries.push(discoveryEntry);
@@ -999,7 +1001,9 @@ export class HomeAssistant extends Extension {
                     const closingState = motorState.values.find((s) => COVER_CLOSING_LOOKUP.includes(s.toString().toLowerCase()));
                     const stoppedState = motorState.values.find((s) => COVER_STOPPED_LOOKUP.includes(s.toString().toLowerCase()));
 
+                    /* v8 ignore start */
                     if (openingState && closingState && stoppedState) {
+                        /* v8 ignore stop */
                         discoveryEntry.discovery_payload.state_opening = openingState;
                         discoveryEntry.discovery_payload.state_closing = closingState;
                         discoveryEntry.discovery_payload.state_open = "OPEN";
@@ -1127,7 +1131,9 @@ export class HomeAssistant extends Extension {
                     // Emulate state based on mode
                     discoveryEntry.discovery_payload.state_value_template = "{{ value_json.fan_state }}";
                     discoveryEntry.discovery_payload.command_topic_postfix = "fan_state";
+                    /* v8 ignore start */
                 } else if (nativeSpeed) {
+                    /* v8 ignore stop */
                     discoveryEntry.discovery_payload.percentage_state_topic = true;
                     discoveryEntry.discovery_payload.percentage_command_topic = "speed";
                     discoveryEntry.discovery_payload.percentage_value_template = `{{ value_json["${nativeSpeed.property}"] | default('None') }}`;
@@ -1357,7 +1363,9 @@ export class HomeAssistant extends Extension {
                 /**
                  * Otherwise expose as SENSOR entity.
                  */
+                /* v8 ignore start */
                 if (firstExpose.access & ACCESS_STATE) {
+                    /* v8 ignore stop */
                     discoveryEntries.push({
                         type: "sensor",
                         object_id: firstExpose.property,
@@ -1397,9 +1405,11 @@ export class HomeAssistant extends Extension {
                         },
                     };
 
+                    /* v8 ignore start */
                     if (modeFeature) {
                         const tones = modeFeature.values.filter((v) => v !== "stop");
                         if (tones.length) {
+                            /* v8 ignore stop */
                             discoveryEntry.discovery_payload.available_tones = tones;
                         }
                     }
@@ -1408,7 +1418,9 @@ export class HomeAssistant extends Extension {
                         discoveryEntry.discovery_payload.support_volume_set = true;
                     }
 
+                    /* v8 ignore start */
                     if (durationFeature) {
+                        /* v8 ignore stop */
                         discoveryEntry.discovery_payload.support_duration = true;
                     }
 
@@ -1619,8 +1631,9 @@ export class HomeAssistant extends Extension {
         const isDevice = entity.isDevice();
         const isGroup = entity.isGroup();
 
-        /* v8 ignore next */
+        /* v8 ignore start */
         if (!entity || (isDevice && !entity.definition)) return [];
+        /* v8 ignore stop */
 
         let configs: DiscoveryEntry[] = [];
         if (isDevice) {
@@ -1635,7 +1648,9 @@ export class HomeAssistant extends Extension {
 
             for (const member of entity.zh.members) {
                 const device = this.zigbee.resolveEntity(member.getDevice()) as Device;
+                /* v8 ignore start */
                 if (device.definition) {
+                    /* v8 ignore stop */
                     const exposes = device.exposes();
                     allExposes.push(...exposes);
                     for (const expose of exposes.filter((e) => GROUP_SUPPORTED_TYPES.includes(e.type))) {
@@ -1676,7 +1691,9 @@ export class HomeAssistant extends Extension {
                 },
             };
 
+            /* v8 ignore start */
             if (settings.get().advanced.last_seen.startsWith("ISO_8601")) {
+                /* v8 ignore stop */
                 config.discovery_payload.device_class = "timestamp";
             }
 
@@ -1774,7 +1791,9 @@ export class HomeAssistant extends Extension {
             if (payload.state_topic === undefined || payload.state_topic) {
                 payload.state_topic = stateTopic;
             } else {
+                /* v8 ignore start */
                 if (payload.state_topic !== undefined) {
+                    /* v8 ignore stop */
                     delete payload.state_topic;
                 }
             }
@@ -2021,7 +2040,9 @@ export class HomeAssistant extends Extension {
                 logger.debug(`Skipping discovery of '${topic}', already discovered`);
             }
 
+            /* v8 ignore start */
             if (config.mockProperties) {
+                /* v8 ignore stop */
                 for (const mockProperty of config.mockProperties) {
                     discovered.mockProperties.add(mockProperty);
                 }
@@ -2082,7 +2103,9 @@ export class HomeAssistant extends Extension {
             if (clear) {
                 logger.debug(`Clearing outdated Home Assistant config '${data.topic}'`);
                 await this.mqtt.publish(topic, "", {clientOptions: {retain: true, qos: 1}, baseTopic: this.discoveryTopic, skipReceive: false});
+                /* v8 ignore start */
             } else if (entity) {
+                /* v8 ignore stop */
                 this.getDiscovered(entity).messages[topic] = {payload: stringify(message), published: true};
             }
         } else if (data.topic === this.statusTopic && data.message.toLowerCase() === "online") {

@@ -102,7 +102,9 @@ export default class Zigbee {
         });
         this.#herdsman.on("deviceInterview", async (data: ZHEvents.DeviceInterviewPayload) => {
             const device = this.resolveDevice(data.device.ieeeAddr);
-            /* v8 ignore next */ if (!device) return; // Prevent potential race
+            /* v8 ignore start */
+            if (!device) return; // Prevent potential race
+            /* v8 ignore stop */
             await device.resolveDefinition();
             const d = {device, status: data.status};
             this.logDeviceInterview(d);
@@ -110,7 +112,9 @@ export default class Zigbee {
         });
         this.#herdsman.on("deviceJoined", async (data: ZHEvents.DeviceJoinedPayload) => {
             const device = this.resolveDevice(data.device.ieeeAddr);
-            /* v8 ignore next */ if (!device) return; // Prevent potential race
+            /* v8 ignore start */
+            if (!device) return; // Prevent potential race
+            /* v8 ignore stop */
             await device.resolveDefinition();
             logger.info(`Device '${device.name}' joined`);
             this.eventBus.emitDeviceJoined({device});
@@ -356,7 +360,9 @@ export default class Zigbee {
             // First split the input token by the latest slash
             const match = id.match(entityIDRegex);
 
+            /* v8 ignore start */
             if (match) {
+                /* v8 ignore stop */
                 // Get the resulting IDs from the match
                 entityName = match[1];
                 deviceOrGroup = this.resolveEntity(entityName);

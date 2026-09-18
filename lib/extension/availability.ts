@@ -77,7 +77,7 @@ export default class Availability extends Extension {
 
     private isAvailable(entity: Device | Group): boolean {
         if (entity.isDevice()) {
-            const lastSeen = entity.zh.lastSeen ?? /* v8 ignore next */ 0;
+            const lastSeen = /* v8 ignore next */ entity.zh.lastSeen ?? 0;
 
             return Date.now() - lastSeen < this.getTimeout(entity);
         }
@@ -248,7 +248,9 @@ export default class Availability extends Extension {
 
     private async publishAvailability(entity: Device | Group, logLastSeen: boolean, forcePublish = false, skipGroups = false): Promise<void> {
         if (logLastSeen && entity.isDevice()) {
-            const ago = Date.now() - (entity.zh.lastSeen ?? /* v8 ignore next */ 0);
+            /* v8 ignore start */
+            const ago = Date.now() - (entity.zh.lastSeen ?? 0);
+            /* v8 ignore stop */
 
             if (this.isActiveDevice(entity)) {
                 logger.debug(`Active device '${entity.name}' was last seen '${(ago / utils.minutes(1)).toFixed(2)}' minutes ago.`);

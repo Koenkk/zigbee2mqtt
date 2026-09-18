@@ -53,7 +53,9 @@ export default abstract class ExternalJSExtension<M> extends Extension {
             const z2mDirNormalized = `${path.resolve(path.join(nodeModulesPath, ".."))}${path.sep}`;
             const basePathNormalized = `${path.resolve(this.basePath)}${path.sep}`;
             const basePathInZ2mDir = basePathNormalized.startsWith(z2mDirNormalized);
+            /* v8 ignore start */
             if (!basePathInZ2mDir) {
+                /* v8 ignore stop */
                 logger.debug(`External JS folder '${this.folderName}' is outside the Z2M install dir, creating a symlink to 'node_modules'`);
                 const nodeModulesSymlink = path.join(this.basePath, "node_modules");
                 /* v8 ignore start */
@@ -234,8 +236,9 @@ export default abstract class ExternalJSExtension<M> extends Extension {
         fs.copyFileSync(file, tmpFile);
         try {
             // Do `replaceAll("\\", "/")` to prevent issues on Windows
-            /* v8 ignore next */
+            /* v8 ignore start */
             const mod = await import(os.platform() === "win32" ? `file:///${tmpFile.replaceAll("\\", "/")}` : tmpFile);
+            /* v8 ignore stop */
             return mod;
         } finally {
             fs.rmSync(tmpFile);

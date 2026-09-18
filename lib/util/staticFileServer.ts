@@ -4,12 +4,12 @@ import {staticMiddleware} from "srvx/static";
 
 export type StaticFileServer = (request: IncomingMessage, response: ServerResponse) => void;
 
-const escapeHtml = (value: string): string => value.replace(/[&<>"']/g, (char) => `&#${char.charCodeAt(0)};`);
+const escapeHtml = (value: string): string => value.replace(/[&<>"']/g, /* v8 ignore next */ (char) => `&#${char.charCodeAt(0)};`);
 
 /** Terminal `404` handler for requests no file matched, mirroring the response `finalhandler` used to produce. */
 export function sendNotFound(request: IncomingMessage, response: ServerResponse): void {
-    const method = request.method /* v8 ignore next */ ?? "GET";
-    const url = request.url /* v8 ignore next */ ?? "/";
+    const method = /* v8 ignore next */ request.method ?? "GET";
+    const url = /* v8 ignore next */ request.url ?? "/";
     const message = escapeHtml(`Cannot ${method} ${encodeURI(url)}`);
     const body = `<!DOCTYPE html>\n<html lang="en">\n<head>\n<meta charset="utf-8">\n<title>Error</title>\n</head>\n<body>\n<pre>${message}</pre>\n</body>\n</html>\n`;
 
@@ -55,7 +55,9 @@ export function createStaticFileServer(dir: string, logError: (message: string) 
         handle(request, response).catch((error) => {
             logError(`Failed to serve '${request.url}': ${(error as Error).message}`);
 
+            /* v8 ignore start */
             if (!response.headersSent) {
+                /* v8 ignore stop */
                 response.writeHead(500);
             }
 

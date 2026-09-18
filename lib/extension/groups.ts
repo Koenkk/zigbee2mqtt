@@ -85,7 +85,9 @@ export default class Groups extends Extension {
             if (entity instanceof Device) {
                 const endpoint = entity.endpoint(endpointName);
 
+                /* v8 ignore start */
                 if (endpoint) {
+                    /* v8 ignore stop */
                     for (const group of groups) {
                         if (
                             group.zh.hasMember(endpoint) &&

@@ -100,8 +100,9 @@ export default class Receive extends Extension {
     }
 
     @bind async onDeviceMessage(data: eventdata.DeviceMessage): Promise<void> {
-        /* v8 ignore next */
+        /* v8 ignore start */
         if (!data.device) return;
+        /* v8 ignore stop */
 
         if (!data.device.definition || !data.device.interviewed) {
             logger.debug("Skipping message, still interviewing");
