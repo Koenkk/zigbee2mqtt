@@ -196,9 +196,6 @@ describe("Extension: HomeAssistant", () => {
             const offenders = new Set<string>();
 
             for (const config of await getGeneratedConfigs()) {
-                // The `update` entity builds JSON out of nested `value_json['update'][...]` reads.
-                if (config.type === "update") continue;
-
                 for (const [key, value] of templatesOf(config)) {
                     for (const property of findUnguardedReads(value)) {
                         // Carried on the expose by zigbee-herdsman-converters (`lib/zosung.js`), not built here.
@@ -2089,7 +2086,8 @@ describe("Extension: HomeAssistant", () => {
         );
     });
 
-    it("Should set missing values to null", async () => {
+    it("Should not add missing values to the payload", async () => {
+        // Missing properties are guarded in the discovery value templates instead.
         // https://github.com/Koenkk/zigbee2mqtt/issues/6987
         const device = devices.WSDCGQ11LM;
         const data = {measuredValue: -85};
@@ -2105,11 +2103,7 @@ describe("Extension: HomeAssistant", () => {
         await mockZHEvents.message(payload);
         await flushPromises();
         expect(mockMQTTPublishAsync).toHaveBeenCalledTimes(1);
-        expect(mockMQTTPublishAsync).toHaveBeenCalledWith(
-            "zigbee2mqtt/weather_sensor",
-            stringify({battery: null, humidity: null, linkquality: null, pressure: null, temperature: -0.85, voltage: null}),
-            {retain: false, qos: 1},
-        );
+        expect(mockMQTTPublishAsync).toHaveBeenCalledWith("zigbee2mqtt/weather_sensor", stringify({temperature: -0.85}), {retain: false, qos: 1});
     });
 
     it("Should copy hue/saturtion to h/s if present", async () => {
@@ -2125,14 +2119,7 @@ describe("Extension: HomeAssistant", () => {
             stringify({
                 color: {hue: 0, saturation: 100, h: 0, s: 100},
                 color_mode: "hs",
-                effect: null,
-                effect_color: null,
-                effect_speed: null,
-                identify: null,
-                linkquality: null,
-                state: null,
-                power_on_behavior: null,
-                update: {state: null, installed_version: -1, latest_version: -1},
+                update: {installed_version: -1, latest_version: -1},
             }),
             {retain: false, qos: 0},
         );
@@ -2151,14 +2138,7 @@ describe("Extension: HomeAssistant", () => {
             stringify({
                 color: {x: 0.4576, y: 0.41},
                 color_mode: "xy",
-                effect: null,
-                effect_color: null,
-                effect_speed: null,
-                identify: null,
-                linkquality: null,
-                state: null,
-                power_on_behavior: null,
-                update: {state: null, installed_version: -1, latest_version: -1},
+                update: {installed_version: -1, latest_version: -1},
             }),
             {retain: false, qos: 0},
         );
@@ -2175,14 +2155,8 @@ describe("Extension: HomeAssistant", () => {
         expect(mockMQTTPublishAsync).toHaveBeenCalledWith(
             "zigbee2mqtt/bulb_color",
             stringify({
-                linkquality: null,
-                effect: null,
-                effect_color: null,
-                effect_speed: null,
-                identify: null,
                 state: "ON",
-                power_on_behavior: null,
-                update: {state: null, installed_version: -1, latest_version: -1},
+                update: {installed_version: -1, latest_version: -1},
             }),
             {retain: false, qos: 0},
         );
@@ -2287,25 +2261,18 @@ describe("Extension: HomeAssistant", () => {
             "zigbee2mqtt/bulb",
             stringify({
                 state: "ON",
-                color_options: null,
                 brightness: 50,
                 color_temp: 370,
-                effect: null,
-                identify: null,
                 linkquality: 99,
-                power_on_behavior: null,
-                update: {state: null, installed_version: -1, latest_version: -1},
+                update: {installed_version: -1, latest_version: -1},
             }),
             {retain: true, qos: 0},
         );
         expect(mockMQTTPublishAsync).toHaveBeenCalledWith(
             "zigbee2mqtt/remote",
             stringify({
-                action_duration: null,
-                battery: null,
                 brightness: 255,
-                linkquality: null,
-                update: {state: null, installed_version: -1, latest_version: -1},
+                update: {installed_version: -1, latest_version: -1},
             }),
             {retain: true, qos: 0},
         );
@@ -2328,26 +2295,37 @@ describe("Extension: HomeAssistant", () => {
             "zigbee2mqtt/bulb",
             stringify({
                 state: "ON",
-                color_options: null,
                 brightness: 50,
                 color_temp: 370,
-                effect: null,
-                identify: null,
                 linkquality: 99,
-                power_on_behavior: null,
-                update: {state: null, installed_version: -1, latest_version: -1},
+                update: {installed_version: -1, latest_version: -1},
             }),
             {retain: true, qos: 0},
         );
         expect(mockMQTTPublishAsync).toHaveBeenCalledWith(
             "zigbee2mqtt/remote",
             stringify({
-                action_duration: null,
-                battery: null,
                 brightness: 255,
-                linkquality: null,
-                update: {state: null, installed_version: -1, latest_version: -1},
+                update: {installed_version: -1, latest_version: -1},
             }),
+            {retain: true, qos: 0},
+        );
+    });
+
+    it("Should keep the versions of an update payload that already has them", async () => {
+        data.writeDefaultState({"0x000b57fffec6a5b2": {state: "ON", update: {state: "idle", installed_version: 1, latest_version: 2}}});
+        // @ts-expect-error private
+        extension.state.load();
+        await resetExtension();
+        await flushPromises();
+        mockMQTTPublishAsync.mockClear();
+        await mockMQTTEvents.message("homeassistant/status", "online");
+        await flushPromises();
+        await vi.runOnlyPendingTimersAsync();
+        await flushPromises();
+        expect(mockMQTTPublishAsync).toHaveBeenCalledWith(
+            "zigbee2mqtt/bulb",
+            stringify({state: "ON", update: {state: "idle", installed_version: 1, latest_version: 2}}),
             {retain: true, qos: 0},
         );
     });
@@ -2640,7 +2618,7 @@ describe("Extension: HomeAssistant", () => {
             state_topic: "zigbee2mqtt/bulb",
             unique_id: "0x000b57fffec6a5b2_update_zigbee2mqtt",
             value_template:
-                "{\"latest_version\":\"{{ value_json['update']['latest_version'] }}\",\"installed_version\":\"{{ value_json['update']['installed_version'] }}\",\"update_percentage\":{{ value_json['update'].get('progress', 'null') }},\"in_progress\":{{ (value_json['update']['state'] == 'updating')|lower }}}",
+                "{% if \"update\" in value_json %}{\"latest_version\":\"{{ value_json['update']['latest_version'] }}\",\"installed_version\":\"{{ value_json['update']['installed_version'] }}\",\"update_percentage\":{{ value_json['update'].get('progress', 'null') }},\"in_progress\":{{ (value_json['update'].get('state') == 'updating')|lower }}}{% endif %}",
         };
 
         expect(mockMQTTPublishAsync).toHaveBeenCalledWith("homeassistant/update/0x000b57fffec6a5b2/update/config", stringify(payload), {
@@ -2683,19 +2661,7 @@ describe("Extension: HomeAssistant", () => {
             {retain: true, qos: 1},
         );
 
-        expect(mockMQTTPublishAsync).toHaveBeenCalledWith(
-            "zigbee2mqtt/button",
-            stringify({
-                action: "single",
-                battery: null,
-                identify: null,
-                linkquality: null,
-                voltage: null,
-                power_outage_count: null,
-                device_temperature: null,
-            }),
-            {retain: false, qos: 0},
-        );
+        expect(mockMQTTPublishAsync).toHaveBeenCalledWith("zigbee2mqtt/button", stringify({action: "single"}), {retain: false, qos: 0});
 
         // Should only discover it once
         mockMQTTPublishAsync.mockClear();
@@ -2819,30 +2785,13 @@ describe("Extension: HomeAssistant", () => {
 
         await mockMQTTEvents.message("zigbee2mqtt/U202DST600ZB/l2/set", stringify({state: "ON", brightness: 20}));
         await flushPromises();
-        expect(mockMQTTPublishAsync).toHaveBeenCalledWith(
-            "zigbee2mqtt/U202DST600ZB",
-            stringify({
-                state_l2: "ON",
-                brightness_l2: 20,
-                linkquality: null,
-                state_l1: null,
-                effect_l1: null,
-                effect_l2: null,
-                power_on_behavior_l1: null,
-                power_on_behavior_l2: null,
-            }),
-            {qos: 0, retain: false},
-        );
-        expect(mockMQTTPublishAsync).toHaveBeenCalledWith(
-            "zigbee2mqtt/U202DST600ZB/l2",
-            stringify({state: "ON", brightness: 20, effect: null, power_on_behavior: null}),
-            {},
-        );
-        expect(mockMQTTPublishAsync).toHaveBeenCalledWith(
-            "zigbee2mqtt/U202DST600ZB/l1",
-            stringify({state: null, effect: null, power_on_behavior: null}),
-            {},
-        );
+        expect(mockMQTTPublishAsync).toHaveBeenCalledWith("zigbee2mqtt/U202DST600ZB", stringify({state_l2: "ON", brightness_l2: 20}), {
+            qos: 0,
+            retain: false,
+        });
+        expect(mockMQTTPublishAsync).toHaveBeenCalledWith("zigbee2mqtt/U202DST600ZB/l2", stringify({state: "ON", brightness: 20}), {});
+        // `l1` has no attributes in this payload, so nothing is republished for it.
+        expect(mockMQTTPublishAsync).not.toHaveBeenCalledWith("zigbee2mqtt/U202DST600ZB/l1", expect.any(String), expect.any(Object));
     });
 
     it("Shouldnt crash in onPublishEntityState on group publish", async () => {
@@ -3603,23 +3552,11 @@ describe("Extension: HomeAssistant", () => {
         expect(mockMQTTPublishAsync.mock.calls[0][0]).toStrictEqual("zigbee2mqtt/button");
         expect(JSON.parse(mockMQTTPublishAsync.mock.calls[0][1])).toStrictEqual({
             action: "single",
-            battery: null,
-            identify: null,
-            linkquality: null,
-            voltage: null,
-            power_outage_count: null,
-            device_temperature: null,
         });
         expect(mockMQTTPublishAsync.mock.calls[0][2]).toStrictEqual({qos: 0, retain: false});
         expect(mockMQTTPublishAsync.mock.calls[1][0]).toStrictEqual("zigbee2mqtt/button");
         expect(JSON.parse(mockMQTTPublishAsync.mock.calls[1][1])).toStrictEqual({
             action: "",
-            battery: null,
-            identify: null,
-            linkquality: null,
-            voltage: null,
-            power_outage_count: null,
-            device_temperature: null,
         });
         expect(mockMQTTPublishAsync.mock.calls[1][2]).toStrictEqual({qos: 0, retain: false});
         expect(mockMQTTPublishAsync.mock.calls[2][0]).toStrictEqual("homeassistant/device_automation/0x0017880104e45520/action_single/config");
