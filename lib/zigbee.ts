@@ -44,7 +44,7 @@ export default class Zigbee {
             databasePath: data.joinPath("database.db"),
             databaseBackupPath: data.joinPath("database.db.backup"),
             backupPath: data.joinPath("coordinator_backup.json"),
-            serialPort: {
+            transport: {
                 baudRate: settings.get().serial.baudrate,
                 rtscts: settings.get().serial.rtscts,
                 path: settings.get().serial.port,
