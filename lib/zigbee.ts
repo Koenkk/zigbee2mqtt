@@ -13,6 +13,37 @@ import utils from "./util/utils";
 
 const entityIDRegex = /^(.+?)(?:\/([^/]+))?$/;
 
+// Temporary local mirror of zigbee-herdsman's AdditionalCoordinatorEndpoint descriptor.
+// Once Zigbee2MQTT depends on a zigbee-herdsman release containing that API,
+// import the type from zigbee-herdsman instead.
+// import type {AdditionalCoordinatorEndpoint} from "zigbee-herdsman/dist/adapter/coordinatorEndpoints";
+type AdditionalCoordinatorEndpoint = {
+    name?: string;
+    profileId: number;
+    deviceId: number;
+    deviceVersion: number;
+    inputClusters: readonly number[];
+    outputClusters: readonly number[];
+};
+
+function adapterServiceEndpoints(endpointNames: string[]): AdditionalCoordinatorEndpoint[] {
+    return endpointNames.map((endpointName) => {
+        switch (endpointName) {
+            case "mieleGateway":
+                return {
+                    name: endpointName,
+                    profileId: 0xc51e,
+                    deviceId: 0x0000,
+                    deviceVersion: 0x01,
+                    inputClusters: [0x0003, 0xfd05, 0xfd01],
+                    outputClusters: [0x0003, 0xfd00, 0xfd01, 0x000a, 0x001b, 0x0402, 0x0a00, 0x0b02, 0xfd02],
+                };
+            default:
+                throw new Error(`Unsupported adapter service endpoint '${endpointName}'`);
+        }
+    });
+}
+
 export default class Zigbee {
     #herdsman!: Controller;
     private eventBus: EventBus;
@@ -55,7 +86,7 @@ export default class Zigbee {
                 delay: settings.get().advanced.adapter_delay,
                 disableLED: settings.get().serial.disable_led,
                 transmitPower: settings.get().advanced.transmit_power,
-                coordinatorServiceEndpoints: settings.get().advanced.adapter_service_endpoints,
+                additionalCoordinatorEndpoints: adapterServiceEndpoints(settings.get().advanced.adapter_service_endpoints),
             },
             acceptJoiningDeviceHandler: this.acceptJoiningDeviceHandler,
         };

@@ -104,7 +104,7 @@ describe("Controller", () => {
             databaseBackupPath: path.join(data.mockDir, "database.db.backup"),
             backupPath: path.join(data.mockDir, "coordinator_backup.json"),
             acceptJoiningDeviceHandler: expect.any(Function),
-            adapter: {concurrent: undefined, delay: undefined, disableLED: false, transmitPower: 14},
+            adapter: {concurrent: undefined, delay: undefined, disableLED: false, transmitPower: 14, additionalCoordinatorEndpoints: []},
             serialPort: {baudRate: undefined, rtscts: undefined, path: "/dev/dummy"},
         });
         expect(mockZHController.start).toHaveBeenCalledTimes(1);
@@ -128,6 +128,29 @@ describe("Controller", () => {
         );
         expect(mockMQTTPublishAsync).toHaveBeenCalledWith("zigbee2mqtt/remote", stringify({brightness: 255}), {retain: true, qos: 0});
         expect(settings.get().onboarding).toBeUndefined();
+    });
+
+    it("Passes configured adapter service endpoint descriptors to herdsman", async () => {
+        settings.setOnboarding(true);
+        settings.set(["advanced", "adapter_service_endpoints"], ["mieleGateway"]);
+        await controller.start();
+
+        expect(ZHController).toHaveBeenCalledWith(
+            expect.objectContaining({
+                adapter: expect.objectContaining({
+                    additionalCoordinatorEndpoints: [
+                        {
+                            name: "mieleGateway",
+                            profileId: 0xc51e,
+                            deviceId: 0x0000,
+                            deviceVersion: 0x01,
+                            inputClusters: [0x0003, 0xfd05, 0xfd01],
+                            outputClusters: [0x0003, 0xfd00, 0xfd01, 0x000a, 0x001b, 0x0402, 0x0a00, 0x0b02, 0xfd02],
+                        },
+                    ],
+                }),
+            }),
+        );
     });
 
     it("Start controller with specific MQTT settings", async () => {

@@ -755,7 +755,7 @@
                     },
                     "uniqueItems": true,
                     "default": [],
-                    "description": "Additional coordinator service endpoints to register. On deCONZ/ConBee this may replace Green Power because only two coordinator endpoint slots are supported."
+                    "description": "Named coordinator service endpoint presets to register. On deCONZ/ConBee this may replace Green Power because only two coordinator endpoint slots are supported."
                 },
                 "cache_state": {
                     "type": "boolean",
