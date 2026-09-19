@@ -54,8 +54,8 @@ importers:
         specifier: ^8.21.3
         version: 8.21.3
       zigbee-herdsman:
-        specifier: 10.9.4
-        version: 10.9.4(supports-color@7.2.0)
+        specifier: 10.9.5
+        version: 10.9.5(supports-color@7.2.0)
       zigbee-herdsman-converters:
         specifier: 26.111.0
         version: 26.111.0(supports-color@7.2.0)
@@ -1285,8 +1285,8 @@ packages:
     resolution: {integrity: sha512-hwPaMP/rcsY7Rs5F73QYDepi9OoRK8Iiq3WZZhWSCd9h9UKF1CUf9ypv0vscdP0J6am6B4eN+QIB/ja0PHiKbg==}
     engines: {node: ^22.2.0 || ^24 || <=26.2}
 
-  zigbee-herdsman@10.9.4:
-    resolution: {integrity: sha512-e/E7Z3BUkYCEzw0Wr6VJaAx96LO9cuWiYsskUwOQi2Ax8bx1F2SPIUUwae5BQ0XRkVkZJLHLmA9s7YiYudXjbg==}
+  zigbee-herdsman@10.9.5:
+    resolution: {integrity: sha512-iAbHRsM4YkyYrP65pp3NgPOfbkG6+iEC4V+WWT0qVJO82tDtW26r+eTqxOkF0ieeOLW+TA0TUZ0JZ6rgMwgKoQ==}
     engines: {node: ^22.2.0 || ^24 || <=26.2}
 
   zigbee-on-host@0.2.4:
@@ -2286,11 +2286,11 @@ snapshots:
     dependencies:
       iconv-lite: 0.7.3
       semver: 7.8.5
-      zigbee-herdsman: 10.9.4(supports-color@7.2.0)
+      zigbee-herdsman: 10.9.5(supports-color@7.2.0)
     transitivePeerDependencies:
       - supports-color
 
-  zigbee-herdsman@10.9.4(supports-color@7.2.0):
+  zigbee-herdsman@10.9.5(supports-color@7.2.0):
     dependencies:
       '@date-fns/tz': 1.5.0
       '@serialport/bindings-cpp': 13.0.1(supports-color@7.2.0)
