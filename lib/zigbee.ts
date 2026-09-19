@@ -55,6 +55,7 @@ export default class Zigbee {
                 delay: settings.get().advanced.adapter_delay,
                 disableLED: settings.get().serial.disable_led,
                 transmitPower: settings.get().advanced.transmit_power,
+                coordinatorServiceEndpoints: settings.get().advanced.adapter_service_endpoints,
             },
             acceptJoiningDeviceHandler: this.acceptJoiningDeviceHandler,
         };
