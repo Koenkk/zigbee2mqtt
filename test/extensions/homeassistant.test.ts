@@ -12,6 +12,7 @@ import assert from "node:assert";
 import {stringify} from "../../lib/util/stringify";
 import type {MockInstance} from "vitest";
 import * as zhc from "zigbee-herdsman-converters";
+import {presets} from "zigbee-herdsman-converters/lib/exposes";
 import type {KeyValueAny} from "zigbee-herdsman-converters/lib/types";
 import {Controller} from "../../lib/controller";
 import HomeAssistant from "../../lib/extension/homeassistant";
@@ -128,190 +129,51 @@ describe("Extension: HomeAssistant", () => {
         expect(duplicated).toStrictEqual([]);
     }, 30000);
 
-    it("discovers switch state as an MQTT valve when the expose requests it", () => {
-        const valveExpose = {
-            type: "switch",
-            homeassistant: {type: "valve"},
-            features: [
-                {
-                    type: "binary",
-                    name: "state",
-                    property: "state",
-                    label: "State",
-                    access: 7,
-                    value_on: "ON",
-                    value_off: "OFF",
-                    value_toggle: "TOGGLE",
-                },
-            ],
+    it.each([undefined, "l1"])("uses generic metadata and payload overrides for MQTT valves (%s)", async (endpoint) => {
+        const device = getZ2MEntity(devices.ZNCZ02LM) as Device;
+        assert(device.definition);
+        const originalMeta = device.definition.meta;
+        const expose = presets.switch().withHomeAssistant({type: "valve"});
+        if (endpoint) expose.withEndpoint(endpoint);
+        const exposesSpy = vi.spyOn(device, "exposes").mockReturnValue([expose]);
+        device.definition.meta = {
+            ...originalMeta,
+            overrideHaDiscoveryPayload: (payload) => {
+                if (!payload.default_entity_id?.startsWith("valve.")) return;
+                payload.payload_close = payload.state_closed = payload.payload_off;
+                payload.payload_open = payload.state_open = payload.payload_on;
+                delete payload.payload_off;
+                delete payload.payload_on;
+            },
         };
-        const device = {
-            definition: {model: "WATER-VALVE"},
-            isDevice: (): boolean => true,
-            isGroup: (): boolean => false,
-            endpoint: (): undefined => undefined,
-            options: {},
-            exposes: (): unknown[] => [valveExpose],
-            zh: {endpoints: []},
-        };
-
-        // @ts-expect-error private
-        const configs = extension.getConfigs(device);
-
-        expect(configs).toContainEqual({
-            type: "valve",
-            object_id: "switch",
-            endpoint: undefined,
-            mockProperties: [{property: "state", value: null}],
-            discovery_payload: {
-                name: null,
-                value_template: '{{ value_json["state"] }}',
-                command_topic: true,
-                command_topic_prefix: undefined,
+        try {
+            mockMQTTPublishAsync.mockClear();
+            // @ts-expect-error private
+            await extension.discover(device);
+            const objectId = endpoint ? `switch_${endpoint}` : "switch";
+            const topic = `homeassistant/valve/${device.ieeeAddr}/${objectId}/config`;
+            const call = mockMQTTPublishAsync.mock.calls.find((call) => call[0] === topic);
+            expect(call).toBeDefined();
+            const payload = JSON.parse(call![1] as string);
+            expect(payload).toMatchObject({
+                unique_id: `${device.ieeeAddr}_${objectId}_zigbee2mqtt`,
                 payload_close: "OFF",
                 payload_open: "ON",
                 state_closed: "OFF",
                 state_open: "ON",
-            },
-        });
-    });
-
-    it("discovers endpoint-scoped switch state as an MQTT valve when the expose requests it", () => {
-        const valveExpose = {
-            type: "switch",
-            endpoint: "l1",
-            homeassistant: {type: "valve"},
-            features: [
-                {
-                    type: "binary",
-                    name: "state",
-                    property: "state_l1",
-                    label: "State",
-                    access: 7,
-                    value_on: "ON",
-                    value_off: "OFF",
-                    value_toggle: "TOGGLE",
-                },
-            ],
-        };
-        const device = {
-            definition: {model: "WATER-VALVE"},
-            isDevice: (): boolean => true,
-            isGroup: (): boolean => false,
-            endpoint: (): undefined => undefined,
-            options: {},
-            exposes: (): unknown[] => [valveExpose],
-            zh: {endpoints: []},
-        };
-
-        // @ts-expect-error private
-        const configs = extension.getConfigs(device);
-
-        expect(configs).toContainEqual({
-            type: "valve",
-            object_id: "switch_l1",
-            mockProperties: [{property: "state_l1", value: null}],
-            discovery_payload: {
-                name: "L1",
-                value_template: '{{ value_json["state_l1"] }}',
-                command_topic: true,
-                command_topic_prefix: "l1",
-                payload_close: "OFF",
-                payload_open: "ON",
-                state_closed: "OFF",
-                state_open: "ON",
-            },
-        });
-    });
-
-    it("keeps regular switch state discovery as an MQTT switch", () => {
-        const switchExpose = {
-            type: "switch",
-            features: [
-                {
-                    type: "binary",
-                    name: "state",
-                    property: "state",
-                    label: "State",
-                    access: 7,
-                    value_on: "ON",
-                    value_off: "OFF",
-                    value_toggle: "TOGGLE",
-                },
-            ],
-        };
-        const device = {
-            definition: {model: "SA-003-Zigbee"},
-            isDevice: (): boolean => true,
-            isGroup: (): boolean => false,
-            endpoint: (): undefined => undefined,
-            options: {},
-            exposes: (): unknown[] => [switchExpose],
-            zh: {endpoints: []},
-        };
-
-        // @ts-expect-error private
-        const configs = extension.getConfigs(device);
-
-        expect(configs).toContainEqual({
-            type: "switch",
-            object_id: "switch",
-            endpoint: undefined,
-            mockProperties: [{property: "state", value: null}],
-            discovery_payload: {
-                name: null,
-                value_template: '{{ value_json["state"] }}',
-                command_topic: true,
-                command_topic_prefix: undefined,
-                payload_off: "OFF",
-                payload_on: "ON",
-            },
-        });
-    });
-
-    it("does not infer valve discovery from the device model", () => {
-        const switchExpose = {
-            type: "switch",
-            features: [
-                {
-                    type: "binary",
-                    name: "state",
-                    property: "state",
-                    label: "State",
-                    access: 7,
-                    value_on: "ON",
-                    value_off: "OFF",
-                    value_toggle: "TOGGLE",
-                },
-            ],
-        };
-        const device = {
-            definition: {model: "SWV-ZFE"},
-            isDevice: (): boolean => true,
-            isGroup: (): boolean => false,
-            endpoint: (): undefined => undefined,
-            options: {},
-            exposes: (): unknown[] => [switchExpose],
-            zh: {endpoints: []},
-        };
-
-        // @ts-expect-error private
-        const configs = extension.getConfigs(device);
-
-        expect(configs).toContainEqual({
-            type: "switch",
-            object_id: "switch",
-            endpoint: undefined,
-            mockProperties: [{property: "state", value: null}],
-            discovery_payload: {
-                name: null,
-                value_template: '{{ value_json["state"] }}',
-                command_topic: true,
-                command_topic_prefix: undefined,
-                payload_off: "OFF",
-                payload_on: "ON",
-            },
-        });
+                command_topic: `zigbee2mqtt/${device.name}/${endpoint ? `${endpoint}/` : ""}set`,
+                value_template: `{{ value_json["state${endpoint ? `_${endpoint}` : ""}"] }}`,
+            });
+            expect(payload.default_entity_id).toMatch(/^valve\./);
+            expect(payload).not.toHaveProperty("payload_off");
+            expect(payload).not.toHaveProperty("payload_on");
+            // The component changes even though unique_id/object_id stay stable.
+            // Remove the retained switch discovery instead of leaving both domains active.
+            expect(mockMQTTPublishAsync).toHaveBeenCalledWith(`homeassistant/switch/${device.ieeeAddr}/switch/config`, "", {qos: 1, retain: true});
+        } finally {
+            exposesSpy.mockRestore();
+            device.definition.meta = originalMeta;
+        }
     });
 
     it("Should mark thermostat configuration toggles as config entities", () => {
