@@ -2026,9 +2026,9 @@ describe("Extension: Publish", () => {
     });
 
     describe("Transaction Response", () => {
-        it("Should respond on /request/set with success and echo z2m_transaction", async () => {
+        it("Should respond on /request/set with success and echo transaction", async () => {
             const endpoint = devices.bulb_color.getEndpoint(1)!;
-            await mockMQTTEvents.message("zigbee2mqtt/bulb_color/request/set", stringify({brightness: "200", z2m_transaction: "tx1"}));
+            await mockMQTTEvents.message("zigbee2mqtt/bulb_color/request/set", stringify({brightness: "200", transaction: "tx1"}));
             await flushPromises();
             expect(endpoint.command).toHaveBeenCalledTimes(1);
             expect(endpoint.command).toHaveBeenCalledWith(
@@ -2039,14 +2039,14 @@ describe("Extension: Publish", () => {
             );
             expect(mockMQTTPublishAsync).toHaveBeenCalledWith(
                 "zigbee2mqtt/bulb_color/response/set",
-                stringify({data: {brightness: "200"}, status: "ok", z2m_transaction: "tx1"}),
+                stringify({data: {brightness: "200"}, status: "ok", transaction: "tx1"}),
                 {qos: 0, retain: false},
             );
-            // z2m_transaction must be stripped before converters
-            expect(mockLogger.error).not.toHaveBeenCalledWith(expect.stringContaining("z2m_transaction"));
+            // transaction must be stripped before converters
+            expect(mockLogger.error).not.toHaveBeenCalledWith(expect.stringContaining("transaction"));
         });
 
-        it("Should respond on /request/set without z2m_transaction when not provided", async () => {
+        it("Should respond on /request/set without transaction when not provided", async () => {
             await mockMQTTEvents.message("zigbee2mqtt/bulb_color/request/set", stringify({brightness: "200"}));
             await flushPromises();
             expect(mockMQTTPublishAsync).toHaveBeenCalledWith(
@@ -2070,7 +2070,7 @@ describe("Extension: Publish", () => {
         it("Should respond with error on /request/set when converter fails", async () => {
             const endpoint = devices.bulb_color.getEndpoint(1)!;
             endpoint.command.mockRejectedValueOnce(new Error("Zigbee error"));
-            await mockMQTTEvents.message("zigbee2mqtt/bulb_color/request/set", stringify({brightness: "200", z2m_transaction: "tx2"}));
+            await mockMQTTEvents.message("zigbee2mqtt/bulb_color/request/set", stringify({brightness: "200", transaction: "tx2"}));
             await flushPromises();
             expect(mockMQTTPublishAsync).toHaveBeenCalledWith(
                 "zigbee2mqtt/bulb_color/response/set",
@@ -2079,7 +2079,7 @@ describe("Extension: Publish", () => {
                     error: "Failed to set 'brightness': Zigbee error",
                     error_details: {brightness: "Zigbee error"},
                     status: "error",
-                    z2m_transaction: "tx2",
+                    transaction: "tx2",
                 }),
                 {qos: 0, retain: false},
             );
@@ -2088,7 +2088,7 @@ describe("Extension: Publish", () => {
         it("Should pass the original error message through when herdsman reports Request superseded", async () => {
             const endpoint = devices.bulb_color.getEndpoint(1)!;
             endpoint.command.mockRejectedValueOnce(new Error("Request superseded"));
-            await mockMQTTEvents.message("zigbee2mqtt/bulb_color/request/set", stringify({brightness: "200", z2m_transaction: "tx3"}));
+            await mockMQTTEvents.message("zigbee2mqtt/bulb_color/request/set", stringify({brightness: "200", transaction: "tx3"}));
             await flushPromises();
             expect(mockMQTTPublishAsync).toHaveBeenCalledWith(
                 "zigbee2mqtt/bulb_color/response/set",
@@ -2097,7 +2097,7 @@ describe("Extension: Publish", () => {
                     error: "Failed to set 'brightness': Request superseded",
                     error_details: {brightness: "Request superseded"},
                     status: "error",
-                    z2m_transaction: "tx3",
+                    transaction: "tx3",
                 }),
                 {qos: 0, retain: false},
             );
@@ -2108,7 +2108,7 @@ describe("Extension: Publish", () => {
             endpoint.command.mockRejectedValueOnce(new Error("Request superseded"));
             await mockMQTTEvents.message(
                 "zigbee2mqtt/bulb_color/request/set",
-                stringify({brightness: "200", color_temp_startup: 300, z2m_transaction: "tx4"}),
+                stringify({brightness: "200", color_temp_startup: 300, transaction: "tx4"}),
             );
             await flushPromises();
             expect(endpoint.command).toHaveBeenCalledTimes(1);
@@ -2120,7 +2120,7 @@ describe("Extension: Publish", () => {
                     error: "Failed to set 'brightness': Request superseded",
                     error_details: {brightness: "Request superseded"},
                     status: "error",
-                    z2m_transaction: "tx4",
+                    transaction: "tx4",
                 }),
                 {qos: 0, retain: false},
             );
@@ -2132,7 +2132,7 @@ describe("Extension: Publish", () => {
             endpoint.write.mockRejectedValueOnce(new Error("Zigbee error"));
             await mockMQTTEvents.message(
                 "zigbee2mqtt/bulb_color/request/set",
-                stringify({brightness: "200", color_temp_startup: 300, z2m_transaction: "tx5"}),
+                stringify({brightness: "200", color_temp_startup: 300, transaction: "tx5"}),
             );
             await flushPromises();
             expect(mockMQTTPublishAsync).toHaveBeenCalledWith(
@@ -2142,7 +2142,7 @@ describe("Extension: Publish", () => {
                     error: "Failed to set 'brightness', 'color_temp_startup': Request superseded; Zigbee error",
                     error_details: {brightness: "Request superseded", color_temp_startup: "Zigbee error"},
                     status: "error",
-                    z2m_transaction: "tx5",
+                    transaction: "tx5",
                 }),
                 {qos: 0, retain: false},
             );
@@ -2175,6 +2175,13 @@ describe("Extension: Publish", () => {
             );
         });
 
+        it("Should pass transaction through to converters on legacy /set topic", async () => {
+            // Only /request/ topics treat `transaction` as a correlation ID
+            await mockMQTTEvents.message("zigbee2mqtt/bulb_color/set", stringify({brightness: "200", transaction: "tx6"}));
+            await flushPromises();
+            expect(mockLogger.error).toHaveBeenCalledWith("No converter available for 'transaction' on 'bulb_color': (\"tx6\")");
+        });
+
         it("Should NOT publish response for legacy /set topic", async () => {
             await mockMQTTEvents.message("zigbee2mqtt/bulb_color/set", stringify({brightness: "200"}));
             await flushPromises();
@@ -2185,14 +2192,14 @@ describe("Extension: Publish", () => {
             expect(responseCall).toBeUndefined();
         });
 
-        it("Should respond to ping (empty payload after z2m_transaction strip)", async () => {
+        it("Should respond to ping (empty payload after transaction strip)", async () => {
             const endpoint = devices.bulb_color.getEndpoint(1)!;
-            await mockMQTTEvents.message("zigbee2mqtt/bulb_color/request/set", stringify({z2m_transaction: "ping1"}));
+            await mockMQTTEvents.message("zigbee2mqtt/bulb_color/request/set", stringify({transaction: "ping1"}));
             await flushPromises();
             expect(endpoint.command).toHaveBeenCalledTimes(0);
             expect(mockMQTTPublishAsync).toHaveBeenCalledWith(
                 "zigbee2mqtt/bulb_color/response/set",
-                stringify({data: {}, status: "ok", z2m_transaction: "ping1"}),
+                stringify({data: {}, status: "ok", transaction: "ping1"}),
                 {qos: 0, retain: false},
             );
         });
@@ -2206,12 +2213,12 @@ describe("Extension: Publish", () => {
         it("Should respond on group /request/set", async () => {
             const group = groups.group_1;
             group.members.push(devices.bulb_color.getEndpoint(1)!);
-            await mockMQTTEvents.message("zigbee2mqtt/group_1/request/set", stringify({state: "ON", z2m_transaction: "grp1"}));
+            await mockMQTTEvents.message("zigbee2mqtt/group_1/request/set", stringify({state: "ON", transaction: "grp1"}));
             await flushPromises();
             expect(group.command).toHaveBeenCalledTimes(1);
             expect(mockMQTTPublishAsync).toHaveBeenCalledWith(
                 "zigbee2mqtt/group_1/response/set",
-                stringify({data: {state: "ON"}, status: "ok", z2m_transaction: "grp1"}),
+                stringify({data: {state: "ON"}, status: "ok", transaction: "grp1"}),
                 {qos: 0, retain: false},
             );
             group.members.pop();
@@ -2228,13 +2235,13 @@ describe("Extension: Publish", () => {
         });
 
         it("Should respond on /request/set with endpoint in topic", async () => {
-            await mockMQTTEvents.message("zigbee2mqtt/0x0017880104e45542/left/request/set", stringify({state: "ON", z2m_transaction: "ep1"}));
+            await mockMQTTEvents.message("zigbee2mqtt/0x0017880104e45542/left/request/set", stringify({state: "ON", transaction: "ep1"}));
             await flushPromises();
             const endpoint = devices.QBKG03LM.getEndpoint(2)!;
             expect(endpoint.command).toHaveBeenCalledTimes(1);
             expect(mockMQTTPublishAsync).toHaveBeenCalledWith(
                 "zigbee2mqtt/wall_switch_double/response/set",
-                stringify({data: {state: "ON"}, status: "ok", z2m_transaction: "ep1"}),
+                stringify({data: {state: "ON"}, status: "ok", transaction: "ep1"}),
                 {qos: 0, retain: false},
             );
         });

@@ -132,19 +132,33 @@ export default class Publish extends Extension {
             return;
         }
 
-        // Extract and strip z2m_transaction before forwarding to converters
-        const z2mTransaction = parsedTopic.isRequest ? message.z2m_transaction : undefined;
-        if (message.z2m_transaction !== undefined) {
-            delete message.z2m_transaction;
+        // On /request/ topics `transaction` correlates request and response (same as the bridge API),
+        // so it is stripped before forwarding to converters. Legacy /set and /get pass it through untouched.
+        const transaction = parsedTopic.isRequest ? message.transaction : undefined;
+        if (parsedTopic.isRequest) {
+            delete message.transaction;
         }
 
-        // Ping: /request/ topic with empty payload after stripping z2m_transaction
-        if (parsedTopic.isRequest && Object.keys(message).length === 0) {
-            const response: KeyValue = {data: {}, status: "ok"};
-            if (z2mTransaction !== undefined) response.z2m_transaction = z2mTransaction;
+        const publishResponse = async (responseData: KeyValue, errorDetails: Record<string, string> = {}): Promise<void> => {
+            const failedKeys = Object.keys(errorDetails);
+            const response: KeyValue =
+                failedKeys.length > 0
+                    ? {
+                          data: responseData,
+                          status: "error",
+                          error: `Failed to ${parsedTopic.type} ${failedKeys.map((k) => `'${k}'`).join(", ")}: ${utils.arrayUnique(Object.values(errorDetails)).join("; ")}`,
+                          error_details: errorDetails,
+                      }
+                    : {data: responseData, status: "ok"};
+            if (transaction !== undefined) response.transaction = transaction;
             await this.mqtt.publish(`${re.name}/response/${parsedTopic.type}`, stringify(response), {
                 clientOptions: {qos: /* v8 ignore next */ data.qos ?? 0, retain: false},
             });
+        };
+
+        // Ping: /request/ topic with empty payload after stripping transaction
+        if (parsedTopic.isRequest && Object.keys(message).length === 0) {
+            await publishResponse({});
             return;
         }
 
@@ -334,20 +348,7 @@ export default class Publish extends Extension {
         }
 
         if (parsedTopic.isRequest) {
-            const failedKeys = Object.keys(errorDetails);
-            const response: KeyValue =
-                failedKeys.length > 0
-                    ? {
-                          data: responseData,
-                          status: "error",
-                          error: `Failed to ${parsedTopic.type} ${failedKeys.map((k) => `'${k}'`).join(", ")}: ${utils.arrayUnique(Object.values(errorDetails)).join("; ")}`,
-                          error_details: errorDetails,
-                      }
-                    : {data: responseData, status: "ok"};
-            if (z2mTransaction !== undefined) response.z2m_transaction = z2mTransaction;
-            await this.mqtt.publish(`${re.name}/response/${parsedTopic.type}`, stringify(response), {
-                clientOptions: {qos: /* v8 ignore next */ data.qos ?? 0, retain: false},
-            });
+            await publishResponse(responseData, errorDetails);
         }
 
         for (const [ID, payload] of Object.entries(toPublish)) {
