@@ -1115,14 +1115,20 @@ export class HomeAssistant extends Extension {
 
                     discoveryEntry.discovery_payload.percentage_state_topic = true;
                     discoveryEntry.discovery_payload.percentage_command_topic = "fan_mode";
-                    discoveryEntry.discovery_payload.percentage_value_template = `{{ {${percentValues}}[value_json["${modeEmulatedSpeed.property}"]] | default('None') }}`;
+                    discoveryEntry.discovery_payload.percentage_value_template = stateValueTemplate(
+                        modeEmulatedSpeed.property,
+                        `{{ {${percentValues}}[value_json["${modeEmulatedSpeed.property}"]] | default('None') }}`,
+                    );
                     discoveryEntry.discovery_payload.percentage_command_template = `{{ {${percentCommands}}[value] | default('') }}`;
                     discoveryEntry.discovery_payload.speed_range_min = 1;
                     discoveryEntry.discovery_payload.speed_range_max = speeds.length - 1;
                     assert(presets.length !== 0);
                     discoveryEntry.discovery_payload.preset_mode_state_topic = true;
                     discoveryEntry.discovery_payload.preset_mode_command_topic = "fan_mode";
-                    discoveryEntry.discovery_payload.preset_mode_value_template = `{{ value_json["${modeEmulatedSpeed.property}"] if value_json["${modeEmulatedSpeed.property}"] in [${presetList}] else 'None' | default('None') }}`;
+                    discoveryEntry.discovery_payload.preset_mode_value_template = stateValueTemplate(
+                        modeEmulatedSpeed.property,
+                        `{{ value_json["${modeEmulatedSpeed.property}"] if value_json["${modeEmulatedSpeed.property}"] in [${presetList}] else 'None' }}`,
+                    );
                     discoveryEntry.discovery_payload.preset_modes = presets;
 
                     // Emulate state based on mode
@@ -1133,7 +1139,7 @@ export class HomeAssistant extends Extension {
                     /* v8 ignore stop */
                     discoveryEntry.discovery_payload.percentage_state_topic = true;
                     discoveryEntry.discovery_payload.percentage_command_topic = "speed";
-                    discoveryEntry.discovery_payload.percentage_value_template = `{{ value_json["${nativeSpeed.property}"] | default('None') }}`;
+                    discoveryEntry.discovery_payload.percentage_value_template = stateValueTemplate(nativeSpeed.property);
                     discoveryEntry.discovery_payload.percentage_command_template = `{{ value | default('') }}`;
                     discoveryEntry.discovery_payload.speed_range_min = nativeSpeed.value_min;
                     discoveryEntry.discovery_payload.speed_range_max = nativeSpeed.value_max;
@@ -1457,7 +1463,10 @@ export class HomeAssistant extends Extension {
                             name: endpointName ? `${firstExposeTyped.label} ${endpointName}` : firstExposeTyped.label,
                             // Truncate text if it's too long
                             // https://github.com/Koenkk/zigbee2mqtt/issues/23199
-                            value_template: `{{ value_json["${firstExposeTyped.property}"] | default('',True) | string | truncate(254, True, '', 0) }}`,
+                            value_template: stateValueTemplate(
+                                firstExposeTyped.property,
+                                `{{ value_json["${firstExposeTyped.property}"] | default('',True) | string | truncate(254, True, '', 0) }}`,
+                            ),
                             ...LIST_DISCOVERY_LOOKUP[firstExposeTyped.name],
                         },
                     });
