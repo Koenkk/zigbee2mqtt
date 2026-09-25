@@ -139,14 +139,6 @@ export default class Mqtt {
 
         this.client.on("connect", this.onConnect);
 
-        this.republishRetainedTimer = setTimeout(async () => {
-            // Republish retained messages in case MQTT broker does not persist them.
-            // https://github.com/Koenkk/zigbee2mqtt/issues/9629
-            for (const msg of Object.values(this.retainedMessages)) {
-                await this.publish(msg.topic, msg.payload, msg.options);
-            }
-        }, 2000);
-
         // Set timer at interval to check if connected to MQTT server.
         this.connectionTimer = setInterval(() => {
             if (!this.isConnected()) {
@@ -186,6 +178,15 @@ export default class Mqtt {
 
         await this.publish("bridge/state", JSON.stringify(stateData), {clientOptions: {retain: true, qos: 1}});
         await this.subscribe(`${settings.get().mqtt.base_topic}/#`);
+
+        clearTimeout(this.republishRetainedTimer);
+        this.republishRetainedTimer = setTimeout(async () => {
+            // Republish retained messages in case MQTT broker does not persist them.
+            // https://github.com/Koenkk/zigbee2mqtt/issues/9629
+            for (const msg of Object.values(this.retainedMessages)) {
+                await this.publish(msg.topic, msg.payload, msg.options);
+            }
+        }, 2000);
     }
 
     @bind public onMessage(topic: string, message: Buffer): void {
