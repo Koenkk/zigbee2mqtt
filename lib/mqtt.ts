@@ -174,11 +174,8 @@ export default class Mqtt {
     @bind private async onConnect(): Promise<void> {
         logger.info("Connected to MQTT server");
 
-        const stateData: Zigbee2MQTTAPI["bridge/state"] = {state: "online"};
-
-        await this.publish("bridge/state", JSON.stringify(stateData), {clientOptions: {retain: true, qos: 1}});
-        await this.subscribe(`${settings.get().mqtt.base_topic}/#`);
-
+        // Armed before any await: on reconnect mqtt.js has already resubscribed, so retained
+        // messages (including the `bridge/info` that cancels this timer) can arrive during the publish below.
         clearTimeout(this.republishRetainedTimer);
         this.republishRetainedTimer = setTimeout(async () => {
             // Republish retained messages in case MQTT broker does not persist them.
@@ -187,6 +184,11 @@ export default class Mqtt {
                 await this.publish(msg.topic, msg.payload, msg.options);
             }
         }, 2000);
+
+        const stateData: Zigbee2MQTTAPI["bridge/state"] = {state: "online"};
+
+        await this.publish("bridge/state", JSON.stringify(stateData), {clientOptions: {retain: true, qos: 1}});
+        await this.subscribe(`${settings.get().mqtt.base_topic}/#`);
     }
 
     @bind public onMessage(topic: string, message: Buffer): void {
