@@ -1359,6 +1359,55 @@ describe("Controller", () => {
         expect(mockMQTTPublishAsync).toHaveBeenCalledTimes(0);
     });
 
+    it("Should republish retained messages on MQTT reconnect", async () => {
+        await controller.start();
+        await flushPromises();
+        // broker kept retained messages on initial connect, no republish
+        await mockMQTTEvents.message("zigbee2mqtt/bridge/info", "dummy");
+
+        const retainedMessages = Object.keys(controller.mqtt.retainedMessages).length;
+
+        mockMQTTPublishAsync.mockClear();
+        await mockMQTTEvents.connect();
+        await vi.advanceTimersByTimeAsync(2500); // before any startup configure triggers
+
+        // bridge/state from onConnect + all retained messages
+        expect(mockMQTTPublishAsync).toHaveBeenCalledTimes(retainedMessages + 1);
+        expect(mockMQTTPublishAsync).toHaveBeenCalledWith("zigbee2mqtt/bridge/info", expect.any(String), {retain: true});
+        expect(mockMQTTPublishAsync).toHaveBeenCalledWith("zigbee2mqtt/bridge/devices", expect.any(String), {retain: true});
+    });
+
+    it("Should not republish retained messages on MQTT reconnect when retained message are sent", async () => {
+        await controller.start();
+        await flushPromises();
+        await mockMQTTEvents.message("zigbee2mqtt/bridge/info", "dummy");
+
+        mockMQTTPublishAsync.mockClear();
+        await mockMQTTEvents.connect();
+        await mockMQTTEvents.message("zigbee2mqtt/bridge/info", "dummy");
+        await vi.advanceTimersByTimeAsync(2500); // before any startup configure triggers
+
+        expect(mockMQTTPublishAsync).toHaveBeenCalledTimes(1);
+        expect(mockMQTTPublishAsync).toHaveBeenCalledWith("zigbee2mqtt/bridge/state", stringify({state: "online"}), {retain: true, qos: 1});
+    });
+
+    it("Should not republish retained messages on MQTT reconnect when retained message arrives while publishing bridge state", async () => {
+        await controller.start();
+        await flushPromises();
+        await mockMQTTEvents.message("zigbee2mqtt/bridge/info", "dummy");
+
+        mockMQTTPublishAsync.mockClear();
+        // mqtt.js resubscribes on reconnect before onConnect runs, retained messages arrive during its first publish
+        mockMQTTPublishAsync.mockImplementationOnce(async () => {
+            await mockMQTTEvents.message("zigbee2mqtt/bridge/info", "dummy");
+        });
+        await mockMQTTEvents.connect();
+        await vi.advanceTimersByTimeAsync(2500); // before any startup configure triggers
+
+        expect(mockMQTTPublishAsync).toHaveBeenCalledTimes(1);
+        expect(mockMQTTPublishAsync).toHaveBeenCalledWith("zigbee2mqtt/bridge/state", stringify({state: "online"}), {retain: true, qos: 1});
+    });
+
     it("Should prevent any message being published with retain flag when force_disable_retain is set", async () => {
         settings.set(["mqtt", "force_disable_retain"], true);
         await controller.mqtt.connect();
