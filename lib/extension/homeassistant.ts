@@ -922,7 +922,10 @@ export class HomeAssistant extends Extension {
                     discoveryEntries.push(discoveryEntry);
                 }
 
-                const currentHumidity = allExposes?.filter(isNumericExpose).find((e) => e.name === "humidity" && e.access & ACCESS_STATE);
+                // Prefer the humidity of the same endpoint as the climate (multi-endpoint thermostats, e.g. Danfoss Icon2),
+                // fall back to a humidity without endpoint.
+                const humidities = allExposes.filter(isNumericExpose).filter((e) => e.name === "humidity" && e.access & ACCESS_STATE);
+                const currentHumidity = humidities.find((e) => e.endpoint === endpointName) ?? humidities.find((e) => e.endpoint === undefined);
                 if (currentHumidity) {
                     discoveryEntry.discovery_payload.current_humidity_template = `{{ value_json["${currentHumidity.property}"] }}`;
                     discoveryEntry.discovery_payload.current_humidity_topic = true;
