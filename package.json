@@ -56,7 +56,7 @@
         "winston": "^3.19.0",
         "winston-syslog": "^2.7.1",
         "winston-transport": "^4.9.0",
-        "ws": "^8.21.3",
+        "ws": "^8.22.0",
         "zigbee-herdsman": "10.10.0",
         "zigbee-herdsman-converters": "26.114.0",
         "zigbee2mqtt-frontend": "0.9.21",
@@ -65,7 +65,7 @@
     "devDependencies": {
         "@biomejs/biome": "^2.5.11",
         "@types/humanize-duration": "^3.27.4",
-        "@types/node": "^26.6.2",
+        "@types/node": "^26.6.3",
         "@types/readable-stream": "4.0.24",
         "@types/ws": "8.18.1",
         "@vitest/coverage-v8": "^4.1.11",
