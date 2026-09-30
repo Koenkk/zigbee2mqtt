@@ -1623,6 +1623,31 @@ describe("Extension: HomeAssistant", () => {
         });
     });
 
+    it("Should use humidity of the same endpoint for multi-endpoint climate", () => {
+        const climateL1Expose = new zhc.Climate().withSetpoint("occupied_heating_setpoint", 5, 35, 0.5).withLocalTemperature().withEndpoint("l1");
+        const climateL2Expose = new zhc.Climate().withSetpoint("occupied_heating_setpoint", 5, 35, 0.5).withLocalTemperature().withEndpoint("l2");
+        const humidityL1Expose = new zhc.Numeric("humidity", zhc.access.STATE_GET).withUnit("%").withEndpoint("l1");
+        const humidityExpose = new zhc.Numeric("humidity", zhc.access.STATE_GET).withUnit("%");
+        const device = {
+            definition: {},
+            isDevice: (): boolean => true,
+            isGroup: (): boolean => false,
+            endpoint: () => undefined,
+            options: {},
+            exposes: (): zhc.Expose[] => [climateL1Expose, climateL2Expose, humidityL1Expose, humidityExpose],
+            zh: {endpoints: []},
+        } as Device;
+
+        // @ts-expect-error private
+        const configs = extension.getConfigs(device);
+        const climateL1 = configs.find((c) => c.type === "climate" && c.object_id === "climate_l1");
+        const climateL2 = configs.find((c) => c.type === "climate" && c.object_id === "climate_l2");
+        // Same endpoint humidity is preferred
+        expect(climateL1!.discovery_payload.current_humidity_template).toStrictEqual('{{ value_json["humidity_l1"] }}');
+        // Falls back to humidity without endpoint
+        expect(climateL2!.discovery_payload.current_humidity_template).toStrictEqual('{{ value_json["humidity"] }}');
+    });
+
     it("Should discover climate with cooling-only setpoint", () => {
         const climateExpose = new zhc.Climate()
             .withSetpoint("occupied_cooling_setpoint", 16, 32, 0.5)
