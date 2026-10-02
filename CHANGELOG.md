@@ -1,5 +1,15 @@
 # Changelog
 
+## [2.14.3](https://github.com/Koenkk/zigbee2mqtt/compare/2.14.2...2.14.3) (2026-10-02)
+
+
+### Bug Fixes
+
+* **deps:** bump ip-address from 10.7.0 to 10.7.2 ([#33244](https://github.com/Koenkk/zigbee2mqtt/issues/33244)) ([992952c](https://github.com/Koenkk/zigbee2mqtt/commit/992952cdb3fda92becaea926db42f15e0772e06b))
+* **ignore:** bump fast-uri from 3.1.6 to 3.1.8 ([#33245](https://github.com/Koenkk/zigbee2mqtt/issues/33245)) ([cc10d3a](https://github.com/Koenkk/zigbee2mqtt/commit/cc10d3a1cbf39f79a17fe8015aecd208e7f32d11))
+* **ignore:** update zigbee-herdsman-converters to 26.115.2 ([#33251](https://github.com/Koenkk/zigbee2mqtt/issues/33251)) ([77bd457](https://github.com/Koenkk/zigbee2mqtt/commit/77bd457beff1748c19277782d835a4eb8a903652))
+* **ignore:** update zigbee-herdsman-converters to 26.116.0 ([#33261](https://github.com/Koenkk/zigbee2mqtt/issues/33261)) ([1d7d708](https://github.com/Koenkk/zigbee2mqtt/commit/1d7d708ad56ff7aace671e2316066f97e2306e0d))
+
 ## [2.14.2](https://github.com/Koenkk/zigbee2mqtt/compare/2.14.1...2.14.2) (2026-10-01)
 
 
