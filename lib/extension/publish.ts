@@ -134,8 +134,7 @@ export default class Publish extends Extension {
         const entityState = this.state.get(re);
         const membersState =
             re instanceof Group
-                ? // biome-ignore lint/style/noNonNullAssertion: TODO: biome migration: might be a bit much assumed here?
-                  Object.fromEntries(re.zh.members.map((e) => [e.deviceIeeeAddress, this.state.get(this.zigbee.resolveEntity(e.deviceIeeeAddress)!)]))
+                ? Object.fromEntries(Array.from(re.membersDevices(), (member) => [member.ieeeAddr, this.state.get(member)]))
                 : undefined;
         const converters = this.getDefinitionConverters(definition);
 
@@ -268,8 +267,11 @@ export default class Publish extends Extension {
 
                     if (result?.membersState && optimistic) {
                         for (const [ieeeAddr, state] of Object.entries(result.membersState)) {
-                            // biome-ignore lint/style/noNonNullAssertion: might be a bit much assumed here?
-                            addToToPublish(this.zigbee.resolveEntity(ieeeAddr)!, state);
+                            const entity = this.zigbee.resolveEntity(ieeeAddr);
+
+                            if (entity) {
+                                addToToPublish(entity, state);
+                            }
                         }
                     }
                 } else if (parsedTopic.type === "get" && converter.convertGet) {

@@ -485,6 +485,41 @@ describe("Extension: Publish", () => {
         group.members.pop();
     });
 
+    it("Should publish remaining membersState when a group member is unresolved", async () => {
+        const group = groups.group_tradfri_remote;
+        const originalMembers = group.members;
+        const sceneEndpoints = [devices.bulb_color_2.getEndpoint(1)!, devices.bulb_2.getEndpoint(1)!];
+        const originalScenes = sceneEndpoints.map((endpoint) => endpoint.meta.scenes);
+        group.members = [...originalMembers].reverse();
+        for (const endpoint of sceneEndpoints) {
+            endpoint.meta.scenes = {
+                ...(endpoint.meta.scenes as Record<string, unknown> | undefined),
+                "1_15071": {state: {state: "ON"}},
+            };
+        }
+        const resolveEntity = controller.zigbee.resolveEntity.bind(controller.zigbee);
+        const resolveEntitySpy = vi
+            .spyOn(controller.zigbee, "resolveEntity")
+            .mockImplementation((id) => (id === devices.bulb_2.ieeeAddr ? undefined : resolveEntity(id)));
+
+        try {
+            await mockMQTTEvents.message("zigbee2mqtt/group_tradfri_remote/set", stringify({scene_recall: 1}));
+            await flushPromises();
+            expect(group.command).toHaveBeenCalledTimes(1);
+            expect(mockMQTTPublishAsync).toHaveBeenCalledWith("zigbee2mqtt/bulb_color_2", stringify({state: "ON"}), {retain: false, qos: 0});
+            const unresolvedGroupMemberWarnings = mockLogger.warning.mock.calls.filter((call) =>
+                String(call[0]).includes("Skipping unresolved group member"),
+            );
+            expect(unresolvedGroupMemberWarnings).toHaveLength(0);
+        } finally {
+            group.members = originalMembers;
+            sceneEndpoints.forEach((endpoint, index) => {
+                endpoint.meta.scenes = originalScenes[index];
+            });
+            resolveEntitySpy.mockRestore();
+        }
+    });
+
     it("Should publish messages to groups with brightness_percent", async () => {
         const group = groups.group_1;
         group.members.push(devices.bulb_color.getEndpoint(1)!);
