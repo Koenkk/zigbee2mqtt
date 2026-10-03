@@ -710,6 +710,37 @@ describe("Extension: HomeAssistant", () => {
         expect(extension.parseActionValue(action)).toStrictEqual(expected);
     });
 
+    it("Should not change parsed action events of supported devices unnoticed", async () => {
+        // HA automations match on event_type and its attributes, so a change to how an existing action
+        // value is parsed breaks them for every device exposing it. Values parsed as-is are left out to
+        // keep the snapshot small; a value that starts being split shows up as an added line.
+        const parsed = new Map<string, string>();
+
+        for (const baseDefinition of await getZhcBaseDefinitions()) {
+            const d = zhc.prepareDefinition(baseDefinition);
+            const exposes = typeof d.exposes === "function" ? d.exposes({isDummyDevice: true}, {}) : d.exposes;
+
+            for (const expose of exposes) {
+                if (expose.type !== "enum" || expose.property !== "action") {
+                    continue;
+                }
+
+                for (const value of (expose as zhc.Enum).values) {
+                    const action = value.toString();
+                    const result = extension.parseActionValue(action);
+
+                    if (result.action !== action || Object.keys(result).length > 1) {
+                        parsed.set(action, stringify(result));
+                    }
+                }
+            }
+        }
+
+        const lines = [...parsed.keys()].sort().map((action) => `${action} ${parsed.get(action)}\n`);
+
+        await expect(lines.join("")).toMatchFileSnapshot("./__snapshots__/homeassistant-action-events.txt");
+    });
+
     it("Should not discovery devices which are already discovered", async () => {
         await resetExtension(false);
         const topic1 = "homeassistant/sensor/0x0017880104e45522/humidity/config";
