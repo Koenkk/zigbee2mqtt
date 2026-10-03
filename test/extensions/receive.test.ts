@@ -10,6 +10,7 @@ import {devices, events as mockZHEvents} from "../mocks/zigbeeHerdsman";
 import {stringify} from "../../lib/util/stringify";
 import {Controller} from "../../lib/controller";
 import * as settings from "../../lib/util/settings";
+import HomeAssistant from "../../lib/extension/homeassistant";
 
 const mocksClear = [mockMQTTPublishAsync, mockLogger.warning, mockLogger.debug];
 
@@ -682,6 +683,104 @@ describe("Extension: Receive", () => {
         expect(mockMQTTPublishAsync.mock.calls[0][0]).toStrictEqual("zigbee2mqtt/ikea_onoff");
         expect(JSON.parse(mockMQTTPublishAsync.mock.calls[0][1])).toStrictEqual({action: "brightness_stop"});
         expect(mockMQTTPublishAsync.mock.calls[0][2]).toStrictEqual({qos: 0, retain: false});
+    });
+
+    describe("software multi-press integration", () => {
+        let sequence = 100;
+        const config = {enabled: true, buttons: [{name: "power", click: "on"}]};
+        const press = async () => {
+            const device = devices.E1743;
+            await mockZHEvents.message({
+                device,
+                endpoint: device.getEndpoint(1),
+                cluster: "genOnOff",
+                type: "commandOn",
+                data: {},
+                meta: {zclTransactionSequenceNumber: ++sequence},
+            });
+            await flushPromises();
+        };
+        it.each(["debounce", "throttle"])("counts before %s and ignores cached or synthetic publications", async (option) => {
+            settings.set(["devices", devices.E1743.ieeeAddr, "software_multi_press"], config);
+            settings.set(["devices", devices.E1743.ieeeAddr, option], 1);
+            const device = controller.zigbee.resolveEntity(devices.E1743) as Device;
+            const native = structuredClone(device.nativeExposes());
+            expect(device.exposes()).toEqual(
+                expect.arrayContaining([
+                    expect.objectContaining({property: "action", values: expect.arrayContaining(["on", "software_power_double_press"])}),
+                ]),
+            );
+            expect(device.nativeExposes()).toEqual(native);
+            await press();
+            await press();
+            await controller.publishEntityState(device, {});
+            await controller.publishEntityState(device, {action: "software_power_single_press"});
+            await vi.advanceTimersByTimeAsync(300);
+            const classified = mockMQTTPublishAsync.mock.calls.filter((call) => call[1].includes("software_power_double_press"));
+            expect(classified).toHaveLength(1);
+            await vi.advanceTimersByTimeAsync(1000);
+            expect(mockMQTTPublishAsync.mock.calls.filter((call) => call[1].includes("software_power_double_press"))).toHaveLength(1);
+        });
+        it.each(["options", "leave", "remove"])("cancels pending work on %s", async (event) => {
+            settings.set(["devices", devices.E1743.ieeeAddr, "software_multi_press"], config);
+            await press();
+            const entity = controller.zigbee.resolveEntity(devices.E1743) as Device;
+            // @ts-expect-error private
+            const bus = controller.eventBus;
+            if (event === "options") {
+                bus.emitEntityOptionsChanged({entity, from: {software_multi_press: config}, to: {}});
+                bus.emitEntityOptionsChanged({entity, from: {}, to: {software_multi_press: config}});
+            } else if (event === "remove") bus.emitEntityRemoved({entity, name: entity.name});
+            else bus.emitDeviceLeave({device: entity, ieeeAddr: entity.ieeeAddr});
+            await vi.advanceTimersByTimeAsync(300);
+            expect(
+                mockMQTTPublishAsync.mock.calls.some(
+                    (call) => call[0] === "zigbee2mqtt/ikea_onoff" && JSON.parse(call[1]).action === "software_power_single_press",
+                ),
+            ).toBe(false);
+        });
+        it("discovers classified actions as Home Assistant MQTT device triggers", async () => {
+            settings.set(["devices", devices.E1743.ieeeAddr, "software_multi_press"], config);
+            settings.set(["homeassistant", "enabled"], true);
+            const ha = new HomeAssistant(...controller.extensionArgs);
+            await controller.addExtension(ha);
+            mockMQTTPublishAsync.mockClear();
+            await press();
+            await press();
+            await vi.advanceTimersByTimeAsync(300);
+            expect(
+                mockMQTTPublishAsync.mock.calls.some(
+                    (call) => call[0].startsWith("homeassistant/device_automation/") && call[1].includes('"payload":"software_power_double_press"'),
+                ),
+            ).toBe(true);
+            await controller.removeExtension(ha);
+        });
+        it("requires per-device opt-in despite global defaults", async () => {
+            settings.set(["device_options", "software_multi_press"], config);
+            await press();
+            const entity = controller.zigbee.resolveEntity(devices.E1743) as Device;
+            expect(entity.softwareMultiPressOptions).toBeUndefined();
+            await vi.advanceTimersByTimeAsync(300);
+            expect(mockMQTTPublishAsync.mock.calls.some((call) => call[1].includes("software_power_"))).toBe(false);
+        });
+        it.each([{enabled: true}, {enabled: true, buttons: null}, {...config, timeout: 0}])(
+            "retains native events after invalid live options: %s",
+            async (options) => {
+                mockMQTTEvents.message(
+                    "zigbee2mqtt/bridge/request/device/options",
+                    stringify({id: "ikea_onoff", options: {software_multi_press: options}}),
+                );
+                await flushPromises();
+                await press();
+                await vi.advanceTimersByTimeAsync(300);
+                expect(
+                    mockMQTTPublishAsync.mock.calls.some((call) => call[0] === "zigbee2mqtt/ikea_onoff" && JSON.parse(call[1]).action === "on"),
+                ).toBe(true);
+                expect(
+                    mockMQTTPublishAsync.mock.calls.some((call) => call[0] === "zigbee2mqtt/ikea_onoff" && call[1].includes("software_power_")),
+                ).toBe(false);
+            },
+        );
     });
 
     it("Should add elapsed", async () => {

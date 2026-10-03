@@ -72,7 +72,11 @@ export default class OnEvent extends Extension {
     }
 
     private async callOnEvent(device: Device, event: ZhcOnEvent.Event): Promise<void> {
-        if (device.options.disabled) {
+        if (device.options.disabled && event.type !== "stop") {
+            // Options changes must still stop timers without starting disabled devices.
+            if (event.type === "deviceOptionsChanged") {
+                await this.callOnEvent(device, {type: "stop", data: {ieeeAddr: device.ieeeAddr}});
+            }
             return;
         }
 

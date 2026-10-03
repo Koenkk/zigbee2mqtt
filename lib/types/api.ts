@@ -59,7 +59,14 @@ export type OnboardData = OnboardInitData | OnboardDoneData | OnboardFailureData
 
 export type OnboardSubmitResponse = {success: true; frontendUrl: string | null} | {success: false; error: string};
 
+export type SoftwareMultiPressOptions = {
+    enabled?: boolean;
+    timeout?: number;
+    buttons: {name: string; click: string; press?: string; cancel?: string[]; endpoint?: number}[];
+};
+
 export type Zigbee2MQTTDeviceOptions = {
+    software_multi_press?: SoftwareMultiPressOptions;
     disabled?: boolean;
     retention?: number;
     availability?:
