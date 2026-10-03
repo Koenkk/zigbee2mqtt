@@ -178,4 +178,20 @@ describe("Extension: OnEvent", () => {
         });
         await controller.addExtension(new OnEvent(...controller.extensionArgs));
     });
+    it("stops disabled devices on options changes and shutdown without starting them", async () => {
+        const entity = getZ2MDevice(devices.LIVOLO);
+        settings.set(["devices", entity.ieeeAddr, "disabled"], true);
+        deviceOnEventSpy.mockClear();
+        // @ts-expect-error private
+        controller.eventBus.emitEntityOptionsChanged({entity, from: {}, to: {disabled: true}});
+        await flushPromises();
+        expect(deviceOnEventSpy.mock.calls.map(([event]) => event.type)).toEqual(["stop"]);
+        await mockZHEvents.deviceAnnounce({device: devices.LIVOLO});
+        await flushPromises();
+        await controller.removeExtension(controller.getExtension("OnEvent")!);
+        expect(deviceOnEventSpy.mock.calls.map(([event]) => event.type)).toEqual(["stop", "stop"]);
+        await controller.addExtension(new OnEvent(...controller.extensionArgs));
+        expect(deviceOnEventSpy).toHaveBeenCalledTimes(2);
+        settings.set(["devices", entity.ieeeAddr, "disabled"], false);
+    });
 });

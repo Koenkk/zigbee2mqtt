@@ -6,6 +6,7 @@ import * as zhc from "zigbee-herdsman-converters";
 import {access, Numeric} from "zigbee-herdsman-converters";
 import logger from "../util/logger";
 import * as settings from "../util/settings";
+import {softwareMultiPressActions} from "../util/softwareMultiPress";
 
 const LINKQUALITY = new Numeric("linkquality", access.STATE)
     .withUnit("lqi")
@@ -31,6 +32,9 @@ export default class Device {
         const deviceOptions = settings.getDevice(this.ieeeAddr) ?? {friendly_name: this.ieeeAddr, ID: this.ieeeAddr};
         return {...settings.get().device_options, ...deviceOptions};
     }
+    get softwareMultiPressOptions() {
+        return settings.getDevice(this.ieeeAddr)?.software_multi_press;
+    }
     get name(): string {
         return this.zh.type === "Coordinator" ? "Coordinator" : this.options?.friendly_name;
     }
@@ -51,7 +55,7 @@ export default class Device {
         this.zh = device;
     }
 
-    exposes(): zhc.Expose[] {
+    nativeExposes(): zhc.Expose[] {
         const exposes: zhc.Expose[] = [];
         assert(this.definition, "Cannot retreive exposes before definition is resolved");
         if (typeof this.definition.exposes === "function") {
@@ -59,6 +63,18 @@ export default class Device {
             exposes.push(...this.definition.exposes(this.zh, options));
         } else {
             exposes.push(...this.definition.exposes);
+        }
+        return exposes;
+    }
+
+    exposes(): zhc.Expose[] {
+        const exposes = this.nativeExposes();
+        const actions = softwareMultiPressActions(exposes, this.softwareMultiPressOptions);
+        if (actions.length) {
+            const index = exposes.findIndex((expose) => expose instanceof zhc.Enum && expose.property === "action");
+            const action = (exposes[index] as zhc.Enum).clone();
+            action.values.push(...actions);
+            exposes[index] = action;
         }
         exposes.push(LINKQUALITY);
         return exposes;

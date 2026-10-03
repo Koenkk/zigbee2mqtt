@@ -5,6 +5,7 @@ import throttle from "throttleit";
 import * as zhc from "zigbee-herdsman-converters";
 import logger from "../util/logger";
 import * as settings from "../util/settings";
+import SoftwareMultiPress from "../util/softwareMultiPress";
 import {stringify} from "../util/stringify";
 import utils from "../util/utils";
 import Extension from "./extension";
@@ -16,11 +17,27 @@ export default class Receive extends Extension {
     private elapsed: {[s: string]: number} = {};
     private debouncers: {[s: string]: {payload: KeyValue; publish: DebounceFunction}} = {};
     private throttlers: {[s: string]: {publish: PublishEntityState}} = {};
+    private multiPress = new SoftwareMultiPress();
 
     // biome-ignore lint/suspicious/useAwait: API
     override async start(): Promise<void> {
         this.eventBus.onPublishEntityState(this, this.onPublishEntityState);
         this.eventBus.onDeviceMessage(this, this.onDeviceMessage);
+        this.eventBus.onEntityRemoved(this, (data) => {
+            if (data.entity.isDevice()) this.multiPress.clear(data.entity.ieeeAddr);
+        });
+        this.eventBus.onDeviceLeave(this, (data) => this.multiPress.clear(data.ieeeAddr));
+        this.eventBus.onEntityOptionsChanged(this, (data) => {
+            if (data.entity.isDevice()) {
+                this.multiPress.clear(data.entity.ieeeAddr);
+                if ("software_multi_press" in data.from || "software_multi_press" in data.to) this.eventBus.emitExposesAndDevicesChanged(data.entity);
+            }
+        });
+    }
+
+    override async stop(): Promise<void> {
+        this.multiPress.clear();
+        await super.stop();
     }
 
     @bind onPublishEntityState(data: eventdata.PublishEntityState): void {
@@ -135,6 +152,14 @@ export default class Receive extends Extension {
             assert(data.device.definition);
             const options: KeyValue = data.device.options;
             zhc.postProcessConvertedFromZigbeeMessage(data.device.definition, payload, options, data.device.zh);
+            if (typeof payload.action === "string") {
+                this.multiPress.process(
+                    data.device,
+                    data.endpoint.ID,
+                    payload.action,
+                    async (_source, classified) => await this.publishEntityState(data.device, classified),
+                );
+            }
 
             if (settings.get().advanced.elapsed) {
                 const now = Date.now();
