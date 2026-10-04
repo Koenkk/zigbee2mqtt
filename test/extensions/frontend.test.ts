@@ -262,6 +262,12 @@ describe("Extension: Frontend", () => {
         mockWSClientEvents.message(null, false);
         await flushPromises();
 
+        // Malformed payload, must not escape the listener
+        mockLogger.error.mockClear();
+        expect(() => mockWSClientEvents.message("not json", false)).not.toThrow();
+        expect(mockLogger.error).toHaveBeenCalledWith("Received invalid message from WebSocket: not json");
+        await flushPromises();
+
         // Error
         mockWSClientEvents.error(new Error("This is an error"));
         expect(mockLogger.error).toHaveBeenCalledWith("WebSocket error: This is an error");
