@@ -122,6 +122,7 @@ describe("Extension: Bridge", () => {
                     advanced: {
                         adapter_concurrent: undefined,
                         adapter_delay: undefined,
+                        adapter_service_endpoints: [],
                         cache_state: true,
                         cache_state_persistent: true,
                         cache_state_send_on_startup: true,

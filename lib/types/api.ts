@@ -207,6 +207,7 @@ export type Zigbee2MQTTSettings = {
         channel: number;
         adapter_concurrent?: number;
         adapter_delay?: number;
+        adapter_service_endpoints: string[];
         cache_state: boolean;
         cache_state_persistent: boolean;
         cache_state_send_on_startup: boolean;
