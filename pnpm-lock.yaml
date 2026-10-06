@@ -54,8 +54,8 @@ importers:
         specifier: ^8.22.0
         version: 8.22.0
       zigbee-herdsman:
-        specifier: 10.10.0
-        version: 10.10.0(supports-color@7.2.0)
+        specifier: 11.0.0
+        version: 11.0.0(supports-color@7.2.0)
       zigbee-herdsman-converters:
         specifier: 26.117.1
         version: 26.117.1(supports-color@7.2.0)
