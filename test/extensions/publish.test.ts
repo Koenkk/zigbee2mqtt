@@ -521,7 +521,9 @@ describe("Extension: Publish", () => {
     });
 
     it("Should skip a payload for an unavailable endpoint", async () => {
-        const device = devices.bulb_color;
+        const device = controller.zigbee.resolveEntity(devices.bulb_color.ieeeAddr);
+        expect(device).toBeDefined();
+        if (!device || !device.isDevice()) return;
         const endpointNames = vi.spyOn(device, "getEndpointNames").mockReturnValue(["missing"]);
         const resolveEndpoint = device.endpoint.bind(device);
         const endpoint = vi.spyOn(device, "endpoint").mockImplementation((name) => (name === "missing" ? undefined : resolveEndpoint(name)));
