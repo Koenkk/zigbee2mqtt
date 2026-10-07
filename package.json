@@ -65,9 +65,9 @@
     "devDependencies": {
         "@biomejs/biome": "^2.5.11",
         "@types/humanize-duration": "^3.27.4",
-        "@types/node": "^26.6.3",
-        "@types/readable-stream": "4.0.24",
-        "@types/ws": "8.18.1",
+        "@types/node": "^26.6.4",
+        "@types/readable-stream": "4.0.25",
+        "@types/ws": "8.18.2",
         "@vitest/coverage-v8": "^4.1.11",
         "tmp": "^0.2.7",
         "typescript": "^7.0.2",
