@@ -185,8 +185,13 @@ export default class Publish extends Extension {
             if (re instanceof Device && propertyEndpointMatch) {
                 endpointName = propertyEndpointMatch[2];
                 key = propertyEndpointMatch[1];
-                // biome-ignore lint/style/noNonNullAssertion: endpointName is always matched to an existing endpoint of the device since `propertyEndpointRegex` only contains valid endpoints for this device
-                localTarget = re.endpoint(endpointName)!;
+                localTarget = re.endpoint(endpointName);
+
+                if (!localTarget) {
+                    logger.error(`No endpoint '${endpointName}' available on '${re.name}'`);
+                    continue;
+                }
+
                 endpointOrGroupID = localTarget.ID;
             }
 

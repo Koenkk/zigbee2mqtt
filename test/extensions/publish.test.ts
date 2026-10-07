@@ -520,6 +520,23 @@ describe("Extension: Publish", () => {
         }
     });
 
+    it("Should skip a payload for an unavailable endpoint", async () => {
+        const device = devices.bulb_color;
+        const endpointNames = vi.spyOn(device, "getEndpointNames").mockReturnValue(["missing"]);
+        const resolveEndpoint = device.endpoint.bind(device);
+        const endpoint = vi.spyOn(device, "endpoint").mockImplementation((name) => (name === "missing" ? undefined : resolveEndpoint(name)));
+
+        try {
+            await mockMQTTEvents.message("zigbee2mqtt/bulb_color/set", stringify({state_missing: "ON"}));
+            await flushPromises();
+            expectNothingPublished();
+            expect(mockLogger.error).toHaveBeenCalledWith("No endpoint 'missing' available on 'bulb_color'");
+        } finally {
+            endpointNames.mockRestore();
+            endpoint.mockRestore();
+        }
+    });
+
     it("Should publish messages to groups with brightness_percent", async () => {
         const group = groups.group_1;
         group.members.push(devices.bulb_color.getEndpoint(1)!);
