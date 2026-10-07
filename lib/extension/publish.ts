@@ -185,14 +185,15 @@ export default class Publish extends Extension {
             if (re instanceof Device && propertyEndpointMatch) {
                 endpointName = propertyEndpointMatch[2];
                 key = propertyEndpointMatch[1];
-                localTarget = re.endpoint(endpointName);
+                const endpoint = re.endpoint(endpointName);
 
-                if (!localTarget) {
+                if (!endpoint) {
                     logger.error(`No endpoint '${endpointName}' available on '${re.name}'`);
                     continue;
                 }
 
-                endpointOrGroupID = localTarget.ID;
+                localTarget = endpoint;
+                endpointOrGroupID = endpoint.ID;
             }
 
             if (usedConverters[endpointOrGroupID] === undefined) usedConverters[endpointOrGroupID] = [];
