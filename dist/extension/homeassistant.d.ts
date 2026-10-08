@@ -1,11 +1,6 @@
 import type { Zh } from "zigbee-herdsman-converters/lib/types";
 import Extension from "./extension";
-interface MockProperty {
-    property: string;
-    value: KeyValue | string | null;
-}
 interface DiscoveryEntry {
-    mockProperties: MockProperty[];
     type: string;
     object_id: string;
     discovery_payload: KeyValue;
