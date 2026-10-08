@@ -806,10 +806,13 @@ export class HomeAssistant extends Extension {
                     discoveryEntry.discovery_payload.fan_mode_state_topic = true;
                 }
 
-                const swingMode = (firstExpose as zhc.Climate).features.filter(isEnumExpose).find((f) => f.name === "swing_mode");
+                const swingMode = (firstExpose as zhc.Climate).features
+                    .filter(isEnumExpose)
+                    // `ac_louver_position` is the ZCL name for the same concept; both map to HA swing.
+                    .find((f) => f.name === "swing_mode" || f.name === "ac_louver_position");
                 if (swingMode) {
                     discoveryEntry.discovery_payload.swing_modes = swingMode.values;
-                    discoveryEntry.discovery_payload.swing_mode_command_topic = true;
+                    discoveryEntry.discovery_payload.swing_mode_command_topic = swingMode.name;
                     discoveryEntry.discovery_payload.swing_mode_state_template = `{{ value_json["${swingMode.property}"] }}`;
                     discoveryEntry.discovery_payload.swing_mode_state_topic = true;
                 }
@@ -1957,7 +1960,7 @@ export class HomeAssistant extends Extension {
             }
 
             if (payload.swing_mode_command_topic) {
-                payload.swing_mode_command_topic = `${baseTopic}/${commandTopicPrefix}set/swing_mode`;
+                payload.swing_mode_command_topic = `${baseTopic}/${commandTopicPrefix}set/${payload.swing_mode_command_topic}`;
             }
 
             if (payload.percentage_state_topic) {

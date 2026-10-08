@@ -466,6 +466,16 @@ const TS0601_thermostat = new Device(
     "Mains (single phase)",
     "kud7u2l",
 );
+const IRB_4_1_00 = new Device(
+    "Router",
+    "0x0017880104e45599",
+    6545,
+    4747,
+    [new Endpoint(1, [0, 3, 4, 5, 513, 514, 1029], [3, 25], "0x0017880104e45599")],
+    InterviewState.Successful,
+    "Mains (single phase)",
+    "IRB-4-1-00",
+);
 const TS0601_switch = new Device(
     "EndDevice",
     "0x0017882104a44560",
@@ -1049,6 +1059,7 @@ export const devices = {
         "_TZ3000_j1xl73iw",
     ),
     TS0601_thermostat: TS0601_thermostat,
+    IRB_4_1_00: IRB_4_1_00,
     TS0601_switch: TS0601_switch,
     TS0601_cover_switch: TS0601_cover_switch,
     external_converter_device: new Device(

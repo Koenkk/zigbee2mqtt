@@ -1215,6 +1215,20 @@ describe("Extension: HomeAssistant", () => {
         expect(JSON.parse(mockMQTTPublishAsync.mock.calls[idx][1])).toStrictEqual(payload);
     });
 
+    it("Should discover ac_louver_position as swing mode", () => {
+        // Devices that expose the ZCL AcLouverPosition attribute name it `ac_louver_position`
+        // (NodOn IRB-4-1-00, OWON PCT513). It is the same concept as `swing_mode`, so it must
+        // map to the Home Assistant swing feature, and the command topic must follow the
+        // property name instead of being hardcoded to `set/swing_mode`.
+        const call = mockMQTTPublishAsync.mock.calls.find((c) => c[0] === "homeassistant/climate/0x0017880104e45599/climate/config");
+        expect(call).not.toBeUndefined();
+        const payload = JSON.parse(call![1] as string);
+        expect(payload.swing_modes).toStrictEqual(["fully_open", "fully_closed", "half_open", "quarter_open", "three_quarters_open"]);
+        expect(payload.swing_mode_command_topic).toBe("zigbee2mqtt/irb_blaster/set/ac_louver_position");
+        expect(payload.swing_mode_state_topic).toBe("zigbee2mqtt/irb_blaster");
+        expect(payload.swing_mode_state_template).toBe('{{ value_json["ac_louver_position"] }}');
+    });
+
     it("Should discover thermostat devices", () => {
         const payload = {
             action_template:

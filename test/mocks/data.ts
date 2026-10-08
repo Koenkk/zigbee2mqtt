@@ -188,6 +188,9 @@ export const DEFAULT_CONFIGURATION = {
         "0x0017882104a44559": {
             friendly_name: "TS0601_thermostat",
         },
+        "0x0017880104e45599": {
+            friendly_name: "irb_blaster",
+        },
         "0x0017882104a44560": {
             friendly_name: "TS0601_switch",
         },
