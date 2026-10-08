@@ -1745,9 +1745,13 @@ describe("Extension: HomeAssistant", () => {
         const climateL1 = configs.find((c) => c.type === "climate" && c.object_id === "climate_l1");
         const climateL2 = configs.find((c) => c.type === "climate" && c.object_id === "climate_l2");
         // Same endpoint humidity is preferred
-        expect(climateL1!.discovery_payload.current_humidity_template).toStrictEqual('{{ value_json["humidity_l1"] }}');
+        expect(climateL1!.discovery_payload.current_humidity_template).toStrictEqual(
+            '{% if "humidity_l1" in value_json %}{{ value_json["humidity_l1"] }}{% endif %}',
+        );
         // Falls back to humidity without endpoint
-        expect(climateL2!.discovery_payload.current_humidity_template).toStrictEqual('{{ value_json["humidity"] }}');
+        expect(climateL2!.discovery_payload.current_humidity_template).toStrictEqual(
+            '{% if "humidity" in value_json %}{{ value_json["humidity"] }}{% endif %}',
+        );
     });
 
     it("Should discover climate with cooling-only setpoint", () => {
