@@ -5,6 +5,7 @@ import type * as zhc from "zigbee-herdsman-converters";
 import Device from "../model/device";
 import Group from "../model/group";
 import type {Zigbee2MQTTAPI, Zigbee2MQTTResponseEndpoints} from "../types/api";
+import {type ColorMode, exposedColorModes} from "../util/colorMode";
 import logger from "../util/logger";
 import * as settings from "../util/settings";
 import {stringify} from "../util/stringify";
@@ -16,12 +17,7 @@ const STATE_PROPERTIES: Readonly<Record<string, (value: string, exposes: zhc.Exp
     brightness: (_value, exposes) => exposes.some((e) => isLightExpose(e) && e.features.some((f) => f.name === "brightness")),
     color_temp: (_value, exposes) => exposes.some((e) => isLightExpose(e) && e.features.some((f) => f.name === "color_temp")),
     color: (_value, exposes) => exposes.some((e) => isLightExpose(e) && e.features.some((f) => f.name === "color_xy" || f.name === "color_hs")),
-    color_mode: (value, exposes) =>
-        exposes.some(
-            (e) =>
-                isLightExpose(e) &&
-                (e.features.some((f) => f.name === `color_${value}`) || (value === "color_temp" && e.features.some((f) => f.name === "color_temp"))),
-        ),
+    color_mode: (value, exposes) => !!exposedColorModes(exposes)?.has(value as ColorMode),
 };
 
 interface ParsedMQTTMessage {
