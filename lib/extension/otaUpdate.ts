@@ -174,8 +174,8 @@ export default class OTAUpdate extends Extension {
                     if (availableResult?.available) {
                         logger.info(`OTA update available for '${data.device.name}'`);
                     }
-                } else if (!data.device.options.ota_always_respond) {
-                    // TODO (Z2M 3.0.0): Make ota_always_respond default to true
+                } else if (data.device.options.ota_skip_reply_in_cooldown !== false) {
+                    // TODO (Z2M 3.0.0): Make ota_skip_reply_in_cooldown default to false
                     return;
                 }
             }

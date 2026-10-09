@@ -962,12 +962,15 @@ describe("Extension: OTAUpdate", () => {
     });
 
     it.each([
-        {alwaysRespond: false, responses: 1},
-        {alwaysRespond: true, responses: 2},
+        {skipReply: undefined, responses: 1},
+        {skipReply: true, responses: 1},
+        {skipReply: false, responses: 2},
     ])(
-        "responds to $responses of 2 requests within the update check interval when ota_always_respond is $alwaysRespond",
-        async ({alwaysRespond, responses}) => {
-            settings.set(["devices", "0x000b57fffec6a5b2", "ota_always_respond"], alwaysRespond);
+        "responds to $responses of 2 requests within the update check interval when ota_skip_reply_in_cooldown is $skipReply",
+        async ({skipReply, responses}) => {
+            if (skipReply !== undefined) {
+                settings.set(["devices", "0x000b57fffec6a5b2", "ota_skip_reply_in_cooldown"], skipReply);
+            }
             const data = {imageType: 12382, manufacturerCode: 2134, fileVersion: 33};
             devices.bulb.checkOta.mockResolvedValueOnce({
                 available: false,
@@ -994,9 +997,9 @@ describe("Extension: OTAUpdate", () => {
                 "queryNextImageResponse",
                 {status: 0x98},
                 undefined,
-                alwaysRespond ? 11 : 10,
+                responses === 2 ? 11 : 10,
             );
-            settings.set(["devices", "0x000b57fffec6a5b2", "ota_always_respond"], false);
+            settings.set(["devices", "0x000b57fffec6a5b2", "ota_skip_reply_in_cooldown"], true);
         },
     );
 
