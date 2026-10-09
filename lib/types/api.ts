@@ -83,6 +83,7 @@ export type Zigbee2MQTTDeviceOptions = {
     description?: string;
     qos?: 0 | 1 | 2;
     disable_automatic_update_check?: boolean;
+    ota_always_respond?: boolean;
 };
 
 export type Zigbee2MQTTGroupOptions = {
