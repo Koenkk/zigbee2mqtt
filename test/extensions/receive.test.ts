@@ -52,7 +52,7 @@ describe("Extension: Receive", () => {
             qos: 0,
         });
     });
-    
+
     describe("color_mode", () => {
         // https://github.com/Koenkk/zigbee2mqtt/issues/28757
         const published = (topic: string): Record<string, unknown>[] =>

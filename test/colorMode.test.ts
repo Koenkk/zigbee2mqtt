@@ -76,7 +76,7 @@ describe("Color mode", () => {
         normalizeColorMode(device([e.battery()]), noLight);
         expect(noLight).toStrictEqual({color_mode: "hs"});
     });
-    
+
     it("normalizeColorMode skips devices without a resolved definition", () => {
         const state = {color_mode: "hs"};
         normalizeColorMode(device(undefined), state);
