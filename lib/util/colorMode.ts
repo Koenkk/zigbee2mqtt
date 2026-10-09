@@ -73,7 +73,8 @@ function entityExposes(entity: Device | Group): zhc.Expose[] {
 
 /**
  * Replace any `color_mode` (or `color_mode_<endpoint>`) in `state` the entity doesn't support with the closest supported one,
- * or remove it when the light supports no color mode. Modifies `state` in place.
+ * or remove it when the light supports no color mode, or when it would be replaced by `color_temp` while `state` has no `color_temp`.
+ * Modifies `state` in place.
  */
 export function normalizeColorMode(entity: Device | Group, state: KeyValue): void {
     let exposes: zhc.Expose[] | undefined;
@@ -94,7 +95,10 @@ export function normalizeColorMode(entity: Device | Group, state: KeyValue): voi
 
         const newMode = toSupportedColorMode(mode, supported);
 
-        if (newMode === undefined) {
+        // Without a `color_temp` value there's nothing to back a `color_temp` mode, so drop the mode instead of replacing it.
+        const colorTempKey = endpoint === undefined ? "color_temp" : `color_temp_${endpoint}`;
+
+        if (newMode === undefined || (newMode === "color_temp" && newMode !== mode && state[colorTempKey] === undefined)) {
             delete state[key];
         } else if (newMode !== mode) {
             state[key] = newMode;

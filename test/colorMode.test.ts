@@ -61,6 +61,33 @@ describe("Color mode", () => {
         expect(supported).toStrictEqual({color_mode: "xy"});
     });
 
+    // Light Solutions 42-050 (CCT LED driver, `m.light({colorTemp: {range: [160, 450]}})`) reports `xy`, which is legal in ZCL,
+    // but it doesn't expose `color_xy`. https://github.com/Koenkk/zigbee-herdsman-converters/pull/12943
+    it("normalizeColorMode maps `xy` of a color temperature only light (42-050)", () => {
+        const cctDriver = e.light().withBrightness().withColorTemp([160, 450]);
+
+        const state = {state: "ON", brightness: 254, color_mode: "xy", color_temp: 300};
+        normalizeColorMode(device([cctDriver]), state);
+        expect(state).toStrictEqual({state: "ON", brightness: 254, color_mode: "color_temp", color_temp: 300});
+
+        // Dropped when there's no `color_temp` to back it (e.g. `cache_state: false`).
+        const withoutColorTemp = {brightness: 254, color_mode: "xy"};
+        normalizeColorMode(device([cctDriver]), withoutColorTemp);
+        expect(withoutColorTemp).toStrictEqual({brightness: 254});
+
+        // A supported `color_temp` mode is kept, with or without a value.
+        const supported = {color_mode: "color_temp"};
+        normalizeColorMode(device([cctDriver]), supported);
+        expect(supported).toStrictEqual({color_mode: "color_temp"});
+    });
+
+    it("normalizeColorMode checks the endpoint's `color_temp` before mapping to `color_temp`", () => {
+        const exposes = [colorTempLight.clone().withEndpoint("l1"), colorTempLight.clone().withEndpoint("l2")];
+        const state = {color_mode_l1: "xy", color_temp_l1: 300, color_mode_l2: "xy", color_temp: 300};
+        normalizeColorMode(device(exposes), state);
+        expect(state).toStrictEqual({color_mode_l1: "color_temp", color_temp_l1: 300, color_temp: 300});
+    });
+
     it("normalizeColorMode removes the mode for a light without color modes", () => {
         const state = {state: "ON", color_mode: "color_temp"};
         normalizeColorMode(device([brightnessLight]), state);
@@ -82,21 +109,21 @@ describe("Color mode", () => {
         normalizeColorMode(device(undefined), state);
         expect(state).toStrictEqual({color_mode: "hs"});
 
-        const groupState = {color_mode: "hs"};
+        const groupState = {color_mode: "hs", color_temp: 300};
         normalizeColorMode(group([undefined, [colorTempLight]]), groupState);
-        expect(groupState).toStrictEqual({color_mode: "color_temp"});
+        expect(groupState).toStrictEqual({color_mode: "color_temp", color_temp: 300});
     });
 
     it("normalizeColorMode handles endpoints", () => {
-        const state = {color_mode_l1: "hs", color_mode_l2: "hs"};
+        const state = {color_mode_l1: "hs", color_temp_l1: 300, color_mode_l2: "hs"};
         normalizeColorMode(device([colorTempLight.clone().withEndpoint("l1"), xyLight.clone().withEndpoint("l2")]), state);
-        expect(state).toStrictEqual({color_mode_l1: "color_temp", color_mode_l2: "xy"});
+        expect(state).toStrictEqual({color_mode_l1: "color_temp", color_temp_l1: 300, color_mode_l2: "xy"});
     });
 
     it("normalizeColorMode uses the combined exposes of group members", () => {
-        const colorTempOnly = {color_mode: "hs"};
+        const colorTempOnly = {color_mode: "hs", color_temp: 300};
         normalizeColorMode(group([[colorTempLight], [colorTempLight.clone().withEndpoint("l1")]]), colorTempOnly);
-        expect(colorTempOnly).toStrictEqual({color_mode: "color_temp"});
+        expect(colorTempOnly).toStrictEqual({color_mode: "color_temp", color_temp: 300});
 
         const mixed = {color_mode: "hs"};
         normalizeColorMode(group([[colorTempLight], [xyLight]]), mixed);

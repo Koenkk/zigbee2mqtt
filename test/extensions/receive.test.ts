@@ -64,9 +64,16 @@ describe("Extension: Receive", () => {
         };
 
         it("Should publish color_temp when a color temperature only light reports hs", async () => {
-            await report({colorMode: 0});
-            expect(published("zigbee2mqtt/bulb_2").at(-1)).toMatchObject({color_mode: "color_temp"});
+            await report({colorMode: 0, colorTemperature: 300});
+            expect(published("zigbee2mqtt/bulb_2").at(-1)).toMatchObject({color_mode: "color_temp", color_temp: 300});
             expect(published("zigbee2mqtt/group_with_tradfri").at(-1)).toMatchObject({color_mode: "color_temp"});
+        });
+
+        it("Should not publish color_mode when a color temperature only light reports hs without color_temp", async () => {
+            await report({colorMode: 0});
+            for (const message of published("zigbee2mqtt/bulb_2")) {
+                expect(message).not.toHaveProperty("color_mode");
+            }
         });
 
         it("Should correct a stale cached color_mode on an unrelated update", async () => {
@@ -81,7 +88,7 @@ describe("Extension: Receive", () => {
 
         it("Should publish color_temp when a color temperature only light reports hs without cache_state", async () => {
             settings.set(["advanced", "cache_state"], false);
-            await report({colorMode: 0});
+            await report({colorMode: 0, colorTemperature: 300});
             expect(published("zigbee2mqtt/bulb_2").at(-1)).toMatchObject({color_mode: "color_temp"});
         });
 
