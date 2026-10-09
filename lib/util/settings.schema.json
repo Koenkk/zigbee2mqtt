@@ -959,6 +959,12 @@
                     "title": "Disable automatic update check",
                     "description": "Zigbee devices may request a firmware update, and do so frequently, causing Zigbee2MQTT to reach out to third party servers. If you disable these device initiated checks, you can still initiate a firmware update check manually.",
                     "default": false
+                },
+                "ota_skip_reply_in_cooldown": {
+                    "type": "boolean",
+                    "title": "Skip OTA reply in cooldown",
+                    "description": "Do not respond to update requests from this device within the update check interval. Some devices keep retrying until they get a response; set this to false for them.",
+                    "default": true
                 }
             },
             "required": ["friendly_name"]
