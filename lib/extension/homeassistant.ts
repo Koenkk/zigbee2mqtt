@@ -2047,6 +2047,8 @@ export class HomeAssistant extends Extension {
         for (const topic of lastDiscoveredTopics) {
             const isDeviceAutomation = topic.match(this.discoveryRegexWoTopic)?.[1] === "device_automation";
             if (!newDiscoveredTopics.has(topic) && !isDeviceAutomation) {
+                // Forget the cleared config so it is published again if the entity comes back.
+                delete discovered.messages[topic];
                 await this.mqtt.publish(topic, "", {clientOptions: {retain: true, qos: 1}, baseTopic: this.discoveryTopic, skipReceive: false});
             }
         }

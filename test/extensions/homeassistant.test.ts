@@ -3524,6 +3524,23 @@ describe("Extension: HomeAssistant", () => {
         expect(mockMQTTPublishAsync).toHaveBeenCalledWith("homeassistant/light/0xf4ce368a38be56a1/light_l2/config", "", {retain: true, qos: 1});
     });
 
+    it("Should rediscover an entity whose expose comes back after it was removed", async () => {
+        const topic = "homeassistant/light/0xf4ce368a38be56a1/light_l2/config";
+        const discovery = mockMQTTPublishAsync.mock.calls.find((c) => c[0] === topic)?.[1];
+        assert(discovery);
+        const options = (enabled: string): string =>
+            stringify({id: "0xf4ce368a38be56a1", options: {dimmer_1_enabled: enabled, dimmer_1_dimming_enabled: enabled}});
+
+        mockMQTTEvents.message("zigbee2mqtt/bridge/request/device/options", options("false"));
+        await flushPromises();
+        expect(mockMQTTPublishAsync).toHaveBeenCalledWith(topic, "", {retain: true, qos: 1});
+
+        mockMQTTPublishAsync.mockClear();
+        mockMQTTEvents.message("zigbee2mqtt/bridge/request/device/options", options("true"));
+        await flushPromises();
+        expect(mockMQTTPublishAsync).toHaveBeenCalledWith(topic, discovery, {retain: true, qos: 1});
+    });
+
     it("Should publish discovery message when a converter announces changed exposes", async () => {
         mockMQTTPublishAsync.mockClear();
         const device = devices["BMCT-SLZ"];
