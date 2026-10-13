@@ -345,6 +345,10 @@ export function isLightExpose(expose: zhc.Expose): expose is zhc.Light {
     return expose.type === "light";
 }
 
+export function isCoverExpose(expose: zhc.Expose): expose is zhc.Cover {
+    return expose.type === "cover";
+}
+
 export function assertString(value: unknown, property: string): asserts value is string {
     if (typeof value !== "string") {
         throw new Error(`${property} is not a string, got ${typeof value} (${value})`);
