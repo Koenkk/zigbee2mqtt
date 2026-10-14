@@ -48,7 +48,7 @@
         "fast-deep-equal": "^3.1.3",
         "fflate": "^0.8.3",
         "humanize-duration": "^3.35.0",
-        "js-yaml": "^5.4.2",
+        "js-yaml": "^5.4.3",
         "mqtt": "^5.16.0",
         "semver": "^7.8.5",
         "srvx": "^1.0.5",
@@ -60,12 +60,12 @@
         "zigbee-herdsman": "11.1.0",
         "zigbee-herdsman-converters": "26.119.0",
         "zigbee2mqtt-frontend": "0.9.21",
-        "zigbee2mqtt-windfront": "2.15.0"
+        "zigbee2mqtt-windfront": "2.15.1"
     },
     "devDependencies": {
         "@biomejs/biome": "^2.5.11",
         "@types/humanize-duration": "^3.27.4",
-        "@types/node": "^26.6.4",
+        "@types/node": "^26.6.5",
         "@types/readable-stream": "4.0.25",
         "@types/ws": "8.18.2",
         "@vitest/coverage-v8": "^4.1.11",
