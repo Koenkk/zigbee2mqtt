@@ -1161,7 +1161,8 @@ describe("Extension: HomeAssistant", () => {
             default_entity_id: "light.my_switch",
             unique_id: "0x0017880104e45541_light_zigbee2mqtt",
             origin: origin,
-            value_template: '{% if "state" in value_json %}{{ value_json["state"] }}{% endif %}',
+            // a light reads its state from state_value_template (#33402)
+            state_value_template: '{% if "state" in value_json %}{{ value_json["state"] }}{% endif %}',
         };
 
         expect(mockMQTTPublishAsync).toHaveBeenCalledWith("homeassistant/light/0x0017880104e45541/light/config", stringify(payload), {
