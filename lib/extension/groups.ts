@@ -167,9 +167,7 @@ export default class Groups extends Extension {
                 const state = this.state.get(device);
                 // the endpoint ID is not a position in getEndpointNames(), look the name up instead
                 const endpointName =
-                    device.isDevice() &&
-                    device.definition?.meta?.multiEndpoint &&
-                    !device.definition.meta.multiEndpointSkip?.includes("state")
+                    device.isDevice() && device.definition?.meta?.multiEndpoint && !device.definition.meta.multiEndpointSkip?.includes("state")
                         ? device.endpointName(member)
                         : undefined;
                 const stateKey = endpointName ? `state_${endpointName}` : "state";
