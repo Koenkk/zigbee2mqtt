@@ -251,7 +251,15 @@ export interface Zigbee2MQTTDeviceEndpointConfiguredReporting {
     attribute: string | number;
     minimum_report_interval: number;
     maximum_report_interval: number;
-    reportable_change: number;
+    /** An array for attributes wider than 32 bit, e.g. `seMetering.currentSummDelivered` */
+    reportable_change: number | number[];
+}
+
+export interface Zigbee2MQTTDeviceEndpointBindings {
+    /** The bindings the device itself holds */
+    bindings: Zigbee2MQTTDeviceEndpointBinding[];
+    /** Clusters with configured reporting but no binding to the coordinator, the device cannot report those */
+    missing_bindings: string[];
 }
 
 export interface Zigbee2MQTTDeviceDefinition {
@@ -606,6 +614,15 @@ export interface Zigbee2MQTTAPI {
     "bridge/response/device/binds/clear": {
         target: string;
         ieee_list?: Eui64[];
+    };
+
+    "bridge/request/device/binds/read": {
+        id: string;
+    };
+
+    "bridge/response/device/binds/read": {
+        id: string;
+        endpoints: Record<number, Zigbee2MQTTDeviceEndpointBindings>;
     };
 
     "bridge/request/device/configure":
@@ -1008,6 +1025,7 @@ export type Zigbee2MQTTRequestEndpoints =
     | "bridge/request/device/bind"
     | "bridge/request/device/unbind"
     | "bridge/request/device/binds/clear"
+    | "bridge/request/device/binds/read"
     | "bridge/request/device/configure"
     | "bridge/request/device/remove"
     | "bridge/request/device/ota_update/check"
@@ -1060,6 +1078,7 @@ export type Zigbee2MQTTResponseEndpoints =
     | "bridge/response/device/bind"
     | "bridge/response/device/unbind"
     | "bridge/response/device/binds/clear"
+    | "bridge/response/device/binds/read"
     | "bridge/response/device/configure"
     | "bridge/response/device/remove"
     | "bridge/response/device/ota_update/check"

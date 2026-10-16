@@ -6,7 +6,13 @@ import path from "node:path";
 import equals from "fast-deep-equal/es6";
 import humanizeDuration from "humanize-duration";
 import type * as zhc from "zigbee-herdsman-converters";
-import type {Zigbee2MQTTAPI, Zigbee2MQTTResponse, Zigbee2MQTTResponseEndpoints, Zigbee2MQTTScene} from "../types/api";
+import type {
+    Zigbee2MQTTAPI,
+    Zigbee2MQTTDeviceEndpointBinding,
+    Zigbee2MQTTResponse,
+    Zigbee2MQTTResponseEndpoints,
+    Zigbee2MQTTScene,
+} from "../types/api";
 
 import data from "./data";
 
@@ -272,6 +278,15 @@ function isZHEndpoint(obj: unknown): obj is zh.Endpoint {
     return obj?.constructor.name.toLowerCase() === "endpoint";
 }
 
+function toEndpointBinding(bind: zh.Bind): Zigbee2MQTTDeviceEndpointBinding {
+    return {
+        cluster: bind.cluster.name,
+        target: isZHEndpoint(bind.target)
+            ? {type: "endpoint", ieee_address: bind.target.deviceIeeeAddress, endpoint: bind.target.ID}
+            : {type: "group", id: bind.target.groupID},
+    };
+}
+
 function flatten<Type>(arr: Type[][]): Type[] {
     return ([] as Type[]).concat(...arr);
 }
@@ -414,6 +429,7 @@ export default {
     toNetworkAddressHex,
     isZHEndpoint,
     isZHGroup,
+    toEndpointBinding,
     hours,
     minutes,
     seconds,
