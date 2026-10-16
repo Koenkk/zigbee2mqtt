@@ -2177,8 +2177,13 @@ export class HomeAssistant extends Extension {
             payload.model = entity.definition.description;
             payload.model_id = entity.definition.model;
             payload.manufacturer = entity.definition.vendor;
-            payload.sw_version = entity.zh.softwareBuildID;
-            payload.hw_version = entity.zh.hardwareVersion;
+            if (entity.zh.softwareBuildID != null) {
+                payload.sw_version = String(entity.zh.softwareBuildID);
+            }
+
+            if (entity.zh.hardwareVersion != null) {
+                payload.hw_version = String(entity.zh.hardwareVersion);
+            }
             payload.configuration_url = `${url}/#/device/${urlEntityPostfix}${entity.ieeeAddr}/info`;
         } else if (entity.isGroup()) {
             payload.model = "Group";
