@@ -83,6 +83,7 @@ body:
           placeholder: Click here and drag the file into it or click on "Attach files by.." below
       validations:
           required: false
+          render: "log"
     - type: textarea
       id: notes
       attributes:
