@@ -2178,7 +2178,7 @@ export class HomeAssistant extends Extension {
             payload.model_id = entity.definition.model;
             payload.manufacturer = entity.definition.vendor;
             if (entity.zh.softwareBuildID != null) {
-                payload.sw_version = String(entity.zh.softwareBuildID);
+                payload.sw_version = entity.zh.softwareBuildID;
             }
 
             if (entity.zh.hardwareVersion != null) {
