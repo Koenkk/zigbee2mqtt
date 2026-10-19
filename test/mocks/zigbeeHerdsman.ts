@@ -243,6 +243,7 @@ export class Device {
     endpoints: Endpoint[];
     powerSource: string | undefined;
     softwareBuildID: string | undefined;
+    hardwareVersion: number | undefined;
     interviewState: InterviewState;
     modelID: string | undefined;
     interview: Mock;
@@ -304,6 +305,7 @@ export class Device {
         dateCode: string | undefined = undefined,
         softwareBuildID: string | undefined = undefined,
         customClusters = {},
+        hardwareVersion: number | undefined = undefined,
     ) {
         this.type = type;
         this.ieeeAddr = ieeeAddr;
@@ -313,6 +315,7 @@ export class Device {
         this.endpoints = endpoints;
         this.powerSource = powerSource;
         this.softwareBuildID = softwareBuildID;
+        this.hardwareVersion = hardwareVersion;
         this.interviewState = interviewState;
         this.modelID = modelID;
         this.interview = vi.fn();
@@ -612,6 +615,7 @@ export const devices = {
         "20231122",
         "3.05.09",
         CUSTOM_CLUSTER_BTHRA,
+        1,
     ),
     bulb_color: bulb_color,
     bulb_2: bulb_2,
