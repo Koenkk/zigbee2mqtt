@@ -214,6 +214,51 @@ describe("Extension: Receive", () => {
         expect(mockMQTTPublishAsync.mock.calls[0][0]).toStrictEqual("zigbee2mqtt/weather_sensor");
     });
 
+    it("Should throttle last seen updates from frames that are not emitted as a message", async () => {
+        const device = devices.WSDCGQ11LM;
+        settings.set(["devices", device.ieeeAddr, "throttle"], 1);
+        settings.set(["advanced", "last_seen"], "ISO_8601");
+        const devicePublishes = (): unknown[] => mockMQTTPublishAsync.mock.calls.filter((c) => c[0] === "zigbee2mqtt/weather_sensor");
+
+        await mockZHEvents.lastSeenChanged({device, reason: "messageNonEmitted"});
+        await mockZHEvents.lastSeenChanged({device, reason: "messageNonEmitted"});
+        await mockZHEvents.lastSeenChanged({device, reason: "messageNonEmitted"});
+        await flushPromises();
+        expect(devicePublishes()).toHaveLength(1);
+
+        vi.advanceTimersByTime(2000);
+        await flushPromises();
+        expect(devicePublishes()).toHaveLength(2);
+    });
+
+    it("Should debounce last seen updates from frames that are not emitted as a message", async () => {
+        const device = devices.WSDCGQ11LM;
+        settings.set(["devices", device.ieeeAddr, "debounce"], 0.1);
+        settings.set(["advanced", "last_seen"], "ISO_8601");
+        const devicePublishes = (): unknown[] => mockMQTTPublishAsync.mock.calls.filter((c) => c[0] === "zigbee2mqtt/weather_sensor");
+
+        await mockZHEvents.lastSeenChanged({device, reason: "messageNonEmitted"});
+        await mockZHEvents.lastSeenChanged({device, reason: "messageNonEmitted"});
+        await flushPromises();
+        vi.advanceTimersByTime(50);
+        expect(devicePublishes()).toHaveLength(0);
+
+        vi.runOnlyPendingTimers();
+        await flushPromises();
+        expect(devicePublishes()).toHaveLength(1);
+    });
+
+    it("Should publish last seen updates from frames that are not emitted as a message right away without debounce or throttle", async () => {
+        const device = devices.WSDCGQ11LM;
+        settings.set(["advanced", "last_seen"], "ISO_8601");
+        const devicePublishes = (): unknown[] => mockMQTTPublishAsync.mock.calls.filter((c) => c[0] === "zigbee2mqtt/weather_sensor");
+
+        await mockZHEvents.lastSeenChanged({device, reason: "messageNonEmitted"});
+        await mockZHEvents.lastSeenChanged({device, reason: "messageNonEmitted"});
+        await flushPromises();
+        expect(devicePublishes()).toHaveLength(2);
+    });
+
     it("Should debounce and retain messages when set via device_options", async () => {
         const device = devices.WSDCGQ11LM;
         settings.set(["device_options", "debounce"], 0.1);

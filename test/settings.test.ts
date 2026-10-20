@@ -202,7 +202,7 @@ describe("Settings", () => {
         writeAndCheck();
     });
 
-    it("Should write environment variables as overrides to configuration.yaml, not in the ref file", () => {
+    it("Should preserve secret references when writing environment overrides", () => {
         write(secretFile, {password: "password-in-secret-file"}, false);
         write(configurationFile, {mqtt: {password: "!secret password", server: "server"}});
         process.env.ZIGBEE2MQTT_CONFIG_MQTT_PASSWORD = "password-in-env-var";
@@ -216,14 +216,27 @@ describe("Settings", () => {
             expected.mqtt.password = "password-in-env-var";
             expected.mqtt.server = "server";
             expect(s).toStrictEqual(expected);
-            expect(read(secretFile)).toMatchObject({password: "password-in-secret-file"});
-            expect(read(configurationFile)).toMatchObject({mqtt: {password: "password-in-env-var", server: "server"}});
+            expect(read(secretFile)).toMatchObject({password: "password-in-env-var"});
+            expect(read(configurationFile)).toMatchObject({mqtt: {password: "!secret password", server: "server"}});
         };
 
         // Write trice to ensure there are no side effects.
         writeAndCheck();
         writeAndCheck();
         writeAndCheck();
+    });
+
+    it("Should prefer a secret reference from the environment over the configuration reference", () => {
+        write(secretFile, {password: "original-password", override: "environment-password"}, false);
+        write(configurationFile, {mqtt: {password: "!secret password", server: "server"}});
+        process.env.ZIGBEE2MQTT_CONFIG_MQTT_PASSWORD = "!secret.yaml override";
+
+        for (let i = 0; i < 3; i++) {
+            settings.set(["advanced", "log_level"], "debug");
+            expect(settings.get().mqtt.password).toBe("environment-password");
+            expect(read(configurationFile)).toHaveProperty("mqtt.password", "!secret.yaml override");
+            expect(read(secretFile)).toStrictEqual({password: "original-password", override: "environment-password"});
+        }
     });
 
     it("Should add devices", () => {

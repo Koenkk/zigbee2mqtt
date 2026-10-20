@@ -10,3 +10,4 @@ minimumReleaseAgeExclude:
   - zigbee-herdsman-converters
   - zigbee2mqtt-windfront
   - zigbee2mqtt-frontend
+  - zigbee-on-host@0.3.2
