@@ -1752,6 +1752,13 @@ export class HomeAssistant extends Extension {
             for (const config of configs) {
                 const configOverride = s[config.object_id];
                 if (configOverride) {
+                    if (config.type === "switch" && configOverride.type === "light") {
+                        logger.warning(
+                            `Overriding the Home Assistant type of '${entity.name}' from switch to light is deprecated and will be removed ` +
+                                "in a future release, use 'Show as' in Home Assistant instead",
+                        );
+                    }
+
                     config.object_id = configOverride.object_id || config.object_id;
                     config.type = configOverride.type || config.type;
                 }
