@@ -1807,7 +1807,7 @@ describe("Extension: HomeAssistant", () => {
         expect(climate).toBeDefined();
         expect(climate!.discovery_payload.modes).toStrictEqual(["off", "auto", "heat"]);
         expect(climate!.discovery_payload.mode_state_template).toStrictEqual(
-            `{% set mode = value_json["system_mode_water"] %}{{ 'heat' if mode == 'emergency_heating' else mode }}`,
+            `{% if "system_mode_water" in value_json %}{% set mode = value_json["system_mode_water"] %}{{ 'heat' if mode == 'emergency_heating' else mode }}{% endif %}`,
         );
         // Expose itself is untouched so other consumers (e.g. frontend) can still use emergency_heating
         expect(climateExpose.features.find((f) => f.name === "system_mode")).toMatchObject({

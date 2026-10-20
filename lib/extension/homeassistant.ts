@@ -779,7 +779,10 @@ export class HomeAssistant extends Extension {
                         // 'emergency_heating' (e.g. Hive SLR boost) is not a valid Home Assistant HVAC mode,
                         // reporting it would make Home Assistant reject every state update. Report it as 'heat'
                         // and don't offer it as a mode; it can still be set via MQTT or the frontend.
-                        discoveryEntry.discovery_payload.mode_state_template = `{% set mode = value_json["${mode.property}"] %}{{ 'heat' if mode == 'emergency_heating' else mode }}`;
+                        discoveryEntry.discovery_payload.mode_state_template = stateValueTemplate(
+                            mode.property,
+                            `{% set mode = value_json["${mode.property}"] %}{{ 'heat' if mode == 'emergency_heating' else mode }}`,
+                        );
                         discoveryEntry.discovery_payload.modes = mode.values.filter((v) => v !== "emergency_heating");
                     }
                     discoveryEntry.discovery_payload.mode_command_topic = true;
