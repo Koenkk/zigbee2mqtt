@@ -1679,6 +1679,36 @@ describe("Extension: HomeAssistant", () => {
         expect(climate!.discovery_payload).not.toHaveProperty("temperature_high_command_topic");
     });
 
+    it("Should map emergency_heating to heat for climate", () => {
+        const climateExpose = new zhc.Climate()
+            .withSetpoint("occupied_heating_setpoint", 5, 32, 0.5)
+            .withLocalTemperature()
+            .withSystemMode(["off", "auto", "heat", "emergency_heating"])
+            .withEndpoint("water");
+        const device = {
+            definition: {},
+            isDevice: (): boolean => true,
+            isGroup: (): boolean => false,
+            endpoint: () => undefined,
+            options: {},
+            exposes: (): zhc.Expose[] => [climateExpose],
+            zh: {endpoints: []},
+        } as Device;
+
+        // @ts-expect-error private
+        const configs = extension.getConfigs(device);
+        const climate = configs.find((c) => c.type === "climate" && c.object_id === "climate_water");
+        expect(climate).toBeDefined();
+        expect(climate!.discovery_payload.modes).toStrictEqual(["off", "auto", "heat"]);
+        expect(climate!.discovery_payload.mode_state_template).toStrictEqual(
+            `{% set mode = value_json["system_mode_water"] %}{{ 'heat' if mode == 'emergency_heating' else mode }}`,
+        );
+        // Expose itself is untouched so other consumers (e.g. frontend) can still use emergency_heating
+        expect(climateExpose.features.find((f) => f.name === "system_mode")).toMatchObject({
+            values: ["off", "auto", "heat", "emergency_heating"],
+        });
+    });
+
     it("Should discover devices with cover_position", () => {
         let payload;
 
