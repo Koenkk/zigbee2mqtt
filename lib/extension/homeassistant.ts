@@ -1062,12 +1062,14 @@ export class HomeAssistant extends Extension {
                 break;
             }
             case "fan": {
-                assert(!endpointName, "Endpoint not supported for fan type");
+                const state = (firstExpose as zhc.Fan).features.filter(isBinaryExpose).find((e) => e.name === "state");
+                const stateProperty = state?.property ?? "state";
                 const discoveryEntry: DiscoveryEntry = {
                     type: "fan",
-                    object_id: "fan",
+                    object_id: endpointName ? `fan_${endpointName}` : "fan",
                     discovery_payload: {
-                        name: null,
+                        name: endpointName ? utils.capitalize(endpointName) : null,
+                        command_topic_prefix: endpointName,
                         state_topic: true,
                         command_topic: true,
                     },
@@ -1117,7 +1119,7 @@ export class HomeAssistant extends Extension {
                     const presetList = presets.map((s) => `'${s}'`).join(", ");
 
                     discoveryEntry.discovery_payload.percentage_state_topic = true;
-                    discoveryEntry.discovery_payload.percentage_command_topic = "fan_mode";
+                    discoveryEntry.discovery_payload.percentage_command_topic = endpointName ? modeEmulatedSpeed.property : "fan_mode";
                     discoveryEntry.discovery_payload.percentage_value_template = stateValueTemplate(
                         modeEmulatedSpeed.property,
                         `{{ {${percentValues}}[value_json["${modeEmulatedSpeed.property}"]] | default('None') }}`,
@@ -1127,7 +1129,7 @@ export class HomeAssistant extends Extension {
                     discoveryEntry.discovery_payload.speed_range_max = speeds.length - 1;
                     assert(presets.length !== 0);
                     discoveryEntry.discovery_payload.preset_mode_state_topic = true;
-                    discoveryEntry.discovery_payload.preset_mode_command_topic = "fan_mode";
+                    discoveryEntry.discovery_payload.preset_mode_command_topic = endpointName ? modeEmulatedSpeed.property : "fan_mode";
                     discoveryEntry.discovery_payload.preset_mode_value_template = stateValueTemplate(
                         modeEmulatedSpeed.property,
                         `{{ value_json["${modeEmulatedSpeed.property}"] if value_json["${modeEmulatedSpeed.property}"] in [${presetList}] else 'None' }}`,
@@ -1135,21 +1137,21 @@ export class HomeAssistant extends Extension {
                     discoveryEntry.discovery_payload.preset_modes = presets;
 
                     // Emulate state based on mode
-                    discoveryEntry.discovery_payload.state_value_template = stateValueTemplate("fan_state");
-                    discoveryEntry.discovery_payload.command_topic_postfix = "fan_state";
+                    discoveryEntry.discovery_payload.state_value_template = stateValueTemplate(endpointName ? stateProperty : "fan_state");
+                    discoveryEntry.discovery_payload.command_topic_postfix = endpointName ? stateProperty : "fan_state";
                     /* v8 ignore start */
                 } else if (nativeSpeed) {
                     /* v8 ignore stop */
                     discoveryEntry.discovery_payload.percentage_state_topic = true;
-                    discoveryEntry.discovery_payload.percentage_command_topic = "speed";
+                    discoveryEntry.discovery_payload.percentage_command_topic = endpointName ? nativeSpeed.property : "speed";
                     discoveryEntry.discovery_payload.percentage_value_template = stateValueTemplate(nativeSpeed.property);
                     discoveryEntry.discovery_payload.percentage_command_template = `{{ value | default('') }}`;
                     discoveryEntry.discovery_payload.speed_range_min = nativeSpeed.value_min;
                     discoveryEntry.discovery_payload.speed_range_max = nativeSpeed.value_max;
 
                     // Speed-controlled fans generally have an onOff cluster, use that for state
-                    discoveryEntry.discovery_payload.state_value_template = stateValueTemplate("state");
-                    discoveryEntry.discovery_payload.command_topic_postfix = "state";
+                    discoveryEntry.discovery_payload.state_value_template = stateValueTemplate(endpointName ? stateProperty : "state");
+                    discoveryEntry.discovery_payload.command_topic_postfix = endpointName ? stateProperty : "state";
                 }
 
                 discoveryEntries.push(discoveryEntry);

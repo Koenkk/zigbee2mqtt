@@ -1259,6 +1259,66 @@ describe("Extension: HomeAssistant", () => {
         });
     });
 
+    it("Should discover fan on a non-first endpoint", () => {
+        const fanExpose = new zhc.Fan().withState().withModes(["off", "low", "medium", "high", "auto"]).withEndpoint("2");
+        const stateFeature = fanExpose.features.find((f) => f.name === "state");
+        const modeFeature = fanExpose.features.find((f) => f.name === "mode");
+        const device = {
+            definition: {},
+            isDevice: (): boolean => true,
+            isGroup: (): boolean => false,
+            endpoint: () => undefined,
+            options: {},
+            exposes: (): zhc.Expose[] => [fanExpose],
+            zh: {endpoints: []},
+        } as Device;
+
+        // @ts-expect-error private
+        const configs = extension.getConfigs(device);
+        const fan = configs.find((c) => c.type === "fan");
+        expect(fan).toBeDefined();
+
+        // The fan must be scoped to its endpoint instead of pretending to live on endpoint 1.
+        expect(fan!.object_id).toStrictEqual("fan_2");
+        expect(fan!.discovery_payload.name).toStrictEqual("2");
+        expect(fan!.discovery_payload.command_topic_prefix).toStrictEqual("2");
+        expect(fan!.discovery_payload.percentage_command_topic).toStrictEqual(modeFeature?.property);
+        expect(fan!.discovery_payload.preset_mode_command_topic).toStrictEqual(modeFeature?.property);
+        expect(fan!.discovery_payload.command_topic_postfix).toStrictEqual(stateFeature?.property);
+        expect(fan!.discovery_payload.state_value_template).toStrictEqual(
+            `{% if "${stateFeature?.property}" in value_json %}{{ value_json["${stateFeature?.property}"] }}{% endif %}`,
+        );
+    });
+
+    it("Should discover speed-controlled fan on a non-first endpoint", () => {
+        const fanExpose = new zhc.Fan().withState().withSpeed(1, 254).withEndpoint("3");
+        const stateFeature = fanExpose.features.find((f) => f.name === "state");
+        const speedFeature = fanExpose.features.find((f) => f.name === "speed");
+        const device = {
+            definition: {},
+            isDevice: (): boolean => true,
+            isGroup: (): boolean => false,
+            endpoint: () => undefined,
+            options: {},
+            exposes: (): zhc.Expose[] => [fanExpose],
+            zh: {endpoints: []},
+        } as Device;
+
+        // @ts-expect-error private
+        const configs = extension.getConfigs(device);
+        const fan = configs.find((c) => c.type === "fan");
+        expect(fan).toBeDefined();
+
+        expect(fan!.object_id).toStrictEqual("fan_3");
+        expect(fan!.discovery_payload.name).toStrictEqual("3");
+        expect(fan!.discovery_payload.command_topic_prefix).toStrictEqual("3");
+        expect(fan!.discovery_payload.percentage_command_topic).toStrictEqual(speedFeature?.property);
+        expect(fan!.discovery_payload.command_topic_postfix).toStrictEqual(stateFeature?.property);
+        expect(fan!.discovery_payload.state_value_template).toStrictEqual(
+            `{% if "${stateFeature?.property}" in value_json %}{{ value_json["${stateFeature?.property}"] }}{% endif %}`,
+        );
+    });
+
     it("Should discover siren (HS2WD-E)", () => {
         const payload = {
             available_tones: ["emergency"],
