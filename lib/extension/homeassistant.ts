@@ -1752,16 +1752,8 @@ export class HomeAssistant extends Extension {
             for (const config of configs) {
                 const configOverride = s[config.object_id];
                 if (configOverride) {
-                    const originalType = config.type;
                     config.object_id = configOverride.object_id || config.object_id;
                     config.type = configOverride.type || config.type;
-
-                    // Home Assistant's MQTT light reads its state from `state_value_template`,
-                    // `value_template` is not part of the light schema and is dropped
-                    if (originalType === "switch" && config.type === "light" && config.discovery_payload.value_template !== undefined) {
-                        config.discovery_payload.state_value_template = config.discovery_payload.value_template;
-                        delete config.discovery_payload.value_template;
-                    }
                 }
             }
         }
