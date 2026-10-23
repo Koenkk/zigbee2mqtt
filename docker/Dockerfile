@@ -4,7 +4,7 @@ FROM alpine:3.24 AS base
 
 ENV NODE_ENV=production
 WORKDIR /app
-RUN apk add --no-cache tzdata eudev tini nodejs
+RUN apk add --no-cache tzdata eudev tini 'nodejs>=24.22.1'
 
 # Dependencies and build
 FROM base AS deps
