@@ -509,6 +509,7 @@ export class HomeAssistant extends Extension {
     private statusTopic: string;
     private legacyActionSensor: boolean;
     private experimentalEventEntities: boolean;
+    private defaultEntityId: boolean;
     // @ts-expect-error initialized in `start`
     private zigbee2MQTTVersion: string;
     // @ts-expect-error initialized in `start`
@@ -545,6 +546,7 @@ export class HomeAssistant extends Extension {
         this.statusTopic = haSettings.status_topic;
         this.legacyActionSensor = haSettings.legacy_action_sensor;
         this.experimentalEventEntities = haSettings.experimental_event_entities;
+        this.defaultEntityId = haSettings.default_entity_id;
         if (haSettings.discovery_topic === settings.get().mqtt.base_topic) {
             throw new Error(`'homeassistant.discovery_topic' cannot not be equal to the 'mqtt.base_topic' (got '${settings.get().mqtt.base_topic}')`);
         }
@@ -1839,7 +1841,10 @@ export class HomeAssistant extends Extension {
             // Set `default_entity_id`, as of HA 2025.10 this replaces the `object_id`.
             // For migration purposes we set both for now.
             // https://github.com/home-assistant/core/pull/151775
-            payload.default_entity_id = `${config.type}.${payload.object_id}`;
+            // When disabled, HA generates the entity_id itself, following its "Entity ID format" setting.
+            if (this.defaultEntityId) {
+                payload.default_entity_id = `${config.type}.${payload.object_id}`;
+            }
 
             // Set unique_id
             const uniqueId = `${entity.options.ID}_${config.object_id}_${settings.get().mqtt.base_topic}`;

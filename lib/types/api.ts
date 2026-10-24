@@ -107,6 +107,7 @@ export type Zigbee2MQTTSettings = {
         discovery_topic: string;
         status_topic: string;
         experimental_event_entities: boolean;
+        default_entity_id: boolean;
         legacy_action_sensor: boolean;
     };
     availability: {

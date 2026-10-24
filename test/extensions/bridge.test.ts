@@ -276,6 +276,7 @@ describe("Extension: Bridge", () => {
                         status_topic: "homeassistant/status",
                         legacy_action_sensor: false,
                         experimental_event_entities: false,
+                        default_entity_id: true,
                     },
                     availability: {
                         enabled: false,

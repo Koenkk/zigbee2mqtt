@@ -880,6 +880,17 @@ describe("Extension: HomeAssistant", () => {
         expect(mockLogger.debug).toHaveBeenCalledWith(`Skipping discovery of 'sensor/0x0017880104e45522/humidity/config', already discovered`);
     });
 
+    it("Should not set default_entity_id when disabled", async () => {
+        settings.set(["homeassistant", "default_entity_id"], false);
+        await resetExtension();
+        await flushPromises();
+
+        const call = mockMQTTPublishAsync.mock.calls.find((c) => c[0] === "homeassistant/sensor/0x0017880104e45522/temperature/config");
+        const payload = JSON.parse(call![1]);
+        expect(payload.default_entity_id).toBeUndefined();
+        expect(payload.unique_id).toStrictEqual("0x0017880104e45522_temperature_zigbee2mqtt");
+    });
+
     it("Should discover devices with precision", async () => {
         settings.set(["devices", "0x0017880104e45522"], {
             humidity_precision: 0,
