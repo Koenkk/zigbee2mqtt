@@ -27,17 +27,17 @@ importers:
         specifier: ^3.35.0
         version: 3.35.0
       js-yaml:
-        specifier: ^5.4.3
-        version: 5.4.3
+        specifier: ^5.5.0
+        version: 5.5.0
       mqtt:
-        specifier: ^5.16.0
-        version: 5.16.0(supports-color@7.2.0)
+        specifier: ^5.16.1
+        version: 5.16.1(supports-color@7.2.0)
       semver:
         specifier: ^7.8.5
         version: 7.8.5
       srvx:
-        specifier: ^1.0.5
-        version: 1.0.5
+        specifier: ^1.0.6
+        version: 1.0.6
       throttleit:
         specifier: ^3.0.0
         version: 3.0.0
@@ -721,8 +721,8 @@ packages:
   ajv@8.20.0:
     resolution: {integrity: sha512-Thbli+OlOj+iMPYFBVBfJ3OmCAnaSyNn4M1vz9T6Gka5Jt9ba/HIR56joy65tY6kx/FCF5VXNB819Y7/GUrBGA==}
 
-  argparse@2.0.1:
-    resolution: {integrity: sha512-8+9WqebbFzpX9OR+Wa6O29asIogeRMzcGtAINdpMHHyAg10f05aSFVBbcEqGf/PXw1EjAZ+q2/bEBg3DvurK3Q==}
+  argparse@3.0.3:
+    resolution: {integrity: sha512-Sn98ftV3KfsO8xfLPHG6oT8y+b0yvbrLgZjgPDXsharNY15tTAjqIsIju4S32nl6/iEUNNE4v+yL2Zhm8ooP3w==}
 
   assertion-error@2.0.1:
     resolution: {integrity: sha512-Izi8RQcffqCeNVgFigKli1ssklIbpHnCYc6AknXGYoB6grJqyeby7jv12JUQgmTAnIDnbck1uxksT4dzN3PWBA==}
@@ -926,8 +926,8 @@ packages:
   js-tokens@10.0.0:
     resolution: {integrity: sha512-lM/UBzQmfJRo9ABXbPWemivdCW8V2G8FHaHdypQaIy523snUjog0W71ayWXTjiR+ixeMyVHN2XcpnTd/liPg/Q==}
 
-  js-yaml@5.4.3:
-    resolution: {integrity: sha512-yzzNtgczwgoVHNigCyKTXcQJU4Y8t/ikU4UxXW0BvrLfHTGWZhsNcOT2s/a7vn81/4KqVnNmHjaUEPlvWnNwVw==}
+  js-yaml@5.5.0:
+    resolution: {integrity: sha512-paNr4LFIFPjeeSmwNYdrb8FafLLG/Cr2Af3GjbsHJ5CxIjH4r0c2emlmRdAtpPAieP1gRVzk6buBbVP5gBMGAg==}
     hasBin: true
 
   json-schema-traverse@1.0.0:
@@ -959,8 +959,8 @@ packages:
   mqtt-packet@9.0.2:
     resolution: {integrity: sha512-MvIY0B8/qjq7bKxdN1eD+nrljoeaai+qjLJgfRn3TiMuz0pamsIWY2bFODPZMSNmabsLANXsLl4EMoWvlaTZWA==}
 
-  mqtt@5.16.0:
-    resolution: {integrity: sha512-G0VsEtuJz5sJUgZJaaADMVfW7SIFPzkIuHR+d6rk+tBeSwdCfd9BaIRycRfd2AbyFDEmLlFM+SDQeti/+IbOnw==}
+  mqtt@5.16.1:
+    resolution: {integrity: sha512-9aEaiR/mLblsMAiynD8quhcGTaINdta2bdyknAtfVzESfoe6Ncdh/uEs5p+3zqcTEtgYErwL4pNk0QkAynXxlg==}
     engines: {node: '>=16.0.0'}
     hasBin: true
 
@@ -1072,8 +1072,8 @@ packages:
     resolution: {integrity: sha512-UcjcJOWknrNkF6PLX83qcHM6KHgVKNkV62Y8a5uYDVv9ydGQVwAHMKqHdJje1VTWpljG0WYpCDhrCdAOYH4TWg==}
     engines: {node: '>= 10.x'}
 
-  srvx@1.0.5:
-    resolution: {integrity: sha512-KvSKRpgPG/oaq3cyT614OQ2bAa7DynuGamivCZeoZzIUULOdbQz6wUtnnVuC4+DCx2Zglzo8v5gBYmWIWYhDxA==}
+  srvx@1.0.6:
+    resolution: {integrity: sha512-QeTKgAhk8OSsfeq60bl3wuVs9PmBftzmk7owBInA/F1YQne+TRw0UcPymNpURldAmx8hfmM2PNNGH/zgo3GpLA==}
     engines: {node: '>=20.16.0'}
     hasBin: true
 
@@ -1709,7 +1709,7 @@ snapshots:
       json-schema-traverse: 1.0.0
       require-from-string: 2.0.2
 
-  argparse@2.0.1: {}
+  argparse@3.0.3: {}
 
   assertion-error@2.0.1: {}
 
@@ -1907,9 +1907,9 @@ snapshots:
 
   js-tokens@10.0.0: {}
 
-  js-yaml@5.4.3:
+  js-yaml@5.5.0:
     dependencies:
-      argparse: 2.0.1
+      argparse: 3.0.3
 
   json-schema-traverse@1.0.0: {}
 
@@ -1950,7 +1950,7 @@ snapshots:
     transitivePeerDependencies:
       - supports-color
 
-  mqtt@5.16.0(supports-color@7.2.0):
+  mqtt@5.16.1(supports-color@7.2.0):
     dependencies:
       '@types/readable-stream': 4.0.25
       '@types/ws': 8.18.2
@@ -2083,7 +2083,7 @@ snapshots:
 
   split2@4.2.0: {}
 
-  srvx@1.0.5: {}
+  srvx@1.0.6: {}
 
   stack-trace@0.0.10: {}
 
