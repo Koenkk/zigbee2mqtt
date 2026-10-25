@@ -2962,6 +2962,49 @@ describe("Extension: HomeAssistant", () => {
         expect(mockMQTTPublishAsync).not.toHaveBeenCalledWith("zigbee2mqtt/U202DST600ZB/l1", expect.any(String), expect.any(Object));
     });
 
+    it("Should not republish a light_type select as an endpoint light state", async () => {
+        const entity = getZ2MEntity(devices.bulb);
+        assert(entity.isDevice());
+        const definition = entity.definition;
+        assert(definition);
+        const originalExposes = definition.exposes;
+        const lightType = new zhc.Enum("light_type", zhc.access.STATE_SET, ["led", "incandescent", "halogen"]);
+        definition.exposes = (device, options) => {
+            const exposes = typeof originalExposes === "function" ? originalExposes(device, options) : originalExposes;
+            return [...exposes, lightType];
+        };
+
+        try {
+            await resetExtension();
+            expect(mockMQTTPublishAsync).toHaveBeenCalledWith(
+                "homeassistant/select/0x000b57fffec6a5b2/light_type/config",
+                expect.any(String),
+                expect.any(Object),
+            );
+
+            mockMQTTPublishAsync.mockClear();
+            await extension.onPublishEntityState({
+                entity,
+                message: {state: "OFF", brightness: 254, light_type: "led", linkquality: 255},
+                payload: {light_type: "led"},
+            });
+
+            expect(mockMQTTPublishAsync).not.toHaveBeenCalledWith("zigbee2mqtt/bulb/type", expect.any(String), expect.any(Object));
+
+            // Multi-endpoint covers still republish onto the endpoint topic.
+            const cover = getZ2MEntity(devices.TS130F_DUAL_COVER_SWITCH);
+            mockMQTTPublishAsync.mockClear();
+            await extension.onPublishEntityState({
+                entity: cover,
+                message: {state_left: "OPEN", position_left: 20},
+                payload: {position_left: 20},
+            });
+            expect(mockMQTTPublishAsync).toHaveBeenCalledWith("zigbee2mqtt/0xa4c138018cf95021/left", stringify({state: "OPEN", position: 20}), {});
+        } finally {
+            definition.exposes = originalExposes;
+        }
+    });
+
     it("Shouldnt crash in onPublishEntityState on group publish", async () => {
         mockLogger.error.mockClear();
         mockMQTTPublishAsync.mockClear();

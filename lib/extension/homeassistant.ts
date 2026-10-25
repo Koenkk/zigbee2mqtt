@@ -1565,9 +1565,11 @@ export class HomeAssistant extends Extension {
                 }
                 /* v8 ignore stop */
 
+                const component = topicMatch[1];
                 const objectID = topicMatch[3];
-                const lightMatch = /^light_(.*)/.exec(objectID);
-                const coverMatch = /^cover_(.*)/.exec(objectID);
+                // Only endpoint lights/covers (`light_l1`, `cover_left`, ...). A `light_type` select shares the prefix.
+                const lightMatch = component === "light" ? /^light_(.*)/.exec(objectID) : null;
+                const coverMatch = component === "cover" ? /^cover_(.*)/.exec(objectID) : null;
 
                 const match = lightMatch || coverMatch;
 
