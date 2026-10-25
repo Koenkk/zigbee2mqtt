@@ -1187,6 +1187,9 @@ describe("Extension: HomeAssistant", () => {
             retain: true,
             qos: 1,
         });
+        expect(mockLogger.warning).toHaveBeenCalledWith(
+            "Overriding the Home Assistant type of 'my_switch' from switch to light is deprecated and will be removed in a future release, use 'Show as' in Home Assistant instead",
+        );
     });
 
     it("Shouldnt discover devices when homeassistant null is set in device options", async () => {
