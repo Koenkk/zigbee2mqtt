@@ -467,6 +467,25 @@ export default class Bridge extends Extension {
         const ID = message.id;
         const entity = this.getEntity(entityType, ID);
 
+        const readOnlyOptions = new Set(
+            Object.entries(settings.schemaJson.definitions[entityType].properties)
+                .filter(([, property]) => "readOnly" in property && property.readOnly)
+                .map(([key]) => key),
+        );
+
+        for (const option of Object.keys(message.options)) {
+            if (readOnlyOptions.has(option)) {
+                if (option === "friendly_name") {
+                    logger.error(`Option '${option}' can only be changed with the 'rename' topic for ${entityType} '${ID}'`);
+                    /* v8 ignore start */
+                } else {
+                    // friendly_name is currently the only read-only option
+                    logger.error(`Option '${option}' is read-only for ${entityType} '${ID}'`);
+                }
+                /* v8 ignore stop */
+            }
+        }
+
         if (entity instanceof Device) {
             const supportedOptions = new Set(Object.keys(settings.schemaJson.definitions.device.properties));
             for (const option of entity.definition?.options ?? []) {
