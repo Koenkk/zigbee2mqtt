@@ -480,6 +480,10 @@ export default class Bridge extends Extension {
             }
         }
 
+        if (Object.keys(cleanup(message.options)).length === 0) {
+            throw new Error(`No options were changed for ${entityType} '${ID}'`);
+        }
+
         const oldOptions = objectAssignDeep({}, cleanup(entity.options));
 
         if (message.options.icon) {
