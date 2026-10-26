@@ -1,3 +1,6 @@
+# Zigbee2MQTT configuration
+#   Please stop Zigbee2MQTT before editing this file, otherwise your changes will be overwritten.
+
 # Indicates the configuration version (used by configuration migrations)
 version: 5
 
