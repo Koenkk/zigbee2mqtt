@@ -824,6 +824,12 @@
                     "description": "Enable external JavaScript (extensions and converters) that can execute arbitrary user-provided code. WARNING: If unused, it is advised to disable this.",
                     "default": true,
                     "requiresRestart": true
+                },
+                "read_missing_config_on_reconnect": {
+                    "type": "boolean",
+                    "title": "Read missing config on reconnect",
+                    "description": "When a device reconnects, also read a fixed set of known configuration values (e.g. power_on_behavior, child_lock) whose state is still missing. Adds up to one read per supported, missing value per device; values already known are not read again.",
+                    "default": false
                 }
             }
         },

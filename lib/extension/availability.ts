@@ -356,7 +356,11 @@ export default class Availability extends Extension {
                 continue;
             }
 
-            if (item.missingOnly && item.keys.every((key) => state[key] !== undefined && state[key] !== null && state[key] !== "unknown")) {
+            if (
+                item.missingOnly &&
+                (!settings.get().advanced.read_missing_config_on_reconnect ||
+                    item.keys.every((key) => state[key] !== undefined && state[key] !== null && state[key] !== "unknown"))
+            ) {
                 continue;
             }
 
