@@ -3625,6 +3625,35 @@ describe("Extension: Bridge", () => {
         );
     });
 
+    it("Should log an error when changing the read-only device option: friendly_name", async () => {
+        mockMQTTPublishAsync.mockClear();
+        mockLogger.error.mockClear();
+
+        mockMQTTEvents.message(
+            "zigbee2mqtt/bridge/request/device/options",
+            stringify({options: {friendly_name: "new_name", retain: false}, id: "bulb"}),
+        );
+        await flushPromises();
+
+        expect(mockLogger.error).toHaveBeenCalledWith("Option 'friendly_name' can only be changed with the 'rename' topic for device 'bulb'");
+        expect(settings.getDevice("bulb")).toHaveProperty("friendly_name", "bulb");
+        expect(settings.getDevice("bulb")).toHaveProperty("retain", false);
+        expect(mockMQTTPublishAsync).toHaveBeenCalledWith("zigbee2mqtt/bridge/response/device/options", expect.stringContaining('"status":"ok"'), {});
+    });
+
+    it("Should reject device options requests with no changeable options", async () => {
+        mockMQTTPublishAsync.mockClear();
+
+        mockMQTTEvents.message("zigbee2mqtt/bridge/request/device/options", stringify({options: {friendly_name: "new_name"}, id: "bulb"}));
+        await flushPromises();
+
+        expect(mockMQTTPublishAsync).toHaveBeenCalledWith(
+            "zigbee2mqtt/bridge/response/device/options",
+            stringify({data: {}, status: "error", error: `No options were changed for device 'bulb'`}),
+            {},
+        );
+    });
+
     it.each([
         ["data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAJ", "device_icons/effcad234beeb56ea7c457cf2d36d10b.png", true],
         ["some_icon.png", "some_icon.png", false],
