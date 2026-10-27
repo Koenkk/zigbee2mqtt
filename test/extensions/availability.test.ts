@@ -299,10 +299,8 @@ describe("Extension: Availability", () => {
         expect(endpoint.read).toHaveBeenCalledTimes(0);
         await setTimeAndAdvanceTimers(utils.seconds(2));
 
-        expect(endpoint.read.mock.calls).toStrictEqual([
-            ["genOnOff", ["onOff"]],
-            ["genOnOff", ["startUpOnOff"]],
-        ]);
+        expect(endpoint.read).toHaveBeenCalledTimes(1);
+        expect(endpoint.read).toHaveBeenCalledWith("genOnOff", ["onOff"]);
 
         endpoint.read.mockClear();
         await mockZHEvents.deviceAnnounce({device: devices.bulb_color});
@@ -311,10 +309,30 @@ describe("Extension: Availability", () => {
             throw new Error("");
         });
         await setTimeAndAdvanceTimers(utils.seconds(3));
-        expect(endpoint.read).toHaveBeenCalledWith("genOnOff", ["onOff"]);
+        expect(endpoint.read).toHaveBeenCalledTimes(1);
+    });
+
+    it("Should also retrieve missing config state when it reconnects and read_missing_config_on_reconnect is enabled", async () => {
+        settings.set(["advanced", "read_missing_config_on_reconnect"], true);
+        const device = controller.zigbee.resolveEntity(devices.bulb_color.ieeeAddr);
+        controller.state.set(device, {state: "OFF"});
+
+        const endpoint = devices.bulb_color.getEndpoint(1);
+        assert(endpoint);
+        endpoint.read.mockClear();
+
+        await mockZHEvents.deviceAnnounce({device: devices.bulb_color});
+        await flushPromises();
+        await setTimeAndAdvanceTimers(utils.seconds(3));
+
+        expect(endpoint.read.mock.calls).toStrictEqual([
+            ["genOnOff", ["onOff"]],
+            ["genOnOff", ["startUpOnOff"]],
+        ]);
     });
 
     it("Should retrieve missing known config state when a device reconnects", async () => {
+        settings.set(["advanced", "read_missing_config_on_reconnect"], true);
         const device = controller.zigbee.resolveEntity(devices.bulb_color.ieeeAddr);
         const endpoint = devices.bulb_color.getEndpoint(1);
         assert(endpoint);
@@ -347,6 +365,7 @@ describe("Extension: Availability", () => {
     });
 
     it("Should retrieve null known config state when a device reconnects", async () => {
+        settings.set(["advanced", "read_missing_config_on_reconnect"], true);
         const device = controller.zigbee.resolveEntity(devices.bulb_color.ieeeAddr);
         const endpoint = devices.bulb_color.getEndpoint(1);
         assert(endpoint);
@@ -378,6 +397,7 @@ describe("Extension: Availability", () => {
     });
 
     it("Should not retrieve known config state for devices that are unavailable for reconnect readback", async () => {
+        settings.set(["advanced", "read_missing_config_on_reconnect"], true);
         const device = controller.zigbee.resolveEntity(devices.bulb_color.ieeeAddr);
         const endpoint = devices.bulb_color.getEndpoint(1);
         assert(endpoint);
@@ -426,6 +446,7 @@ describe("Extension: Availability", () => {
     });
 
     it("Should continue when known config state readback fails", async () => {
+        settings.set(["advanced", "read_missing_config_on_reconnect"], true);
         const device = controller.zigbee.resolveEntity(devices.bulb_color.ieeeAddr);
         const definition = device.definition!;
         const originalToZigbee = definition.toZigbee;
@@ -454,6 +475,7 @@ describe("Extension: Availability", () => {
     });
 
     it("Should skip known config state when a device reconnects", async () => {
+        settings.set(["advanced", "read_missing_config_on_reconnect"], true);
         const device = controller.zigbee.resolveEntity(devices.bulb_color.ieeeAddr);
         const endpoint = devices.bulb_color.getEndpoint(1);
         assert(endpoint);
@@ -485,6 +507,7 @@ describe("Extension: Availability", () => {
     });
 
     it("Should use a bounded static known-config readback list", async () => {
+        settings.set(["advanced", "read_missing_config_on_reconnect"], true);
         const device = controller.zigbee.resolveEntity(devices.bulb_color.ieeeAddr);
         const definition = device.definition!;
         const originalToZigbee = definition.toZigbee;
@@ -515,6 +538,7 @@ describe("Extension: Availability", () => {
     });
 
     it("Should read additional missing config states with their own converter key", async () => {
+        settings.set(["advanced", "read_missing_config_on_reconnect"], true);
         const device = controller.zigbee.resolveEntity(devices.bulb_color.ieeeAddr);
         const definition = device.definition!;
         const originalToZigbee = definition.toZigbee;
