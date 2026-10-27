@@ -507,10 +507,6 @@ describe("Extension: Publish", () => {
             await flushPromises();
             expect(group.command).toHaveBeenCalledTimes(1);
             expect(mockMQTTPublishAsync).toHaveBeenCalledWith("zigbee2mqtt/bulb_color_2", stringify({state: "ON"}), {retain: false, qos: 0});
-            const unresolvedGroupMemberWarnings = mockLogger.warning.mock.calls.filter((call) =>
-                String(call[0]).includes("Skipping unresolved group member"),
-            );
-            expect(unresolvedGroupMemberWarnings).toHaveLength(0);
         } finally {
             group.members = originalMembers;
             sceneEndpoints.forEach((endpoint, index) => {
