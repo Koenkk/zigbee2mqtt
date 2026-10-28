@@ -51,7 +51,7 @@
         "js-yaml": "^5.5.0",
         "mqtt": "^5.16.1",
         "semver": "^7.8.5",
-        "srvx": "^1.0.6",
+        "srvx": "^1.0.7",
         "throttleit": "^3.0.0",
         "winston": "^3.19.0",
         "winston-syslog": "^2.7.1",
@@ -63,7 +63,7 @@
         "zigbee2mqtt-windfront": "2.15.1"
     },
     "devDependencies": {
-        "@biomejs/biome": "^2.5.11",
+        "@biomejs/biome": "^2.6.3",
         "@types/humanize-duration": "^3.27.4",
         "@types/node": "^26.6.5",
         "@types/readable-stream": "4.0.25",
