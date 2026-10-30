@@ -15,6 +15,9 @@ import {stringify} from "../util/stringify";
 import utils from "../util/utils";
 import Extension from "./extension";
 
+// Stay under reverse-proxy idle timeouts (Home Assistant Ingress drops the socket after ~40s).
+export const WEBSOCKET_PING_INTERVAL = utils.seconds(30);
+
 /**
  * This extension servers the frontend
  */
@@ -23,6 +26,8 @@ export class Frontend extends Extension {
     private server: Server | undefined;
     private wss!: WebSocket.Server;
     private baseUrl: string;
+    private websocketPingInterval?: NodeJS.Timeout;
+    private readonly aliveClients = new WeakSet<WebSocket>();
 
     constructor(
         zigbee: Zigbee,
@@ -124,6 +129,8 @@ export class Frontend extends Extension {
         }
 
         this.wss.on("connection", this.onWebSocketConnection);
+        this.wss.on("close", this.clearWebSocketPingInterval);
+        this.websocketPingInterval = setInterval(this.pingWebSocketClients, WEBSOCKET_PING_INTERVAL);
 
         this.eventBus.onMQTTMessagePublished(this, this.onMQTTPublishMessageOrEntityState);
         this.eventBus.onPublishEntityState(this, this.onMQTTPublishMessageOrEntityState);
@@ -131,6 +138,8 @@ export class Frontend extends Extension {
 
     override async stop(): Promise<void> {
         await super.stop();
+
+        this.clearWebSocketPingInterval();
 
         if (this.wss) {
             for (const client of this.wss.clients) {
@@ -158,7 +167,28 @@ export class Frontend extends Extension {
         });
     }
 
+    @bind private clearWebSocketPingInterval(): void {
+        clearInterval(this.websocketPingInterval);
+        this.websocketPingInterval = undefined;
+    }
+
+    @bind private pingWebSocketClients(): void {
+        for (const client of this.wss.clients) {
+            if (!this.aliveClients.has(client)) {
+                client.terminate();
+                continue;
+            }
+
+            this.aliveClients.delete(client);
+            client.ping();
+        }
+    }
+
     @bind private onWebSocketConnection(ws: WebSocket): void {
+        this.aliveClients.add(ws);
+        ws.on("pong", () => {
+            this.aliveClients.add(ws);
+        });
         ws.on("error", (msg) => logger.error(`WebSocket error: ${msg.message}`));
         ws.on("message", (data: Buffer, isBinary: boolean) => {
             if (!isBinary && data) {

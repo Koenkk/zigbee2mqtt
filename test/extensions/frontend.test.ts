@@ -11,6 +11,7 @@ import {stringify} from "../../lib/util/stringify";
 import type {Mock} from "vitest";
 import ws from "ws";
 import {Controller} from "../../lib/controller";
+import {WEBSOCKET_PING_INTERVAL} from "../../lib/extension/frontend";
 import * as settings from "../../lib/util/settings";
 
 const mockRedirectResponse = {
@@ -47,6 +48,7 @@ const mockWSClient = {
         mockWSClientEvents[event] = handler;
     },
     send: vi.fn<(data: string) => void>(),
+    ping: vi.fn<() => void>(),
     terminate: vi.fn<() => void>(),
     readyState: "close",
 };
@@ -54,6 +56,8 @@ const mockWSEvents: Record<string, EventHandler> = {};
 const mockWSClients: (typeof mockWSClient)[] = [];
 const mockWS = {
     clients: mockWSClients,
+    // Present so `disable_ui_serving` can log the standalone server address and finish startup.
+    options: {host: "127.0.0.1", port: 8081, path: "/api"},
     on: (event: string, handler: EventHandler): void => {
         mockWSEvents[event] = handler;
     },
@@ -118,6 +122,7 @@ const mocksClear = [
     mockWS.handleUpgrade,
     mockWS.emit,
     mockWSClient.send,
+    mockWSClient.ping,
     mockWSClient.terminate,
     mockSendNotFound,
     mockRedirectResponse.writeHead,
@@ -487,5 +492,65 @@ describe("Extension: Frontend", () => {
         expect(mockWSClient.terminate).toHaveBeenCalledTimes(1);
         expect(mockHTTP.close).toHaveBeenCalledTimes(0);
         expect(mockWS.close).toHaveBeenCalledTimes(1);
+    });
+
+    describe("WebSocket ping", () => {
+        async function connectClient(disableUiServing: boolean): Promise<void> {
+            if (disableUiServing) {
+                settings.set(["frontend", "disable_ui_serving"], true);
+            }
+
+            controller = new Controller(vi.fn(), vi.fn());
+            await controller.start();
+            mockWS.clients.push(mockWSClient);
+            await mockWSEvents.connection(mockWSClient);
+        }
+
+        it.each([false, true])("sends a ping on the interval when disable_ui_serving=%s", async (disableUiServing) => {
+            await connectClient(disableUiServing);
+
+            expect(mockWSClient.ping).not.toHaveBeenCalled();
+            await vi.advanceTimersByTimeAsync(WEBSOCKET_PING_INTERVAL);
+            expect(mockWSClient.ping).toHaveBeenCalledTimes(1);
+            expect(mockWSClient.terminate).not.toHaveBeenCalled();
+        });
+
+        it("terminates a client that does not pong", async () => {
+            await connectClient(false);
+            await vi.advanceTimersByTimeAsync(WEBSOCKET_PING_INTERVAL);
+            expect(mockWSClient.ping).toHaveBeenCalledTimes(1);
+            expect(mockWSClient.terminate).not.toHaveBeenCalled();
+
+            await vi.advanceTimersByTimeAsync(WEBSOCKET_PING_INTERVAL);
+            expect(mockWSClient.terminate).toHaveBeenCalledTimes(1);
+            expect(mockWSClient.ping).toHaveBeenCalledTimes(1);
+        });
+
+        it("keeps a client that responds with pong", async () => {
+            await connectClient(false);
+            await vi.advanceTimersByTimeAsync(WEBSOCKET_PING_INTERVAL);
+            expect(mockWSClient.ping).toHaveBeenCalledTimes(1);
+            mockWSClientEvents.pong();
+
+            await vi.advanceTimersByTimeAsync(WEBSOCKET_PING_INTERVAL);
+            expect(mockWSClient.terminate).not.toHaveBeenCalled();
+            expect(mockWSClient.ping).toHaveBeenCalledTimes(2);
+        });
+
+        it("clears the ping interval on stop and when the server closes", async () => {
+            await connectClient(false);
+            await vi.advanceTimersByTimeAsync(WEBSOCKET_PING_INTERVAL);
+            expect(mockWSClient.ping).toHaveBeenCalledTimes(1);
+
+            await controller.stop();
+            mockWSClient.ping.mockClear();
+            await vi.advanceTimersByTimeAsync(WEBSOCKET_PING_INTERVAL * 2);
+            expect(mockWSClient.ping).not.toHaveBeenCalled();
+
+            await connectClient(true);
+            mockWSEvents.close();
+            await vi.advanceTimersByTimeAsync(WEBSOCKET_PING_INTERVAL * 2);
+            expect(mockWSClient.ping).not.toHaveBeenCalled();
+        });
     });
 });
