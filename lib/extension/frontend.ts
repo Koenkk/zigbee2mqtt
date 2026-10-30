@@ -162,9 +162,15 @@ export class Frontend extends Extension {
         ws.on("error", (msg) => logger.error(`WebSocket error: ${msg.message}`));
         ws.on("message", (data: Buffer, isBinary: boolean) => {
             if (!isBinary && data) {
-                const message = data.toString();
-                const {topic, payload} = JSON.parse(message);
-                this.mqtt.onMessage(`${this.mqttBaseTopic}/${topic}`, Buffer.from(stringify(payload)));
+                try {
+                    const message = data.toString();
+                    const {topic, payload} = JSON.parse(message);
+                    if (typeof topic === "string") {
+                        this.mqtt.onMessage(`${this.mqttBaseTopic}/${topic}`, Buffer.from(stringify(payload)));
+                    }
+                } catch (error) {
+                    logger.error(`Received invalid websocket message (${(error as Error).message})`);
+                }
             }
         });
 

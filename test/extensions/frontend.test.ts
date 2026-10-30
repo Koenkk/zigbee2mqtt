@@ -262,6 +262,14 @@ describe("Extension: Frontend", () => {
         mockWSClientEvents.message(null, false);
         await flushPromises();
 
+        // Invalid JSON messages are logged instead of crashing the process
+        mockWSClientEvents.message("invalid-json", false);
+        await flushPromises();
+        expect(mockLogger.error).toHaveBeenCalledWith(expect.stringContaining("Received invalid websocket message"));
+        mockWSClientEvents.message("null", false);
+        await flushPromises();
+        expect(mockLogger.error).toHaveBeenCalledWith(expect.stringContaining("Received invalid websocket message"));
+
         // Error
         mockWSClientEvents.error(new Error("This is an error"));
         expect(mockLogger.error).toHaveBeenCalledWith("WebSocket error: This is an error");
