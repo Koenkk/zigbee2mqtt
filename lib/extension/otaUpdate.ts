@@ -255,15 +255,20 @@ export default class OTAUpdate extends Extension {
             | Zigbee2MQTTAPI["bridge/request/device/ota_update/schedule/downgrade"]
             | Zigbee2MQTTAPI["bridge/request/device/ota_update/unschedule"];
         // TODO: deprecated 3.0 should remove string payload, enforce object
-        const messageObject = typeof message === "object";
+        const messageObject = typeof message === "object" && message !== null;
+        const type = topicMatch[1] as "check" | "update" | "schedule" | "unschedule";
 
-        if (messageObject) {
-            assert(message.id, "Invalid payload");
+        if (message === null || (messageObject && !message.id)) {
+            // an AssertionError here would escape without publishing any response
+            await this.mqtt.publish(
+                `bridge/response/device/ota_update/${type}`,
+                stringify(utils.getResponse(message ?? {}, {}, "Invalid payload")),
+            );
+            return;
         }
 
         const id = (messageObject ? message.id : message) as string;
         const device = this.zigbee.resolveEntity(id);
-        const type = topicMatch[1] as "check" | "update" | "schedule" | "unschedule";
         const downgrade = topicMatch[2] === "downgrade";
         const abort = topicMatch[2] === "abort";
         let error: string | undefined;
@@ -361,10 +366,18 @@ export default class OTAUpdate extends Extension {
                             | Zigbee2MQTTAPI["bridge/request/device/ota_update/update/downgrade"];
 
                         if (payload.hex) {
-                            assert(payload.hex.data);
+                            if (!payload.hex.data) {
+                                error = "Invalid payload, 'hex.data' is required";
+                                break;
+                            }
 
                             // write to `dataDir` and pass created path as source URL
-                            source.url = writeFirmwareHexToDataDir(payload.hex.data, payload.hex.file_name, device.ieeeAddr);
+                            try {
+                                source.url = writeFirmwareHexToDataDir(payload.hex.data, payload.hex.file_name, device.ieeeAddr);
+                            } catch (e) {
+                                error = `Failed to write firmware file (${(e as Error).message})`;
+                                break;
+                            }
                         } else if (payload.url) {
                             source.url = payload.url;
                         } else if (!device.definition?.ota) {
@@ -434,10 +447,18 @@ export default class OTAUpdate extends Extension {
                             | Zigbee2MQTTAPI["bridge/request/device/ota_update/schedule/downgrade"];
 
                         if (payload.hex) {
-                            assert(payload.hex.data);
+                            if (!payload.hex.data) {
+                                error = "Invalid payload, 'hex.data' is required";
+                                break;
+                            }
 
                             // write to `dataDir` and pass created path as source URL
-                            source.url = writeFirmwareHexToDataDir(payload.hex.data, payload.hex.file_name, device.ieeeAddr);
+                            try {
+                                source.url = writeFirmwareHexToDataDir(payload.hex.data, payload.hex.file_name, device.ieeeAddr);
+                            } catch (e) {
+                                error = `Failed to write firmware file (${(e as Error).message})`;
+                                break;
+                            }
                         } else if (payload.url) {
                             source.url = payload.url;
                         } else if (!device.definition?.ota) {
