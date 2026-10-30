@@ -15,9 +15,6 @@ import {stringify} from "../util/stringify";
 import utils from "../util/utils";
 import Extension from "./extension";
 
-// Stay under reverse-proxy idle timeouts (Home Assistant Ingress drops the socket after ~40s).
-export const WEBSOCKET_PING_INTERVAL = utils.seconds(30);
-
 /**
  * This extension servers the frontend
  */
@@ -130,7 +127,6 @@ export class Frontend extends Extension {
 
         this.wss.on("connection", this.onWebSocketConnection);
         this.wss.on("close", this.clearWebSocketPingInterval);
-        this.websocketPingInterval = setInterval(this.pingWebSocketClients, WEBSOCKET_PING_INTERVAL);
 
         this.eventBus.onMQTTMessagePublished(this, this.onMQTTPublishMessageOrEntityState);
         this.eventBus.onPublishEntityState(this, this.onMQTTPublishMessageOrEntityState);
@@ -173,6 +169,11 @@ export class Frontend extends Extension {
     }
 
     @bind private pingWebSocketClients(): void {
+        if (this.wss.clients.size === 0) {
+            this.clearWebSocketPingInterval();
+            return;
+        }
+
         for (const client of this.wss.clients) {
             if (!this.aliveClients.has(client)) {
                 client.terminate();
@@ -185,6 +186,14 @@ export class Frontend extends Extension {
     }
 
     @bind private onWebSocketConnection(ws: WebSocket): void {
+        if (this.websocketPingInterval === undefined) {
+            const interval = utils.seconds(settings.get().frontend.websocket_ping_interval);
+
+            if (interval > 0) {
+                this.websocketPingInterval = setInterval(this.pingWebSocketClients, interval);
+            }
+        }
+
         this.aliveClients.add(ws);
         ws.on("pong", () => {
             this.aliveClients.add(ws);

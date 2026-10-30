@@ -43,6 +43,7 @@ export const defaults = {
         package: "zigbee2mqtt-windfront",
         port: 8080,
         base_url: "/",
+        websocket_ping_interval: 30,
     },
     mqtt: {
         base_topic: "zigbee2mqtt",

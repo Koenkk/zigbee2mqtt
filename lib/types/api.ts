@@ -185,6 +185,7 @@ export type Zigbee2MQTTSettings = {
         ssl_key?: string;
         notification_filter?: string[];
         disable_ui_serving?: boolean;
+        websocket_ping_interval: number;
     };
     devices: {[s: string]: Zigbee2MQTTDeviceOptions};
     groups: {[s: string]: Omit<Zigbee2MQTTGroupOptions, "ID">};
