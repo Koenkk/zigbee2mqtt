@@ -384,6 +384,28 @@ describe("Extension: Availability", () => {
         devices.bulb_color.ping = vi.fn(); // ensure reset
     });
 
+    it("Should drain the ping queue in one run instead of re-entering per device", async () => {
+        // Re-entering after every ping kept each finished ping's promise pending until the queue ran empty. A queue
+        // that never runs empty (unreachable routers pinged back-to-back) grew that chain without bound.
+        const availability = controller.getExtension("Availability")! as Availability;
+        // @ts-expect-error private
+        const executeNextSpy = vi.spyOn(availability, "pingQueueExecuteNext");
+
+        for (const zh of [devices.bulb_color, devices.bulb_2, devices.ZNCZ02LM]) {
+            // @ts-expect-error private
+            availability.addToPingQueue(controller.zigbee.resolveEntity(zh));
+        }
+        await flushPromises();
+
+        expect(devices.bulb_color.ping).toHaveBeenCalledTimes(1);
+        expect(devices.bulb_2.ping).toHaveBeenCalledTimes(1);
+        expect(devices.ZNCZ02LM.ping).toHaveBeenCalledTimes(1);
+        // @ts-expect-error private
+        expect(availability.pingQueue).toEqual([]);
+        // once per addToPingQueue, none from inside the run
+        expect(executeNextSpy).toHaveBeenCalledTimes(3);
+    });
+
     it("Should prevent instance restart", async () => {
         const availability = controller.getExtension("Availability")! as Availability;
 

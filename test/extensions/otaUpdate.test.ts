@@ -961,6 +961,31 @@ describe("Extension: OTAUpdate", () => {
         );
     });
 
+    it("responds with NO_IMAGE_AVAILABLE when device requests again within the update check interval", async () => {
+        const data = {imageType: 12382, manufacturerCode: 2134, fileVersion: 33};
+        devices.bulb.checkOta.mockResolvedValueOnce({
+            available: false,
+            current: {...DEFAULT_CURRENT, ...data},
+            availableMeta: {...DEFAULT_AVAILABLE_META, fileVersion: 33},
+        });
+        const payload = {
+            data,
+            cluster: "genOta",
+            device: devices.bulb,
+            endpoint: devices.bulb.getEndpoint(1)!,
+            type: "commandQueryNextImageRequest",
+            linkquality: 10,
+            meta: {zclTransactionSequenceNumber: 10},
+        };
+        await mockZHEvents.message(payload);
+        await flushPromises();
+        await mockZHEvents.message({...payload, meta: {zclTransactionSequenceNumber: 11}});
+        await flushPromises();
+        expect(devices.bulb.checkOta).toHaveBeenCalledTimes(1);
+        expect(devices.bulb.endpoints[0].commandResponse).toHaveBeenCalledTimes(2);
+        expect(devices.bulb.endpoints[0].commandResponse).toHaveBeenLastCalledWith("genOta", "queryNextImageResponse", {status: 0x98}, undefined, 11);
+    });
+
     it("does not check for update when device requests it and disable_automatic_update_check is set to true", async () => {
         settings.set(["ota", "disable_automatic_update_check"], true);
         const data = {imageType: 12382, manufacturerCode: 2134, fileVersion: 33};

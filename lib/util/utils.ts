@@ -288,6 +288,10 @@ export const hours = (hours: number): number => 1000 * 60 * 60 * hours;
 export const minutes = (minutes: number): number => 1000 * 60 * minutes;
 export const seconds = (seconds: number): number => 1000 * seconds;
 
+function isDebouncedOrThrottled(device: Device): boolean {
+    return Boolean(device.options.debounce || device.options.throttle);
+}
+
 async function publishLastSeen(
     data: eventdata.LastSeenChanged,
     settings: Settings,
@@ -300,8 +304,12 @@ async function publishLastSeen(
      *      message based on the received zigbee message. In this case allowMessageEmitted has to be true.
      * - In case reason !== messageEmitted, controller.ts will call this based on the zigbee-herdsman
      *      lastSeenChanged event.
+     * - In case reason == messageNonEmitted and the device has debounce or throttle set, receive.ts publishes
+     *      it through the per-device debounce/throttle, so skip it here.
      */
-    const allow = data.reason !== "messageEmitted" || (data.reason === "messageEmitted" && allowMessageEmitted);
+    const allow =
+        (data.reason !== "messageEmitted" || (data.reason === "messageEmitted" && allowMessageEmitted)) &&
+        !(data.reason === "messageNonEmitted" && isDebouncedOrThrottled(data.device));
     if (settings.advanced.last_seen && settings.advanced.last_seen !== "disable" && allow) {
         await publishEntityState(data.device, {}, "lastSeenChanged");
     }
