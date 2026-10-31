@@ -20,6 +20,7 @@ returnDevices.push(
     devices.bulb_2.ieeeAddr,
     devices.GLEDOPTO_2ID.ieeeAddr,
     devices.InovelliVZM31SN.ieeeAddr,
+    devices.zigfred_plus.ieeeAddr,
 );
 
 describe("Extension: Groups", () => {
@@ -360,6 +361,36 @@ describe("Extension: Groups", () => {
         expect(mockMQTTPublishAsync).toHaveBeenCalledWith("zigbee2mqtt/bulb_color", stringify({state: "OFF"}), {retain: false, qos: 0});
         expect(mockMQTTPublishAsync).toHaveBeenCalledWith("zigbee2mqtt/wall_switch_double", stringify({state_left: "OFF"}), {retain: false, qos: 0});
         expect(mockMQTTPublishAsync).toHaveBeenCalledWith("zigbee2mqtt/group_1", stringify({state: "OFF"}), {retain: false, qos: 0});
+    });
+
+    it.each([
+        {name: "still on", l2: "ON", groupOff: false},
+        {name: "off", l2: "OFF", groupOff: true},
+    ])("Should check the state of the member endpoint by its name when its ID is not its position ($name)", async ({l2, groupOff}) => {
+        // ZFP-1A-CH maps l2 to endpoint 7, so its state is state_l2, not state_<getEndpointNames()[7 - 1]>
+        const device_1 = devices.bulb_color;
+        const endpoint_1 = device_1.getEndpoint(1)!;
+        const endpoint_2 = devices.zigfred_plus.getEndpoint(7)!;
+        const group = groups.group_1;
+        group.members.push(endpoint_1);
+        group.members.push(endpoint_2);
+        settings.set(["groups"], {
+            1: {friendly_name: "group_1", retain: false},
+        });
+        await mockMQTTEvents.message("zigbee2mqtt/group_1/set", stringify({state: "ON"}));
+        await flushPromises();
+        // @ts-expect-error private
+        controller.state.set(controller.zigbee.resolveEntity(devices.zigfred_plus.ieeeAddr)!, {state_l2: l2});
+        mockMQTTPublishAsync.mockClear();
+
+        await mockMQTTEvents.message("zigbee2mqtt/bulb_color/set", stringify({state: "OFF"}));
+        await flushPromises();
+        expect(mockMQTTPublishAsync).toHaveBeenCalledWith("zigbee2mqtt/bulb_color", stringify({state: "OFF"}), {retain: false, qos: 0});
+        if (groupOff) {
+            expect(mockMQTTPublishAsync).toHaveBeenCalledWith("zigbee2mqtt/group_1", stringify({state: "OFF"}), {retain: false, qos: 0});
+        } else {
+            expect(mockMQTTPublishAsync).not.toHaveBeenCalledWith("zigbee2mqtt/group_1", stringify({state: "OFF"}), {retain: false, qos: 0});
+        }
     });
 
     it("Should not publish state change off if any lights within are still on when changed via shared group", async () => {

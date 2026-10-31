@@ -27,17 +27,17 @@ importers:
         specifier: ^3.35.0
         version: 3.35.0
       js-yaml:
-        specifier: ^5.4.2
-        version: 5.4.2
+        specifier: ^5.5.0
+        version: 5.5.0
       mqtt:
-        specifier: ^5.16.0
-        version: 5.16.0(supports-color@7.2.0)
+        specifier: ^5.16.1
+        version: 5.16.1(supports-color@7.2.0)
       semver:
         specifier: ^7.8.5
         version: 7.8.5
       srvx:
-        specifier: ^1.0.5
-        version: 1.0.5
+        specifier: ^1.0.6
+        version: 1.0.6
       throttleit:
         specifier: ^3.0.0
         version: 3.0.0
@@ -54,17 +54,17 @@ importers:
         specifier: ^8.22.0
         version: 8.22.0
       zigbee-herdsman:
-        specifier: 10.10.0
-        version: 10.10.0(supports-color@7.2.0)
+        specifier: 11.1.1
+        version: 11.1.1(supports-color@7.2.0)
       zigbee-herdsman-converters:
-        specifier: 26.115.1
-        version: 26.115.1(supports-color@7.2.0)
+        specifier: 26.125.0
+        version: 26.125.0(supports-color@7.2.0)
       zigbee2mqtt-frontend:
         specifier: 0.9.21
         version: 0.9.21
       zigbee2mqtt-windfront:
-        specifier: 2.15.0
-        version: 2.15.0
+        specifier: 2.15.1
+        version: 2.15.1
     devDependencies:
       '@biomejs/biome':
         specifier: ^2.5.11
@@ -73,14 +73,14 @@ importers:
         specifier: ^3.27.4
         version: 3.27.4
       '@types/node':
-        specifier: ^26.6.3
-        version: 26.6.3
+        specifier: ^26.6.5
+        version: 26.6.5
       '@types/readable-stream':
-        specifier: 4.0.24
-        version: 4.0.24
+        specifier: 4.0.25
+        version: 4.0.25
       '@types/ws':
-        specifier: 8.18.1
-        version: 8.18.1
+        specifier: 8.18.2
+        version: 8.18.2
       '@vitest/coverage-v8':
         specifier: ^4.1.11
         version: 4.1.11(vitest@4.1.11)
@@ -92,7 +92,7 @@ importers:
         version: 7.0.2
       vitest:
         specifier: ^4.1.11
-        version: 4.1.11(@types/node@26.6.3)(@vitest/coverage-v8@4.1.11)(vite@7.3.6(@types/node@26.6.3))
+        version: 4.1.11(@types/node@26.6.5)(@vitest/coverage-v8@4.1.11)(vite@7.3.6(@types/node@26.6.5))
     optionalDependencies:
       unix-dgram:
         specifier: ^2.0.7
@@ -544,17 +544,17 @@ packages:
   '@types/humanize-duration@3.27.4':
     resolution: {integrity: sha512-yaf7kan2Sq0goxpbcwTQ+8E9RP6HutFBPv74T/IA/ojcHKhuKVlk2YFYyHhWZeLvZPzzLE3aatuQB4h0iqyyUA==}
 
-  '@types/node@26.6.3':
-    resolution: {integrity: sha512-dsqMQQoeTLqu9wynDD00q573mNzso3IdQOAfHRJqLCcmCFPoGo9A1bDpUcv/9tnKpErQWv9uKeGfl37EIS02Yg==}
+  '@types/node@26.6.5':
+    resolution: {integrity: sha512-uMzsv9stDdofIZBx4UGh4Z9ZgXnGC9seRDscilBcTHAeOFk67MZg/k9bWVfO+bk4qZmG+l52hRnLwUiH2LnJTg==}
 
-  '@types/readable-stream@4.0.24':
-    resolution: {integrity: sha512-NRvUNC/JFGPJvqdAfEve8oginbM6V08u5NzLWpG8MwA2kTPOLnqk+wpwuPT+mp3aUsxyuT6m2gnrPuHYCruzEg==}
+  '@types/readable-stream@4.0.25':
+    resolution: {integrity: sha512-7GsxL8Wd5X3jh73/qgW7WCnbBvGSdD8U3E4Jiuus3/8I+PN20DtlkJtwFhr/sImXfDDQ2Z03i/9wNiIF3TVSsw==}
 
   '@types/triple-beam@1.3.5':
     resolution: {integrity: sha512-6WaYesThRMCl19iryMYP7/x2OVgCtbIVflDGFpWnb9irXI3UjYE4AzmYuiUKY1AJstGijoY+MgUszMgRxIYTYw==}
 
-  '@types/ws@8.18.1':
-    resolution: {integrity: sha512-ThVF6DCVhA8kUGy+aazFQ4kXQ7E1Ty7A3ypFOe0IcJV8O/M511G99AW24irKrW56Wt44yG9+ij8FaqoBGkuBXg==}
+  '@types/ws@8.18.2':
+    resolution: {integrity: sha512-67MQl+fpWKVTT1NYdnmo3U4sc/xPo/zQBncVnI74qmQa0z/b+1g6iYqNmGCPbxO+zz2aklb08a0oHfegiVd0/w==}
 
   '@typescript/typescript-aix-ppc64@7.0.2':
     resolution: {integrity: sha512-MTKKkWB7p/0E9xi1d1tHtZ5PiLkGEMIq88pK2CubZjOsLtYTLqhgIgi6zepFa+9GHZ6h05NMCkQxGKiPXMxXtQ==}
@@ -721,8 +721,8 @@ packages:
   ajv@8.20.0:
     resolution: {integrity: sha512-Thbli+OlOj+iMPYFBVBfJ3OmCAnaSyNn4M1vz9T6Gka5Jt9ba/HIR56joy65tY6kx/FCF5VXNB819Y7/GUrBGA==}
 
-  argparse@2.0.1:
-    resolution: {integrity: sha512-8+9WqebbFzpX9OR+Wa6O29asIogeRMzcGtAINdpMHHyAg10f05aSFVBbcEqGf/PXw1EjAZ+q2/bEBg3DvurK3Q==}
+  argparse@3.0.3:
+    resolution: {integrity: sha512-Sn98ftV3KfsO8xfLPHG6oT8y+b0yvbrLgZjgPDXsharNY15tTAjqIsIju4S32nl6/iEUNNE4v+yL2Zhm8ooP3w==}
 
   assertion-error@2.0.1:
     resolution: {integrity: sha512-Izi8RQcffqCeNVgFigKli1ssklIbpHnCYc6AknXGYoB6grJqyeby7jv12JUQgmTAnIDnbck1uxksT4dzN3PWBA==}
@@ -903,8 +903,8 @@ packages:
   inherits@2.0.4:
     resolution: {integrity: sha512-k/vGaX4/Yla3WzyMCvTQOXYeIHvqOKtnqBduzTHpzpQZzAskKMhZ2K+EnBiSM9zGSoIFeMpXKxa4dYeZIQqewQ==}
 
-  ip-address@10.7.0:
-    resolution: {integrity: sha512-BGFsyJd5mpXp3rK6jIdADLNgpJUK1jnjzvYF8lK+VyDab9JAmqN0YOKDdP17HlgKb2+ehPgDc8EtnRLbGCAMhA==}
+  ip-address@10.7.2:
+    resolution: {integrity: sha512-7H/2gFSIitxc0hG3nOI1glS8QLo/EHBFFLk8vEUjXY/xu0AdL8jZ9U1IzO2PUm0d2D/ofQcAifb0g6OBkt8U7w==}
     engines: {node: '>= 12'}
 
   is-stream@2.0.1:
@@ -926,8 +926,8 @@ packages:
   js-tokens@10.0.0:
     resolution: {integrity: sha512-lM/UBzQmfJRo9ABXbPWemivdCW8V2G8FHaHdypQaIy523snUjog0W71ayWXTjiR+ixeMyVHN2XcpnTd/liPg/Q==}
 
-  js-yaml@5.4.2:
-    resolution: {integrity: sha512-m+aqu+LwO1O6sIopafj8HUVl5aawITwZQe/yHpMCKjaWBaA/d07B/QdMb3529REftiU+RMMHL3Vlsw3hON7vWg==}
+  js-yaml@5.5.0:
+    resolution: {integrity: sha512-paNr4LFIFPjeeSmwNYdrb8FafLLG/Cr2Af3GjbsHJ5CxIjH4r0c2emlmRdAtpPAieP1gRVzk6buBbVP5gBMGAg==}
     hasBin: true
 
   json-schema-traverse@1.0.0:
@@ -959,8 +959,8 @@ packages:
   mqtt-packet@9.0.2:
     resolution: {integrity: sha512-MvIY0B8/qjq7bKxdN1eD+nrljoeaai+qjLJgfRn3TiMuz0pamsIWY2bFODPZMSNmabsLANXsLl4EMoWvlaTZWA==}
 
-  mqtt@5.16.0:
-    resolution: {integrity: sha512-G0VsEtuJz5sJUgZJaaADMVfW7SIFPzkIuHR+d6rk+tBeSwdCfd9BaIRycRfd2AbyFDEmLlFM+SDQeti/+IbOnw==}
+  mqtt@5.16.1:
+    resolution: {integrity: sha512-9aEaiR/mLblsMAiynD8quhcGTaINdta2bdyknAtfVzESfoe6Ncdh/uEs5p+3zqcTEtgYErwL4pNk0QkAynXxlg==}
     engines: {node: '>=16.0.0'}
     hasBin: true
 
@@ -1072,8 +1072,8 @@ packages:
     resolution: {integrity: sha512-UcjcJOWknrNkF6PLX83qcHM6KHgVKNkV62Y8a5uYDVv9ydGQVwAHMKqHdJje1VTWpljG0WYpCDhrCdAOYH4TWg==}
     engines: {node: '>= 10.x'}
 
-  srvx@1.0.5:
-    resolution: {integrity: sha512-KvSKRpgPG/oaq3cyT614OQ2bAa7DynuGamivCZeoZzIUULOdbQz6wUtnnVuC4+DCx2Zglzo8v5gBYmWIWYhDxA==}
+  srvx@1.0.6:
+    resolution: {integrity: sha512-QeTKgAhk8OSsfeq60bl3wuVs9PmBftzmk7owBInA/F1YQne+TRw0UcPymNpURldAmx8hfmM2PNNGH/zgo3GpLA==}
     engines: {node: '>=20.16.0'}
     hasBin: true
 
@@ -1275,24 +1275,24 @@ packages:
       utf-8-validate:
         optional: true
 
-  zigbee-herdsman-converters@26.115.1:
-    resolution: {integrity: sha512-JSoTPMdKNP6OhiR6Ahd1uueNOclhVReDhNnp7a2vmQJMpYrT2dLV//pzZwtRSu8sKFQ7CPoj+jBTEEMMhP/DRA==}
+  zigbee-herdsman-converters@26.125.0:
+    resolution: {integrity: sha512-ZHOPORTkaWnGYuwFhK0EldJzUqQOl+fDhNx9yEte7zjp8I9vw7+XPZis6MBCTnaWxKcunifOfg4e6/nfaUIiUw==}
     engines: {node: ^22.2.0 || ^24 || <=26.2}
 
-  zigbee-herdsman@10.10.0:
-    resolution: {integrity: sha512-sd4ReEBDjC4UP7RzQjaAD0nP+WrDXaAac+ASJec0GNDcpyfbnT0qh+wJ2l8C3mw12f5eXX4nnA88A7h58QdTYA==}
+  zigbee-herdsman@11.1.1:
+    resolution: {integrity: sha512-8/keN//8VW6E/CbeUUlmwSZBYfCk8+qUXM9OHscdnnsv5/8RqoIb5qS7Cc1fJNWOPgPBvr4xHOZCVqAF6Q6f9Q==}
     engines: {node: ^22.2.0 || ^24 || <=26.2}
 
-  zigbee-on-host@0.2.4:
-    resolution: {integrity: sha512-NIG6CWp+Yfn7PjqEIRvenHqpwT1U7rSkyimnFOUIFpnmxQOJKrmcwWDfn6WjbU/YIYYWSQPlj+g13icu1xwlyg==}
-    engines: {node: ^20.19.0 || >=22.12.0}
+  zigbee-on-host@0.3.2:
+    resolution: {integrity: sha512-63/Magh42EyUmJsMkCwh56oi1jXGzPj6nFJKIZcFvfDo8ZpUSaW2pmRArW5inhyhLDr4TjpJay7GeH5NpON35g==}
+    engines: {node: '>=22.12.0'}
 
   zigbee2mqtt-frontend@0.9.21:
     resolution: {integrity: sha512-ClHYlG7g0v/tnIsD6kycNCi1ZEKIbQuU7lGJR3WqYcDmuqEMVcHDGbRiRwYRQcZGMxkqCf7guxNsXiKnC10+kg==}
     engines: {node: '>=20.11'}
 
-  zigbee2mqtt-windfront@2.15.0:
-    resolution: {integrity: sha512-t3JiUjzfLoaHJhYfN36lx1FObOm6unMOP4d4h6lh/KTbH5re75NDSaW6BHbHX8fZvbutxq5gF7WH9KV1vtXg5Q==}
+  zigbee2mqtt-windfront@2.15.1:
+    resolution: {integrity: sha512-G6Gwq1AGmGwHDIRHx3zuG70vQCLvNVHck/K0435Ay3ZbTGNz3KXt44r8+3+YT2u1OKcohdlUepUaqpqyeccGGA==}
     engines: {node: '>=22.22.2'}
 
 snapshots:
@@ -1569,19 +1569,19 @@ snapshots:
 
   '@types/humanize-duration@3.27.4': {}
 
-  '@types/node@26.6.3':
+  '@types/node@26.6.5':
     dependencies:
       undici-types: 8.9.0
 
-  '@types/readable-stream@4.0.24':
+  '@types/readable-stream@4.0.25':
     dependencies:
-      '@types/node': 26.6.3
+      '@types/node': 26.6.5
 
   '@types/triple-beam@1.3.5': {}
 
-  '@types/ws@8.18.1':
+  '@types/ws@8.18.2':
     dependencies:
-      '@types/node': 26.6.3
+      '@types/node': 26.6.5
 
   '@typescript/typescript-aix-ppc64@7.0.2':
     optional: true
@@ -1655,7 +1655,7 @@ snapshots:
       obug: 2.2.1
       std-env: 4.2.0
       tinyrainbow: 3.1.1
-      vitest: 4.1.11(@types/node@26.6.3)(@vitest/coverage-v8@4.1.11)(vite@7.3.6(@types/node@26.6.3))
+      vitest: 4.1.11(@types/node@26.6.5)(@vitest/coverage-v8@4.1.11)(vite@7.3.6(@types/node@26.6.5))
 
   '@vitest/expect@4.1.11':
     dependencies:
@@ -1666,13 +1666,13 @@ snapshots:
       chai: 6.2.2
       tinyrainbow: 3.1.1
 
-  '@vitest/mocker@4.1.11(vite@7.3.6(@types/node@26.6.3))':
+  '@vitest/mocker@4.1.11(vite@7.3.6(@types/node@26.6.5))':
     dependencies:
       '@vitest/spy': 4.1.11
       estree-walker: 3.0.3
       magic-string: 0.30.21
     optionalDependencies:
-      vite: 7.3.6(@types/node@26.6.3)
+      vite: 7.3.6(@types/node@26.6.5)
 
   '@vitest/pretty-format@4.1.11':
     dependencies:
@@ -1709,7 +1709,7 @@ snapshots:
       json-schema-traverse: 1.0.0
       require-from-string: 2.0.2
 
-  argparse@2.0.1: {}
+  argparse@3.0.3: {}
 
   assertion-error@2.0.1: {}
 
@@ -1732,7 +1732,7 @@ snapshots:
 
   bl@6.1.6:
     dependencies:
-      '@types/readable-stream': 4.0.24
+      '@types/readable-stream': 4.0.25
       buffer: 6.0.3
       inherits: 2.0.4
       readable-stream: 4.7.0
@@ -1888,7 +1888,7 @@ snapshots:
 
   inherits@2.0.4: {}
 
-  ip-address@10.7.0: {}
+  ip-address@10.7.2: {}
 
   is-stream@2.0.1: {}
 
@@ -1907,9 +1907,9 @@ snapshots:
 
   js-tokens@10.0.0: {}
 
-  js-yaml@5.4.2:
+  js-yaml@5.5.0:
     dependencies:
-      argparse: 2.0.1
+      argparse: 3.0.3
 
   json-schema-traverse@1.0.0: {}
 
@@ -1950,10 +1950,10 @@ snapshots:
     transitivePeerDependencies:
       - supports-color
 
-  mqtt@5.16.0(supports-color@7.2.0):
+  mqtt@5.16.1(supports-color@7.2.0):
     dependencies:
-      '@types/readable-stream': 4.0.24
-      '@types/ws': 8.18.1
+      '@types/readable-stream': 4.0.25
+      '@types/ws': 8.18.2
       commist: 3.2.0
       concat-stream: 2.0.0
       debug: 4.4.3(supports-color@7.2.0)
@@ -2076,14 +2076,14 @@ snapshots:
 
   socks@2.8.9:
     dependencies:
-      ip-address: 10.7.0
+      ip-address: 10.7.2
       smart-buffer: 4.2.0
 
   source-map-js@1.2.1: {}
 
   split2@4.2.0: {}
 
-  srvx@1.0.5: {}
+  srvx@1.0.6: {}
 
   stack-trace@0.0.10: {}
 
@@ -2163,7 +2163,7 @@ snapshots:
 
   util-deprecate@1.0.2: {}
 
-  vite@7.3.6(@types/node@26.6.3):
+  vite@7.3.6(@types/node@26.6.5):
     dependencies:
       esbuild: 0.28.2
       fdir: 6.5.0(picomatch@4.0.7)
@@ -2172,13 +2172,13 @@ snapshots:
       rollup: 4.63.1
       tinyglobby: 0.2.17
     optionalDependencies:
-      '@types/node': 26.6.3
+      '@types/node': 26.6.5
       fsevents: 2.3.3
 
-  vitest@4.1.11(@types/node@26.6.3)(@vitest/coverage-v8@4.1.11)(vite@7.3.6(@types/node@26.6.3)):
+  vitest@4.1.11(@types/node@26.6.5)(@vitest/coverage-v8@4.1.11)(vite@7.3.6(@types/node@26.6.5)):
     dependencies:
       '@vitest/expect': 4.1.11
-      '@vitest/mocker': 4.1.11(vite@7.3.6(@types/node@26.6.3))
+      '@vitest/mocker': 4.1.11(vite@7.3.6(@types/node@26.6.5))
       '@vitest/pretty-format': 4.1.11
       '@vitest/runner': 4.1.11
       '@vitest/snapshot': 4.1.11
@@ -2195,10 +2195,10 @@ snapshots:
       tinyexec: 1.3.1
       tinyglobby: 0.2.17
       tinyrainbow: 3.1.1
-      vite: 7.3.6(@types/node@26.6.3)
+      vite: 7.3.6(@types/node@26.6.5)
       why-is-node-running: 2.3.0
     optionalDependencies:
-      '@types/node': 26.6.3
+      '@types/node': 26.6.5
       '@vitest/coverage-v8': 4.1.11(vitest@4.1.11)
     transitivePeerDependencies:
       - msw
@@ -2266,15 +2266,15 @@ snapshots:
 
   ws@8.22.0: {}
 
-  zigbee-herdsman-converters@26.115.1(supports-color@7.2.0):
+  zigbee-herdsman-converters@26.125.0(supports-color@7.2.0):
     dependencies:
       iconv-lite: 0.7.3
       semver: 7.8.5
-      zigbee-herdsman: 10.10.0(supports-color@7.2.0)
+      zigbee-herdsman: 11.1.1(supports-color@7.2.0)
     transitivePeerDependencies:
       - supports-color
 
-  zigbee-herdsman@10.10.0(supports-color@7.2.0):
+  zigbee-herdsman@11.1.1(supports-color@7.2.0):
     dependencies:
       '@date-fns/tz': 1.5.0
       '@serialport/bindings-cpp': 13.0.1(supports-color@7.2.0)
@@ -2284,12 +2284,12 @@ snapshots:
       debounce: 3.0.0
       fast-deep-equal: 3.1.3
       slip: 1.0.2
-      zigbee-on-host: 0.2.4
+      zigbee-on-host: 0.3.2
     transitivePeerDependencies:
       - supports-color
 
-  zigbee-on-host@0.2.4: {}
+  zigbee-on-host@0.3.2: {}
 
   zigbee2mqtt-frontend@0.9.21: {}
 
-  zigbee2mqtt-windfront@2.15.0: {}
+  zigbee2mqtt-windfront@2.15.1: {}

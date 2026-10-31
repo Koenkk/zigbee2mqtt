@@ -247,19 +247,20 @@ describe("Extension: Frontend", () => {
             "zigbee2mqtt/bulb_color",
             stringify({
                 state: "ON",
-                effect: null,
-                effect_color: null,
-                effect_speed: null,
-                identify: null,
-                power_on_behavior: null,
                 linkquality: 20,
-                update: {state: null, installed_version: -1, latest_version: -1},
+                update: {installed_version: -1, latest_version: -1},
             }),
             {retain: false, qos: 0},
         );
         mockWSClientEvents.message(undefined, false);
         mockWSClientEvents.message("", false);
         mockWSClientEvents.message(null, false);
+        await flushPromises();
+
+        // Malformed payload, must not escape the listener
+        mockLogger.error.mockClear();
+        expect(() => mockWSClientEvents.message("not json", false)).not.toThrow();
+        expect(mockLogger.error).toHaveBeenCalledWith("Received invalid message from WebSocket: not json");
         await flushPromises();
 
         // Error
@@ -273,13 +274,8 @@ describe("Extension: Frontend", () => {
                 topic: "bulb_color",
                 payload: {
                     state: "ON",
-                    power_on_behavior: null,
-                    effect: null,
-                    effect_color: null,
-                    effect_speed: null,
-                    identify: null,
                     linkquality: 20,
-                    update: {state: null, installed_version: -1, latest_version: -1},
+                    update: {installed_version: -1, latest_version: -1},
                 },
             }),
         );
@@ -303,13 +299,8 @@ describe("Extension: Frontend", () => {
                 payload: {
                     state: "ON",
                     brightness: 90,
-                    power_on_behavior: null,
-                    effect: null,
-                    effect_color: null,
-                    effect_speed: null,
-                    identify: null,
                     linkquality: 20,
-                    update: {state: null, installed_version: -1, latest_version: -1},
+                    update: {installed_version: -1, latest_version: -1},
                 },
             }),
         );

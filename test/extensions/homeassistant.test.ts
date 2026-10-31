@@ -59,6 +59,17 @@ describe("Extension: HomeAssistant", () => {
         return controller.zigbee.resolveEntity(zhDeviceOrGroup)!;
     };
 
+    const createDevice = (exposes: zhc.Expose[], definition: object = {}): Device =>
+        ({
+            definition,
+            isDevice: (): boolean => true,
+            isGroup: (): boolean => false,
+            endpoint: () => undefined,
+            options: {},
+            exposes: (): zhc.Expose[] => exposes,
+            zh: {endpoints: []},
+        }) as Device;
+
     beforeAll(async () => {
         const {getZigbee2MQTTVersion} = await import("../../lib/util/utils.js");
         z2m_version = (await getZigbee2MQTTVersion()).version;
@@ -126,6 +137,115 @@ describe("Extension: HomeAssistant", () => {
         }
 
         expect(duplicated).toStrictEqual([]);
+    });
+
+    /**
+     * Home Assistant logs `Template variable warning: 'dict object' has no attribute '<property>'`
+     * when a `value_template` reads a property which isn't in the payload, reported since 2021 in
+     * #30086, #20949, #20494, #16571, #24386, #15116, #12825, #11848, #7361, #7139, #7073 and #6987.
+     * Guards must check presence, not truthiness: `0`, `false` and `null` are falsy in Jinja, so
+     * `{% if value_json["x"] %}` and `default('', True)` would drop a legitimate `0`.
+     */
+    describe("value_json guards", () => {
+        const findUnguardedReads = (template: string): string[] => {
+            const reads = /value_json(?:\[["']([^"'\]]+)["']\]|\.([A-Za-z_]\w*))/g;
+            const unguarded = new Set<string>();
+
+            for (const match of template.matchAll(reads)) {
+                const property = match[1] ?? match[2];
+                // `default(...)` also guards: Jinja's filter type-checks the `Undefined` instead of
+                // stringifying it, so it doesn't log either. Only counts for the expression it's in,
+                // so a second unguarded read elsewhere in the same template is still reported.
+                const expression = template.slice(template.lastIndexOf("{", match.index), template.indexOf("}", match.index));
+
+                if (!template.includes(`"${property}" in value_json`) && !expression.includes("default(")) {
+                    unguarded.add(property);
+                }
+            }
+
+            return [...unguarded];
+        };
+
+        // One walk over every zigbee-herdsman-converters definition, shared by the checks below.
+        type GeneratedConfig = {type: string; object_id: string; discovery_payload: KeyValueAny};
+        let generatedConfigs: GeneratedConfig[] | undefined;
+
+        const getGeneratedConfigs = async (): Promise<GeneratedConfig[]> => {
+            if (!generatedConfigs) {
+                settings.set(["advanced", "last_seen"], "ISO_8601");
+                generatedConfigs = [];
+
+                for (const baseDefinition of await getZhcBaseDefinitions()) {
+                    const d = zhc.prepareDefinition(baseDefinition);
+                    const exposes = typeof d.exposes === "function" ? d.exposes({isDummyDevice: true}, {}) : d.exposes;
+                    // @ts-expect-error private
+                    generatedConfigs.push(...(extension.getConfigs(createDevice(exposes, d)) as GeneratedConfig[]));
+                }
+            }
+
+            return generatedConfigs;
+        };
+
+        const templatesOf = function* (config: GeneratedConfig): Generator<[string, string]> {
+            for (const [key, value] of Object.entries(config.discovery_payload)) {
+                if (key.endsWith("_template") && typeof value === "string") yield [key, value];
+            }
+        };
+
+        it("Should guard every generated state template against a missing property", async () => {
+            const offenders = new Set<string>();
+
+            for (const config of await getGeneratedConfigs()) {
+                for (const [key, value] of templatesOf(config)) {
+                    for (const property of findUnguardedReads(value)) {
+                        // Carried on the expose by zigbee-herdsman-converters (`lib/zosung.js`), not built here.
+                        if (property === "learned_ir_timings") continue;
+
+                        offenders.add(`${config.type}/${config.object_id} ${key} reads '${property}': ${value}`);
+                    }
+                }
+            }
+
+            expect([...offenders]).toStrictEqual([]);
+        });
+
+        it("Should guard the number entity built from a numeric expose with SET access", () => {
+            const exposes = [new zhc.Numeric("effect_speed", zhc.access.ALL).withLabel("Effect speed").withValueMin(0).withValueMax(255)];
+            // @ts-expect-error private
+            const configs = extension.getConfigs(createDevice(exposes));
+            const number = configs.find((config: {type: string}) => config.type === "number");
+
+            assert(number);
+            expect(number.discovery_payload.value_template).toStrictEqual(
+                '{% if "effect_speed" in value_json %}{{ value_json["effect_speed"] }}{% endif %}',
+            );
+        });
+
+        it("Should not guard with a form that drops a legitimate 0, false or null", async () => {
+            const falsySensitive = new Set<string>();
+
+            for (const config of await getGeneratedConfigs()) {
+                for (const [key, value] of templatesOf(config)) {
+                    // `default(x, True)` is falsy-sensitive, except on the truncating
+                    // text/list/composite template, which only carries strings.
+                    // https://github.com/Koenkk/zigbee2mqtt/issues/23199
+                    if (/default\([^)]*,\s*True\)/.test(value) && !value.includes("truncate(")) {
+                        falsySensitive.add(`${config.type}/${config.object_id} ${key}: ${value}`);
+                    }
+
+                    // A bare `{% if value_json["x"] %}` tests truthiness; a comparison such as
+                    // `{% if value_json["position"] == 0 %}` doesn't, hence the closing `%}`.
+                    // Intended for a binary expose, but only once presence is established.
+                    for (const match of value.matchAll(/\{%-?\s*if\s+value_json\["([^"\]]+)"\]\s*-?%\}/g)) {
+                        if (!value.includes(`"${match[1]}" in value_json`)) {
+                            falsySensitive.add(`${config.type}/${config.object_id} ${key}: ${value}`);
+                        }
+                    }
+                }
+            }
+
+            expect([...falsySensitive]).toStrictEqual([]);
+        });
     });
 
     it("Should mark thermostat configuration toggles as config entities", () => {
@@ -248,17 +368,6 @@ describe("Extension: HomeAssistant", () => {
     });
 
     it("Should apply expose-level Home Assistant discovery metadata", () => {
-        const createDevice = (exposes: zhc.Expose[]): Device =>
-            ({
-                definition: {},
-                isDevice: (): boolean => true,
-                isGroup: (): boolean => false,
-                endpoint: () => undefined,
-                options: {},
-                exposes: (): zhc.Expose[] => exposes,
-                zh: {endpoints: []},
-            }) as Device;
-
         const voltageExpose = new zhc.Numeric("voltage", zhc.access.STATE).withUnit("V");
         Object.assign(voltageExpose, {
             homeassistant: {
@@ -282,17 +391,6 @@ describe("Extension: HomeAssistant", () => {
     });
 
     it("Should set discovery name to null when expose specifies homeassistant name null", () => {
-        const createDevice = (exposes: zhc.Expose[]): Device =>
-            ({
-                definition: {},
-                isDevice: (): boolean => true,
-                isGroup: (): boolean => false,
-                endpoint: () => undefined,
-                options: {},
-                exposes: (): zhc.Expose[] => exposes,
-                zh: {endpoints: []},
-            }) as Device;
-
         const contactExpose = new zhc.Binary("contact", zhc.access.STATE, false, true).withHomeAssistant({name: null});
 
         // @ts-expect-error private
@@ -373,6 +471,7 @@ describe("Extension: HomeAssistant", () => {
                 model: "Element classic (A19)",
                 model_id: "E11-G13",
                 name: "bulb_enddevice",
+                sw_version: version,
                 via_device: "zigbee2mqtt_bridge_0x00124b00120144ae",
             },
             name: null,
@@ -411,7 +510,7 @@ describe("Extension: HomeAssistant", () => {
             unique_id: "9_switch_zigbee2mqtt",
             group: ["0x0017880104e45542_switch_right_zigbee2mqtt"],
             origin: origin,
-            value_template: '{{ value_json["state"] }}',
+            value_template: '{% if "state" in value_json %}{{ value_json["state"] }}{% endif %}',
         };
 
         expect(mockMQTTPublishAsync).toHaveBeenCalledWith(
@@ -424,7 +523,7 @@ describe("Extension: HomeAssistant", () => {
             unit_of_measurement: "°C",
             device_class: "temperature",
             state_class: "measurement",
-            value_template: '{{ value_json["temperature"] }}',
+            value_template: '{% if "temperature" in value_json %}{{ value_json["temperature"] }}{% endif %}',
             state_topic: "zigbee2mqtt/weather_sensor",
             object_id: "weather_sensor_temperature",
             default_entity_id: "sensor.weather_sensor_temperature",
@@ -433,6 +532,7 @@ describe("Extension: HomeAssistant", () => {
             device: {
                 identifiers: ["zigbee2mqtt_0x0017880104e45522"],
                 name: "weather_sensor",
+                sw_version: version,
                 model: "Temperature and humidity sensor",
                 model_id: "WSDCGQ11LM",
                 manufacturer: "Aqara",
@@ -451,7 +551,7 @@ describe("Extension: HomeAssistant", () => {
             unit_of_measurement: "%",
             device_class: "humidity",
             state_class: "measurement",
-            value_template: '{{ value_json["humidity"] }}',
+            value_template: '{% if "humidity" in value_json %}{{ value_json["humidity"] }}{% endif %}',
             state_topic: "zigbee2mqtt/weather_sensor",
             object_id: "weather_sensor_humidity",
             default_entity_id: "sensor.weather_sensor_humidity",
@@ -461,6 +561,7 @@ describe("Extension: HomeAssistant", () => {
             device: {
                 identifiers: ["zigbee2mqtt_0x0017880104e45522"],
                 name: "weather_sensor",
+                sw_version: version,
                 model: "Temperature and humidity sensor",
                 model_id: "WSDCGQ11LM",
                 manufacturer: "Aqara",
@@ -478,7 +579,7 @@ describe("Extension: HomeAssistant", () => {
             unit_of_measurement: "hPa",
             device_class: "atmospheric_pressure",
             state_class: "measurement",
-            value_template: '{{ value_json["pressure"] }}',
+            value_template: '{% if "pressure" in value_json %}{{ value_json["pressure"] }}{% endif %}',
             state_topic: "zigbee2mqtt/weather_sensor",
             object_id: "weather_sensor_pressure",
             default_entity_id: "sensor.weather_sensor_pressure",
@@ -488,6 +589,7 @@ describe("Extension: HomeAssistant", () => {
             device: {
                 identifiers: ["zigbee2mqtt_0x0017880104e45522"],
                 name: "weather_sensor",
+                sw_version: version,
                 model: "Temperature and humidity sensor",
                 model_id: "WSDCGQ11LM",
                 manufacturer: "Aqara",
@@ -505,7 +607,7 @@ describe("Extension: HomeAssistant", () => {
             unit_of_measurement: "%",
             device_class: "battery",
             state_class: "measurement",
-            value_template: '{{ value_json["battery"] }}',
+            value_template: '{% if "battery" in value_json %}{{ value_json["battery"] }}{% endif %}',
             state_topic: "zigbee2mqtt/weather_sensor",
             object_id: "weather_sensor_battery",
             default_entity_id: "sensor.weather_sensor_battery",
@@ -516,6 +618,7 @@ describe("Extension: HomeAssistant", () => {
             device: {
                 identifiers: ["zigbee2mqtt_0x0017880104e45522"],
                 name: "weather_sensor",
+                sw_version: version,
                 model: "Temperature and humidity sensor",
                 model_id: "WSDCGQ11LM",
                 manufacturer: "Aqara",
@@ -535,7 +638,7 @@ describe("Extension: HomeAssistant", () => {
             entity_category: "diagnostic",
             unit_of_measurement: "lqi",
             state_class: "measurement",
-            value_template: '{{ value_json["linkquality"] }}',
+            value_template: '{% if "linkquality" in value_json %}{{ value_json["linkquality"] }}{% endif %}',
             state_topic: "zigbee2mqtt/weather_sensor",
             name: "Linkquality",
             object_id: "weather_sensor_linkquality",
@@ -545,6 +648,7 @@ describe("Extension: HomeAssistant", () => {
             device: {
                 identifiers: ["zigbee2mqtt_0x0017880104e45522"],
                 name: "weather_sensor",
+                sw_version: version,
                 model: "Temperature and humidity sensor",
                 model_id: "WSDCGQ11LM",
                 manufacturer: "Aqara",
@@ -567,6 +671,7 @@ describe("Extension: HomeAssistant", () => {
                 model: "Smart wall switch (no neutral, double rocker)",
                 model_id: "QBKG03LM",
                 name: "wall_switch_double",
+                sw_version: version,
                 via_device: "zigbee2mqtt_bridge_0x00124b00120144ae",
             },
             name: "Left",
@@ -577,7 +682,7 @@ describe("Extension: HomeAssistant", () => {
             default_entity_id: "switch.wall_switch_double_left",
             unique_id: "0x0017880104e45542_switch_left_zigbee2mqtt",
             origin: origin,
-            value_template: '{{ value_json["state_left"] }}',
+            value_template: '{% if "state_left" in value_json %}{{ value_json["state_left"] }}{% endif %}',
         };
 
         expect(mockMQTTPublishAsync).toHaveBeenCalledWith("homeassistant/switch/0x0017880104e45542/switch_left/config", stringify(payload), {
@@ -594,6 +699,7 @@ describe("Extension: HomeAssistant", () => {
                 model: "Smart wall switch (no neutral, double rocker)",
                 model_id: "QBKG03LM",
                 name: "wall_switch_double",
+                sw_version: version,
                 via_device: "zigbee2mqtt_bridge_0x00124b00120144ae",
             },
             name: "Right",
@@ -604,7 +710,7 @@ describe("Extension: HomeAssistant", () => {
             default_entity_id: "switch.wall_switch_double_right",
             unique_id: "0x0017880104e45542_switch_right_zigbee2mqtt",
             origin: origin,
-            value_template: '{{ value_json["state_right"] }}',
+            value_template: '{% if "state_right" in value_json %}{{ value_json["state_right"] }}{% endif %}',
         };
 
         expect(mockMQTTPublishAsync).toHaveBeenCalledWith("homeassistant/switch/0x0017880104e45542/switch_right/config", stringify(payload), {
@@ -626,6 +732,7 @@ describe("Extension: HomeAssistant", () => {
                 model: "TRADFRI bulb E26/E27, white spectrum, globe, opal, 980 lm",
                 model_id: "LED1545G12",
                 name: "bulb",
+                sw_version: version,
                 via_device: "zigbee2mqtt_bridge_0x00124b00120144ae",
             },
             effect: true,
@@ -652,6 +759,7 @@ describe("Extension: HomeAssistant", () => {
                 model: "Wireless mini switch",
                 model_id: "WXKG11LM",
                 name: "button",
+                sw_version: version,
                 via_device: "zigbee2mqtt_bridge_0x00124b00120144ae",
             },
             event_types: ["single", "double", "triple", "quadruple", "hold", "release"],
@@ -717,7 +825,7 @@ describe("Extension: HomeAssistant", () => {
             unit_of_measurement: "%",
             device_class: "humidity",
             state_class: "measurement",
-            value_template: '{{ value_json["humidity"] }}',
+            value_template: '{% if "humidity" in value_json %}{{ value_json["humidity"] }}{% endif %}',
             state_topic: "zigbee2mqtt/weather_sensor",
             object_id: "weather_sensor_humidity",
             default_entity_id: "sensor.weather_sensor_humidity",
@@ -727,6 +835,7 @@ describe("Extension: HomeAssistant", () => {
             device: {
                 identifiers: ["zigbee2mqtt_0x0017880104e45522"],
                 name: "weather_sensor",
+                sw_version: version,
                 model: "Temperature and humidity sensor",
                 model_id: "WSDCGQ11LM",
                 manufacturer: "Aqara",
@@ -745,6 +854,7 @@ describe("Extension: HomeAssistant", () => {
             device: {
                 identifiers: ["zigbee2mqtt_0x0017880104e45522"],
                 name: "weather_sensor_renamed",
+                sw_version: version,
                 model: "Temperature and humidity sensor",
                 model_id: "WSDCGQ11LM",
                 manufacturer: "Aqara",
@@ -789,7 +899,7 @@ describe("Extension: HomeAssistant", () => {
             device_class: "temperature",
             state_class: "measurement",
             enabled_by_default: true,
-            value_template: '{{ value_json["temperature"] }}',
+            value_template: '{% if "temperature" in value_json %}{{ value_json["temperature"] }}{% endif %}',
             state_topic: "zigbee2mqtt/weather_sensor",
             object_id: "weather_sensor_temperature",
             default_entity_id: "sensor.weather_sensor_temperature",
@@ -798,6 +908,7 @@ describe("Extension: HomeAssistant", () => {
             device: {
                 identifiers: ["zigbee2mqtt_0x0017880104e45522"],
                 name: "weather_sensor",
+                sw_version: version,
                 model: "Temperature and humidity sensor",
                 model_id: "WSDCGQ11LM",
                 manufacturer: "Aqara",
@@ -815,7 +926,7 @@ describe("Extension: HomeAssistant", () => {
             unit_of_measurement: "%",
             device_class: "humidity",
             state_class: "measurement",
-            value_template: '{{ value_json["humidity"] }}',
+            value_template: '{% if "humidity" in value_json %}{{ value_json["humidity"] }}{% endif %}',
             state_topic: "zigbee2mqtt/weather_sensor",
             object_id: "weather_sensor_humidity",
             default_entity_id: "sensor.weather_sensor_humidity",
@@ -825,6 +936,7 @@ describe("Extension: HomeAssistant", () => {
             device: {
                 identifiers: ["zigbee2mqtt_0x0017880104e45522"],
                 name: "weather_sensor",
+                sw_version: version,
                 model: "Temperature and humidity sensor",
                 model_id: "WSDCGQ11LM",
                 manufacturer: "Aqara",
@@ -842,7 +954,7 @@ describe("Extension: HomeAssistant", () => {
             unit_of_measurement: "hPa",
             device_class: "atmospheric_pressure",
             state_class: "measurement",
-            value_template: '{{ value_json["pressure"] }}',
+            value_template: '{% if "pressure" in value_json %}{{ value_json["pressure"] }}{% endif %}',
             state_topic: "zigbee2mqtt/weather_sensor",
             enabled_by_default: true,
             object_id: "weather_sensor_pressure",
@@ -852,6 +964,7 @@ describe("Extension: HomeAssistant", () => {
             device: {
                 identifiers: ["zigbee2mqtt_0x0017880104e45522"],
                 name: "weather_sensor",
+                sw_version: version,
                 model: "Temperature and humidity sensor",
                 model_id: "WSDCGQ11LM",
                 manufacturer: "Aqara",
@@ -900,7 +1013,7 @@ describe("Extension: HomeAssistant", () => {
             unit_of_measurement: "°C",
             device_class: "temperature",
             state_class: "measurement",
-            value_template: '{{ value_json["temperature"] }}',
+            value_template: '{% if "temperature" in value_json %}{{ value_json["temperature"] }}{% endif %}',
             state_topic: "zigbee2mqtt/weather_sensor",
             enabled_by_default: true,
             object_id: "weather_sensor_temperature",
@@ -930,12 +1043,13 @@ describe("Extension: HomeAssistant", () => {
             unit_of_measurement: "%",
             device_class: "humidity",
             state_class: "measurement",
-            value_template: '{{ value_json["humidity"] }}',
+            value_template: '{% if "humidity" in value_json %}{{ value_json["humidity"] }}{% endif %}',
             state_topic: "zigbee2mqtt/weather_sensor",
             enabled_by_default: true,
             device: {
                 identifiers: ["zigbee2mqtt_0x0017880104e45522"],
                 name: "weather_sensor",
+                sw_version: version,
                 model: "custom model",
                 model_id: "custom id",
                 manufacturer: "Not from Aqara",
@@ -973,7 +1087,7 @@ describe("Extension: HomeAssistant", () => {
             unit_of_measurement: "°C",
             device_class: "temperature",
             state_class: "measurement",
-            value_template: '{{ value_json["temperature"] }}',
+            value_template: '{% if "temperature" in value_json %}{{ value_json["temperature"] }}{% endif %}',
             state_topic: "zigbee2mqtt/weather_sensor",
             object_id: "weather_sensor_temperature",
             default_entity_id: "sensor.weather_sensor_temperature",
@@ -982,6 +1096,7 @@ describe("Extension: HomeAssistant", () => {
             device: {
                 identifiers: ["zigbee2mqtt_0x0017880104e45522"],
                 name: "Weather Sensor",
+                sw_version: version,
                 model: "Temperature and humidity sensor",
                 model_id: "WSDCGQ11LM",
                 manufacturer: "Aqara",
@@ -1000,7 +1115,7 @@ describe("Extension: HomeAssistant", () => {
             unit_of_measurement: "%",
             device_class: "humidity",
             state_class: "measurement",
-            value_template: '{{ value_json["humidity"] }}',
+            value_template: '{% if "humidity" in value_json %}{{ value_json["humidity"] }}{% endif %}',
             state_topic: "zigbee2mqtt/weather_sensor",
             object_id: "weather_sensor_humidity",
             default_entity_id: "sensor.weather_sensor_humidity",
@@ -1010,6 +1125,7 @@ describe("Extension: HomeAssistant", () => {
             device: {
                 identifiers: ["zigbee2mqtt_0x0017880104e45522"],
                 name: "Weather Sensor",
+                sw_version: version,
                 model: "Temperature and humidity sensor",
                 model_id: "WSDCGQ11LM",
                 manufacturer: "Aqara",
@@ -1053,6 +1169,7 @@ describe("Extension: HomeAssistant", () => {
                 model: "Smart wall switch (no neutral, single rocker)",
                 model_id: "QBKG04LM",
                 name: "my_switch",
+                sw_version: version,
                 via_device: "zigbee2mqtt_bridge_0x00124b00120144ae",
             },
             name: "my_light_name_override",
@@ -1063,13 +1180,16 @@ describe("Extension: HomeAssistant", () => {
             default_entity_id: "light.my_switch",
             unique_id: "0x0017880104e45541_light_zigbee2mqtt",
             origin: origin,
-            value_template: '{{ value_json["state"] }}',
+            value_template: '{% if "state" in value_json %}{{ value_json["state"] }}{% endif %}',
         };
 
         expect(mockMQTTPublishAsync).toHaveBeenCalledWith("homeassistant/light/0x0017880104e45541/light/config", stringify(payload), {
             retain: true,
             qos: 1,
         });
+        expect(mockLogger.warning).toHaveBeenCalledWith(
+            "Overriding the Home Assistant type of 'my_switch' from switch to light is deprecated and will be removed in a future release, use 'Show as' in Home Assistant instead",
+        );
     });
 
     it("Shouldnt discover devices when homeassistant null is set in device options", async () => {
@@ -1105,15 +1225,17 @@ describe("Extension: HomeAssistant", () => {
     it("Should discover devices with fan", () => {
         const payload = {
             state_topic: "zigbee2mqtt/fan",
-            state_value_template: "{{ value_json.fan_state }}",
+            state_value_template: '{% if "fan_state" in value_json %}{{ value_json["fan_state"] }}{% endif %}',
             command_topic: "zigbee2mqtt/fan/set/fan_state",
             percentage_state_topic: "zigbee2mqtt/fan",
             percentage_command_topic: "zigbee2mqtt/fan/set/fan_mode",
-            percentage_value_template: "{{ {'off':0, 'low':1, 'medium':2, 'high':3, 'on':4}[value_json[\"fan_mode\"]] | default('None') }}",
+            percentage_value_template:
+                "{% if \"fan_mode\" in value_json %}{{ {'off':0, 'low':1, 'medium':2, 'high':3, 'on':4}[value_json[\"fan_mode\"]] | default('None') }}{% endif %}",
             percentage_command_template: "{{ {0:'off', 1:'low', 2:'medium', 3:'high', 4:'on'}[value] | default('') }}",
             preset_mode_state_topic: "zigbee2mqtt/fan",
             preset_mode_command_topic: "zigbee2mqtt/fan/set/fan_mode",
-            preset_mode_value_template: "{{ value_json[\"fan_mode\"] if value_json[\"fan_mode\"] in ['smart'] else 'None' | default('None') }}",
+            preset_mode_value_template:
+                '{% if "fan_mode" in value_json %}{{ value_json["fan_mode"] if value_json["fan_mode"] in [\'smart\'] else \'None\' }}{% endif %}',
             preset_modes: ["smart"],
             speed_range_min: 1,
             speed_range_max: 4,
@@ -1125,6 +1247,7 @@ describe("Extension: HomeAssistant", () => {
             device: {
                 identifiers: ["zigbee2mqtt_0x0017880104e45548"],
                 name: "fan",
+                sw_version: version,
                 model: "Universal wink enabled white ceiling fan premier remote control",
                 model_id: "99432",
                 manufacturer: "Hampton Bay",
@@ -1137,6 +1260,66 @@ describe("Extension: HomeAssistant", () => {
             retain: true,
             qos: 1,
         });
+    });
+
+    it("Should discover fan on a non-first endpoint", () => {
+        const fanExpose = new zhc.Fan().withState().withModes(["off", "low", "medium", "high", "auto"]).withEndpoint("2");
+        const stateFeature = fanExpose.features.find((f) => f.name === "state");
+        const modeFeature = fanExpose.features.find((f) => f.name === "mode");
+        const device = {
+            definition: {},
+            isDevice: (): boolean => true,
+            isGroup: (): boolean => false,
+            endpoint: () => undefined,
+            options: {},
+            exposes: (): zhc.Expose[] => [fanExpose],
+            zh: {endpoints: []},
+        } as Device;
+
+        // @ts-expect-error private
+        const configs = extension.getConfigs(device);
+        const fan = configs.find((c) => c.type === "fan");
+        expect(fan).toBeDefined();
+
+        // The fan must be scoped to its endpoint instead of pretending to live on endpoint 1.
+        expect(fan!.object_id).toStrictEqual("fan_2");
+        expect(fan!.discovery_payload.name).toStrictEqual("2");
+        expect(fan!.discovery_payload.command_topic_prefix).toStrictEqual("2");
+        expect(fan!.discovery_payload.percentage_command_topic).toStrictEqual(modeFeature?.property);
+        expect(fan!.discovery_payload.preset_mode_command_topic).toStrictEqual(modeFeature?.property);
+        expect(fan!.discovery_payload.command_topic_postfix).toStrictEqual(stateFeature?.property);
+        expect(fan!.discovery_payload.state_value_template).toStrictEqual(
+            `{% if "${stateFeature?.property}" in value_json %}{{ value_json["${stateFeature?.property}"] }}{% endif %}`,
+        );
+    });
+
+    it("Should discover speed-controlled fan on a non-first endpoint", () => {
+        const fanExpose = new zhc.Fan().withState().withSpeed(1, 254).withEndpoint("3");
+        const stateFeature = fanExpose.features.find((f) => f.name === "state");
+        const speedFeature = fanExpose.features.find((f) => f.name === "speed");
+        const device = {
+            definition: {},
+            isDevice: (): boolean => true,
+            isGroup: (): boolean => false,
+            endpoint: () => undefined,
+            options: {},
+            exposes: (): zhc.Expose[] => [fanExpose],
+            zh: {endpoints: []},
+        } as Device;
+
+        // @ts-expect-error private
+        const configs = extension.getConfigs(device);
+        const fan = configs.find((c) => c.type === "fan");
+        expect(fan).toBeDefined();
+
+        expect(fan!.object_id).toStrictEqual("fan_3");
+        expect(fan!.discovery_payload.name).toStrictEqual("3");
+        expect(fan!.discovery_payload.command_topic_prefix).toStrictEqual("3");
+        expect(fan!.discovery_payload.percentage_command_topic).toStrictEqual(speedFeature?.property);
+        expect(fan!.discovery_payload.command_topic_postfix).toStrictEqual(stateFeature?.property);
+        expect(fan!.discovery_payload.state_value_template).toStrictEqual(
+            `{% if "${stateFeature?.property}" in value_json %}{{ value_json["${stateFeature?.property}"] }}{% endif %}`,
+        );
     });
 
     it("Should discover siren (HS2WD-E)", () => {
@@ -1164,6 +1347,7 @@ describe("Extension: HomeAssistant", () => {
             device: {
                 identifiers: ["zigbee2mqtt_0x0017880104e45549"],
                 name: "siren",
+                sw_version: version,
                 model: "Smart siren",
                 model_id: "HS2WD-E",
                 manufacturer: "Heiman",
@@ -1181,11 +1365,11 @@ describe("Extension: HomeAssistant", () => {
     it("Should discover devices with speed-controlled fan", () => {
         const payload = {
             state_topic: "zigbee2mqtt/fanbee",
-            state_value_template: "{{ value_json.state }}",
+            state_value_template: '{% if "state" in value_json %}{{ value_json["state"] }}{% endif %}',
             command_topic: "zigbee2mqtt/fanbee/set/state",
             percentage_state_topic: "zigbee2mqtt/fanbee",
             percentage_command_topic: "zigbee2mqtt/fanbee/set/speed",
-            percentage_value_template: "{{ value_json[\"speed\"] | default('None') }}",
+            percentage_value_template: '{% if "speed" in value_json %}{{ value_json["speed"] }}{% endif %}',
             percentage_command_template: "{{ value | default('') }}",
             speed_range_min: 1,
             speed_range_max: 254,
@@ -1197,6 +1381,7 @@ describe("Extension: HomeAssistant", () => {
             device: {
                 identifiers: ["zigbee2mqtt_0x00124b00cfcf3298"],
                 name: "fanbee",
+                sw_version: version,
                 model: "Fan with valve",
                 model_id: "FanBee",
                 manufacturer: "Lorenz Brun",
@@ -1218,7 +1403,7 @@ describe("Extension: HomeAssistant", () => {
     it("Should discover thermostat devices", () => {
         const payload = {
             action_template:
-                "{% set values = {None:None,'idle':'idle','heat':'heating','cool':'cooling','fan_only':'fan'} %}{{ values[value_json[\"running_state\"]] }}",
+                "{% if \"running_state\" in value_json %}{% set values = {None:None,'idle':'idle','heat':'heating','cool':'cooling','fan_only':'fan'} %}{{ values[value_json[\"running_state\"]] }}{% endif %}",
             action_topic: "zigbee2mqtt/TS0601_thermostat",
             availability: [
                 {
@@ -1226,7 +1411,7 @@ describe("Extension: HomeAssistant", () => {
                     value_template: "{{ value_json.state }}",
                 },
             ],
-            current_temperature_template: '{{ value_json["local_temperature"] }}',
+            current_temperature_template: '{% if "local_temperature" in value_json %}{{ value_json["local_temperature"] }}{% endif %}',
             current_temperature_topic: "zigbee2mqtt/TS0601_thermostat",
             device: {
                 identifiers: ["zigbee2mqtt_0x0017882104a44559"],
@@ -1234,22 +1419,23 @@ describe("Extension: HomeAssistant", () => {
                 model: "Radiator valve with thermostat",
                 model_id: "TS0601_thermostat",
                 name: "TS0601_thermostat",
+                sw_version: version,
                 via_device: "zigbee2mqtt_bridge_0x00124b00120144ae",
             },
             preset_mode_command_topic: "zigbee2mqtt/TS0601_thermostat/set/preset",
             preset_modes: ["schedule", "manual", "boost", "complex", "comfort", "eco", "away"],
-            preset_mode_value_template: '{{ value_json["preset"] }}',
+            preset_mode_value_template: '{% if "preset" in value_json %}{{ value_json["preset"] }}{% endif %}',
             preset_mode_state_topic: "zigbee2mqtt/TS0601_thermostat",
             max_temp: "35",
             min_temp: "5",
             mode_command_topic: "zigbee2mqtt/TS0601_thermostat/set/system_mode",
-            mode_state_template: '{{ value_json["system_mode"] }}',
+            mode_state_template: '{% if "system_mode" in value_json %}{{ value_json["system_mode"] }}{% endif %}',
             mode_state_topic: "zigbee2mqtt/TS0601_thermostat",
             modes: ["heat", "auto", "off"],
             name: null,
             temp_step: 0.5,
             temperature_command_topic: "zigbee2mqtt/TS0601_thermostat/set/current_heating_setpoint",
-            temperature_state_template: '{{ value_json["current_heating_setpoint"] }}',
+            temperature_state_template: '{% if "current_heating_setpoint" in value_json %}{{ value_json["current_heating_setpoint"] }}{% endif %}',
             temperature_state_topic: "zigbee2mqtt/TS0601_thermostat",
             temperature_unit: "C",
             object_id: "ts0601_thermostat",
@@ -1279,6 +1465,7 @@ describe("Extension: HomeAssistant", () => {
                 model: "Smart heating thermostat",
                 model_id: "1TST-EU",
                 name: "thermostat",
+                sw_version: version,
                 via_device: "zigbee2mqtt_bridge_0x00124b00120144ae",
             },
             entity_category: "diagnostic",
@@ -1289,7 +1476,7 @@ describe("Extension: HomeAssistant", () => {
             state_topic: "zigbee2mqtt/thermostat",
             unique_id: "0x0017880104e45550_pi_heating_demand_zigbee2mqtt",
             unit_of_measurement: "%",
-            value_template: '{{ value_json["pi_heating_demand"] }}',
+            value_template: '{% if "pi_heating_demand" in value_json %}{{ value_json["pi_heating_demand"] }}{% endif %}',
         };
 
         expect(mockMQTTPublishAsync).toHaveBeenCalledWith("homeassistant/sensor/0x0017880104e45550/pi_heating_demand/config", stringify(payload), {
@@ -1315,6 +1502,7 @@ describe("Extension: HomeAssistant", () => {
                 model_id: "BTH-RA",
                 name: "bosch_radiator",
                 sw_version: "3.05.09",
+                hw_version: "1",
                 via_device: "zigbee2mqtt_bridge_0x00124b00120144ae",
             },
             icon: "mdi:radiator",
@@ -1326,7 +1514,7 @@ describe("Extension: HomeAssistant", () => {
             state_topic: "zigbee2mqtt/bosch_radiator",
             unique_id: "0x18fc2600000d7ae2_pi_heating_demand_zigbee2mqtt",
             unit_of_measurement: "%",
-            value_template: '{{ value_json["pi_heating_demand"] }}',
+            value_template: '{% if "pi_heating_demand" in value_json %}{{ value_json["pi_heating_demand"] }}{% endif %}',
         };
 
         expect(mockMQTTPublishAsync).toHaveBeenCalledWith("homeassistant/number/0x18fc2600000d7ae2/pi_heating_demand/config", stringify(payload), {
@@ -1338,10 +1526,10 @@ describe("Extension: HomeAssistant", () => {
     it("Should discover Bosch BTH-RA with a compatibility mapping", () => {
         const payload = {
             action_template:
-                "{% set values = {None:None,'idle':'idle','heat':'heating','cool':'cooling','fan_only':'fan'} %}{{ values[value_json[\"running_state\"]] }}",
+                "{% if \"running_state\" in value_json %}{% set values = {None:None,'idle':'idle','heat':'heating','cool':'cooling','fan_only':'fan'} %}{{ values[value_json[\"running_state\"]] }}{% endif %}",
             action_topic: "zigbee2mqtt/bosch_radiator",
             availability: [{topic: "zigbee2mqtt/bridge/state", value_template: "{{ value_json.state }}"}],
-            current_temperature_template: '{{ value_json["local_temperature"] }}',
+            current_temperature_template: '{% if "local_temperature" in value_json %}{{ value_json["local_temperature"] }}{% endif %}',
             current_temperature_topic: "zigbee2mqtt/bosch_radiator",
             device: {
                 identifiers: ["zigbee2mqtt_0x18fc2600000d7ae2"],
@@ -1350,6 +1538,7 @@ describe("Extension: HomeAssistant", () => {
                 model_id: "BTH-RA",
                 name: "bosch_radiator",
                 sw_version: "3.05.09",
+                hw_version: "1",
                 via_device: "zigbee2mqtt_bridge_0x00124b00120144ae",
             },
             max_temp: "30",
@@ -1366,7 +1555,7 @@ describe("Extension: HomeAssistant", () => {
             origin: origin,
             temp_step: 0.5,
             temperature_command_topic: "zigbee2mqtt/bosch_radiator/set/occupied_heating_setpoint",
-            temperature_state_template: '{{ value_json["occupied_heating_setpoint"] }}',
+            temperature_state_template: '{% if "occupied_heating_setpoint" in value_json %}{{ value_json["occupied_heating_setpoint"] }}{% endif %}',
             temperature_state_topic: "zigbee2mqtt/bosch_radiator",
             temperature_unit: "C",
             unique_id: "0x18fc2600000d7ae2_climate_zigbee2mqtt",
@@ -1393,6 +1582,7 @@ describe("Extension: HomeAssistant", () => {
                 model: "Automatically generated definition",
                 model_id: "notSupportedModelID",
                 name: "0x0017880104e45518",
+                sw_version: version,
                 via_device: "zigbee2mqtt_bridge_0x00124b00120144ae",
             },
             device_class: "temperature",
@@ -1404,7 +1594,7 @@ describe("Extension: HomeAssistant", () => {
             state_topic: "zigbee2mqtt/0x0017880104e45518",
             unique_id: "0x0017880104e45518_analog_in_temperature_1_zigbee2mqtt",
             unit_of_measurement: "°C",
-            value_template: '{{ value_json["analog_in_temperature_1"] }}',
+            value_template: '{% if "analog_in_temperature_1" in value_json %}{{ value_json["analog_in_temperature_1"] }}{% endif %}',
         };
 
         expect(mockMQTTPublishAsync).toHaveBeenCalledWith(
@@ -1433,6 +1623,7 @@ describe("Extension: HomeAssistant", () => {
                 model: "Automatically generated definition",
                 model_id: "notSupportedModelID",
                 name: "0x0017880104e45518",
+                sw_version: version,
                 via_device: "zigbee2mqtt_bridge_0x00124b00120144ae",
             },
             name: "my_number_name",
@@ -1440,7 +1631,7 @@ describe("Extension: HomeAssistant", () => {
             origin: origin,
             state_topic: "zigbee2mqtt/0x0017880104e45518",
             unique_id: "0x0017880104e45518_analog_output_2_zigbee2mqtt",
-            value_template: '{{ value_json["analog_output_2"] }}',
+            value_template: '{% if "analog_output_2" in value_json %}{{ value_json["analog_output_2"] }}{% endif %}',
         };
 
         expect(mockMQTTPublishAsync).toHaveBeenCalledWith("homeassistant/number/0x0017880104e45518/analog_output_2/config", stringify(payload), {
@@ -1482,10 +1673,10 @@ describe("Extension: HomeAssistant", () => {
 
         const payload = {
             action_template:
-                "{% set values = {None:None,'idle':'idle','heat':'heating','cool':'cooling','fan_only':'fan'} %}{{ values[value_json[\"running_state\"]] }}",
+                "{% if \"running_state\" in value_json %}{% set values = {None:None,'idle':'idle','heat':'heating','cool':'cooling','fan_only':'fan'} %}{{ values[value_json[\"running_state\"]] }}{% endif %}",
             action_topic: "zigbee2mqtt/bosch_radiator",
             availability: [{topic: "zigbee2mqtt/bridge/state", value_template: "{{ value_json.state }}"}],
-            current_temperature_template: '{{ value_json["local_temperature"] }}',
+            current_temperature_template: '{% if "local_temperature" in value_json %}{{ value_json["local_temperature"] }}{% endif %}',
             current_temperature_topic: "zigbee2mqtt/bosch_radiator",
             device: {
                 identifiers: ["zigbee2mqtt_0x18fc2600000d7ae2"],
@@ -1494,12 +1685,13 @@ describe("Extension: HomeAssistant", () => {
                 model_id: "BTH-RA",
                 name: "bosch_radiator",
                 sw_version: "3.05.09",
+                hw_version: "1",
                 via_device: "zigbee2mqtt_bridge_0x00124b00120144ae",
             },
             max_temp: "30",
             min_temp: "5",
             mode_command_topic: "zigbee2mqtt/bosch_radiator/set/system_mode",
-            mode_state_template: '{{ value_json["system_mode"] }}',
+            mode_state_template: '{% if "system_mode" in value_json %}{{ value_json["system_mode"] }}{% endif %}',
             mode_state_topic: "zigbee2mqtt/bosch_radiator",
             modes: ["heat"],
             name: null,
@@ -1508,7 +1700,7 @@ describe("Extension: HomeAssistant", () => {
             origin: origin,
             temp_step: 0.5,
             temperature_command_topic: "zigbee2mqtt/bosch_radiator/set/occupied_heating_setpoint",
-            temperature_state_template: '{{ value_json["occupied_heating_setpoint"] }}',
+            temperature_state_template: '{% if "occupied_heating_setpoint" in value_json %}{{ value_json["occupied_heating_setpoint"] }}{% endif %}',
             temperature_state_topic: "zigbee2mqtt/bosch_radiator",
             temperature_unit: "C",
             unique_id: "0x18fc2600000d7ae2_climate_zigbee2mqtt",
@@ -1550,12 +1742,12 @@ describe("Extension: HomeAssistant", () => {
     it("Should discover Bosch BTH-RM230Z with a current_humidity attribute", () => {
         const payload = {
             action_template:
-                "{% set values = {None:None,'idle':'idle','heat':'heating','cool':'cooling','fan_only':'fan'} %}{{ values[value_json[\"running_state\"]] }}",
+                "{% if \"running_state\" in value_json %}{% set values = {None:None,'idle':'idle','heat':'heating','cool':'cooling','fan_only':'fan'} %}{{ values[value_json[\"running_state\"]] }}{% endif %}",
             action_topic: "zigbee2mqtt/bosch_rm230z",
             availability: [{topic: "zigbee2mqtt/bridge/state", value_template: "{{ value_json.state }}"}],
-            current_humidity_template: '{{ value_json["humidity"] }}',
+            current_humidity_template: '{% if "humidity" in value_json %}{{ value_json["humidity"] }}{% endif %}',
             current_humidity_topic: "zigbee2mqtt/bosch_rm230z",
-            current_temperature_template: '{{ value_json["local_temperature"] }}',
+            current_temperature_template: '{% if "local_temperature" in value_json %}{{ value_json["local_temperature"] }}{% endif %}',
             current_temperature_topic: "zigbee2mqtt/bosch_rm230z",
             default_entity_id: "climate.bosch_rm230z",
             device: {
@@ -1564,6 +1756,7 @@ describe("Extension: HomeAssistant", () => {
                 model: "Room thermostat II 230V",
                 model_id: "BTH-RM230Z",
                 name: "bosch_rm230z",
+                sw_version: version,
                 via_device: "zigbee2mqtt_bridge_0x00124b00120144ae",
             },
             max_temp: "30",
@@ -1580,10 +1773,12 @@ describe("Extension: HomeAssistant", () => {
             origin,
             temp_step: 0.5,
             temperature_high_command_topic: "zigbee2mqtt/bosch_rm230z/set/occupied_cooling_setpoint",
-            temperature_high_state_template: '{{ value_json["occupied_cooling_setpoint"] }}',
+            temperature_high_state_template:
+                '{% if "occupied_cooling_setpoint" in value_json %}{{ value_json["occupied_cooling_setpoint"] }}{% endif %}',
             temperature_high_state_topic: "zigbee2mqtt/bosch_rm230z",
             temperature_low_command_topic: "zigbee2mqtt/bosch_rm230z/set/occupied_heating_setpoint",
-            temperature_low_state_template: '{{ value_json["occupied_heating_setpoint"] }}',
+            temperature_low_state_template:
+                '{% if "occupied_heating_setpoint" in value_json %}{{ value_json["occupied_heating_setpoint"] }}{% endif %}',
             temperature_low_state_topic: "zigbee2mqtt/bosch_rm230z",
             temperature_unit: "C",
             unique_id: "0x18fc2600000d7ae3_climate_zigbee2mqtt",
@@ -1605,6 +1800,7 @@ describe("Extension: HomeAssistant", () => {
                 model: "Room thermostat II 230V",
                 model_id: "BTH-RM230Z",
                 name: "bosch_rm230z",
+                sw_version: version,
                 via_device: "zigbee2mqtt_bridge_0x00124b00120144ae",
             },
             device_class: "temperature",
@@ -1614,7 +1810,7 @@ describe("Extension: HomeAssistant", () => {
             state_topic: "zigbee2mqtt/bosch_rm230z",
             unique_id: "0x18fc2600000d7ae3_local_temperature_zigbee2mqtt",
             unit_of_measurement: "°C",
-            value_template: '{{ value_json["local_temperature"] }}',
+            value_template: '{% if "local_temperature" in value_json %}{{ value_json["local_temperature"] }}{% endif %}',
         };
 
         expect(mockMQTTPublishAsync).toHaveBeenCalledWith("homeassistant/sensor/0x18fc2600000d7ae3/local_temperature/config", stringify(payload), {
@@ -1643,9 +1839,13 @@ describe("Extension: HomeAssistant", () => {
         const climateL1 = configs.find((c) => c.type === "climate" && c.object_id === "climate_l1");
         const climateL2 = configs.find((c) => c.type === "climate" && c.object_id === "climate_l2");
         // Same endpoint humidity is preferred
-        expect(climateL1!.discovery_payload.current_humidity_template).toStrictEqual('{{ value_json["humidity_l1"] }}');
+        expect(climateL1!.discovery_payload.current_humidity_template).toStrictEqual(
+            '{% if "humidity_l1" in value_json %}{{ value_json["humidity_l1"] }}{% endif %}',
+        );
         // Falls back to humidity without endpoint
-        expect(climateL2!.discovery_payload.current_humidity_template).toStrictEqual('{{ value_json["humidity"] }}');
+        expect(climateL2!.discovery_payload.current_humidity_template).toStrictEqual(
+            '{% if "humidity" in value_json %}{{ value_json["humidity"] }}{% endif %}',
+        );
     });
 
     it("Should discover climate with cooling-only setpoint", () => {
@@ -1669,7 +1869,7 @@ describe("Extension: HomeAssistant", () => {
         expect(climate).toBeDefined();
         expect(climate!.discovery_payload).toMatchObject({
             temperature_command_topic: "occupied_cooling_setpoint",
-            temperature_state_template: '{{ value_json["occupied_cooling_setpoint"] }}',
+            temperature_state_template: '{% if "occupied_cooling_setpoint" in value_json %}{{ value_json["occupied_cooling_setpoint"] }}{% endif %}',
             temperature_state_topic: true,
             min_temp: "16",
             max_temp: "32",
@@ -1677,6 +1877,36 @@ describe("Extension: HomeAssistant", () => {
         });
         expect(climate!.discovery_payload).not.toHaveProperty("temperature_low_command_topic");
         expect(climate!.discovery_payload).not.toHaveProperty("temperature_high_command_topic");
+    });
+
+    it("Should map emergency_heating to heat for climate", () => {
+        const climateExpose = new zhc.Climate()
+            .withSetpoint("occupied_heating_setpoint", 5, 32, 0.5)
+            .withLocalTemperature()
+            .withSystemMode(["off", "auto", "heat", "emergency_heating"])
+            .withEndpoint("water");
+        const device = {
+            definition: {},
+            isDevice: (): boolean => true,
+            isGroup: (): boolean => false,
+            endpoint: () => undefined,
+            options: {},
+            exposes: (): zhc.Expose[] => [climateExpose],
+            zh: {endpoints: []},
+        } as Device;
+
+        // @ts-expect-error private
+        const configs = extension.getConfigs(device);
+        const climate = configs.find((c) => c.type === "climate" && c.object_id === "climate_water");
+        expect(climate).toBeDefined();
+        expect(climate!.discovery_payload.modes).toStrictEqual(["off", "auto", "heat"]);
+        expect(climate!.discovery_payload.mode_state_template).toStrictEqual(
+            `{% if "system_mode_water" in value_json %}{% set mode = value_json["system_mode_water"] %}{{ 'heat' if mode == 'emergency_heating' else mode }}{% endif %}`,
+        );
+        // Expose itself is untouched so other consumers (e.g. frontend) can still use emergency_heating
+        expect(climateExpose.features.find((f) => f.name === "system_mode")).toMatchObject({
+            values: ["off", "auto", "heat", "emergency_heating"],
+        });
     });
 
     it("Should discover devices with cover_position", () => {
@@ -1687,9 +1917,9 @@ describe("Extension: HomeAssistant", () => {
             position_topic: "zigbee2mqtt/smart vent",
             set_position_topic: "zigbee2mqtt/smart vent/set",
             set_position_template: '{ "position": {{ position }} }',
-            position_template: '{{ value_json["position"] }}',
+            position_template: '{% if "position" in value_json %}{{ value_json["position"] }}{% endif %}',
             state_topic: "zigbee2mqtt/smart vent",
-            value_template: '{{ value_json["state"] }}',
+            value_template: '{% if "state" in value_json %}{{ value_json["state"] }}{% endif %}',
             state_open: "OPEN",
             state_closed: "CLOSE",
             state_stopped: "STOP",
@@ -1701,6 +1931,7 @@ describe("Extension: HomeAssistant", () => {
             device: {
                 identifiers: ["zigbee2mqtt_0x0017880104e45551"],
                 name: "smart vent",
+                sw_version: version,
                 model: "Smart vent",
                 model_id: "SV01",
                 manufacturer: "Keen Home",
@@ -1723,10 +1954,11 @@ describe("Extension: HomeAssistant", () => {
                 model: "zigfred plus smart in-wall switch",
                 model_id: "ZFP-1A-CH",
                 name: "zigfred_plus",
+                sw_version: version,
                 via_device: "zigbee2mqtt_bridge_0x00124b00120144ae",
             },
             name: "L6",
-            position_template: '{{ value_json["position"] }}',
+            position_template: '{% if "position" in value_json %}{{ value_json["position"] }}{% endif %}',
             position_topic: "zigbee2mqtt/zigfred_plus/l6",
             set_position_template: '{ "position_l6": {{ position }} }',
             set_position_topic: "zigbee2mqtt/zigfred_plus/l6/set",
@@ -1735,13 +1967,13 @@ describe("Extension: HomeAssistant", () => {
             state_open: "OPEN",
             state_topic: "zigbee2mqtt/zigfred_plus/l6",
             tilt_command_topic: "zigbee2mqtt/zigfred_plus/l6/set/tilt",
-            tilt_status_template: '{{ value_json["tilt"] }}',
+            tilt_status_template: '{% if "tilt" in value_json %}{{ value_json["tilt"] }}{% endif %}',
             tilt_status_topic: "zigbee2mqtt/zigfred_plus/l6",
             object_id: "zigfred_plus_l6",
             default_entity_id: "cover.zigfred_plus_l6",
             unique_id: "0xf4ce368a38be56a1_cover_l6_zigbee2mqtt",
             origin: origin,
-            value_template: '{{ value_json["state"] }}',
+            value_template: '{% if "state" in value_json %}{{ value_json["state"] }}{% endif %}',
         };
 
         expect(mockMQTTPublishAsync).toHaveBeenCalledWith("homeassistant/cover/0xf4ce368a38be56a1/cover_l6/config", stringify(payload), {
@@ -1767,13 +1999,14 @@ describe("Extension: HomeAssistant", () => {
                 model: "Dual smart curtain switch",
                 model_id: "TS130F_GIRIER_DUAL",
                 name: "0xa4c138018cf95021",
+                sw_version: version,
                 via_device: "zigbee2mqtt_bridge_0x00124b00120144ae",
             },
             name: "Left",
             object_id: "0xa4c138018cf95021_left",
             default_entity_id: "cover.0xa4c138018cf95021_left",
             origin: origin,
-            position_template: '{{ value_json["position"] }}',
+            position_template: '{% if "position" in value_json %}{{ value_json["position"] }}{% endif %}',
             position_topic: "zigbee2mqtt/0xa4c138018cf95021/left",
             set_position_template: '{ "position_left": {{ position }} }',
             set_position_topic: "zigbee2mqtt/0xa4c138018cf95021/left/set",
@@ -1800,13 +2033,14 @@ describe("Extension: HomeAssistant", () => {
                 model: "Dual smart curtain switch",
                 model_id: "TS130F_GIRIER_DUAL",
                 name: "0xa4c138018cf95021",
+                sw_version: version,
                 via_device: "zigbee2mqtt_bridge_0x00124b00120144ae",
             },
             name: "Right",
             object_id: "0xa4c138018cf95021_right",
             default_entity_id: "cover.0xa4c138018cf95021_right",
             origin: origin,
-            position_template: '{{ value_json["position"] }}',
+            position_template: '{% if "position" in value_json %}{{ value_json["position"] }}{% endif %}',
             position_topic: "zigbee2mqtt/0xa4c138018cf95021/right",
             set_position_template: '{ "position_right": {{ position }} }',
             set_position_topic: "zigbee2mqtt/0xa4c138018cf95021/right/set",
@@ -1958,7 +2192,7 @@ describe("Extension: HomeAssistant", () => {
             unit_of_measurement: "°C",
             device_class: "temperature",
             state_class: "measurement",
-            value_template: '{{ value_json["temperature"] }}',
+            value_template: '{% if "temperature" in value_json %}{{ value_json["temperature"] }}{% endif %}',
             state_topic: "zigbee2mqtt/weather_sensor",
             enabled_by_default: true,
             object_id: "weather_sensor_temperature",
@@ -1968,6 +2202,7 @@ describe("Extension: HomeAssistant", () => {
             device: {
                 identifiers: ["zigbee2mqtt_0x0017880104e45522"],
                 name: "weather_sensor",
+                sw_version: version,
                 model: "Temperature and humidity sensor",
                 model_id: "WSDCGQ11LM",
                 manufacturer: "Aqara",
@@ -2011,7 +2246,8 @@ describe("Extension: HomeAssistant", () => {
         );
     });
 
-    it("Should set missing values to null", async () => {
+    it("Should not add missing values to the payload", async () => {
+        // Missing properties are guarded in the discovery value templates instead.
         // https://github.com/Koenkk/zigbee2mqtt/issues/6987
         const device = devices.WSDCGQ11LM;
         const data = {measuredValue: -85};
@@ -2027,11 +2263,7 @@ describe("Extension: HomeAssistant", () => {
         await mockZHEvents.message(payload);
         await flushPromises();
         expect(mockMQTTPublishAsync).toHaveBeenCalledTimes(1);
-        expect(mockMQTTPublishAsync).toHaveBeenCalledWith(
-            "zigbee2mqtt/weather_sensor",
-            stringify({battery: null, humidity: null, linkquality: null, pressure: null, temperature: -0.85, voltage: null}),
-            {retain: false, qos: 1},
-        );
+        expect(mockMQTTPublishAsync).toHaveBeenCalledWith("zigbee2mqtt/weather_sensor", stringify({temperature: -0.85}), {retain: false, qos: 1});
     });
 
     it("Should copy hue/saturtion to h/s if present", async () => {
@@ -2047,14 +2279,7 @@ describe("Extension: HomeAssistant", () => {
             stringify({
                 color: {hue: 0, saturation: 100, h: 0, s: 100},
                 color_mode: "hs",
-                effect: null,
-                effect_color: null,
-                effect_speed: null,
-                identify: null,
-                linkquality: null,
-                state: null,
-                power_on_behavior: null,
-                update: {state: null, installed_version: -1, latest_version: -1},
+                update: {installed_version: -1, latest_version: -1},
             }),
             {retain: false, qos: 0},
         );
@@ -2073,14 +2298,7 @@ describe("Extension: HomeAssistant", () => {
             stringify({
                 color: {x: 0.4576, y: 0.41},
                 color_mode: "xy",
-                effect: null,
-                effect_color: null,
-                effect_speed: null,
-                identify: null,
-                linkquality: null,
-                state: null,
-                power_on_behavior: null,
-                update: {state: null, installed_version: -1, latest_version: -1},
+                update: {installed_version: -1, latest_version: -1},
             }),
             {retain: false, qos: 0},
         );
@@ -2097,14 +2315,8 @@ describe("Extension: HomeAssistant", () => {
         expect(mockMQTTPublishAsync).toHaveBeenCalledWith(
             "zigbee2mqtt/bulb_color",
             stringify({
-                linkquality: null,
-                effect: null,
-                effect_color: null,
-                effect_speed: null,
-                identify: null,
                 state: "ON",
-                power_on_behavior: null,
-                update: {state: null, installed_version: -1, latest_version: -1},
+                update: {installed_version: -1, latest_version: -1},
             }),
             {retain: false, qos: 0},
         );
@@ -2149,7 +2361,7 @@ describe("Extension: HomeAssistant", () => {
             device_class: "temperature",
             enabled_by_default: true,
             state_class: "measurement",
-            value_template: '{{ value_json["temperature"] }}',
+            value_template: '{% if "temperature" in value_json %}{{ value_json["temperature"] }}{% endif %}',
             state_topic: "zigbee2mqtt/weather_sensor",
             object_id: "weather_sensor_temperature",
             default_entity_id: "sensor.weather_sensor_temperature",
@@ -2158,6 +2370,7 @@ describe("Extension: HomeAssistant", () => {
             device: {
                 identifiers: ["zigbee2mqtt_0x0017880104e45522"],
                 name: "weather_sensor",
+                sw_version: version,
                 model: "Temperature and humidity sensor",
                 model_id: "WSDCGQ11LM",
                 manufacturer: "Aqara",
@@ -2209,25 +2422,18 @@ describe("Extension: HomeAssistant", () => {
             "zigbee2mqtt/bulb",
             stringify({
                 state: "ON",
-                color_options: null,
                 brightness: 50,
                 color_temp: 370,
-                effect: null,
-                identify: null,
                 linkquality: 99,
-                power_on_behavior: null,
-                update: {state: null, installed_version: -1, latest_version: -1},
+                update: {installed_version: -1, latest_version: -1},
             }),
             {retain: true, qos: 0},
         );
         expect(mockMQTTPublishAsync).toHaveBeenCalledWith(
             "zigbee2mqtt/remote",
             stringify({
-                action_duration: null,
-                battery: null,
                 brightness: 255,
-                linkquality: null,
-                update: {state: null, installed_version: -1, latest_version: -1},
+                update: {installed_version: -1, latest_version: -1},
             }),
             {retain: true, qos: 0},
         );
@@ -2250,26 +2456,37 @@ describe("Extension: HomeAssistant", () => {
             "zigbee2mqtt/bulb",
             stringify({
                 state: "ON",
-                color_options: null,
                 brightness: 50,
                 color_temp: 370,
-                effect: null,
-                identify: null,
                 linkquality: 99,
-                power_on_behavior: null,
-                update: {state: null, installed_version: -1, latest_version: -1},
+                update: {installed_version: -1, latest_version: -1},
             }),
             {retain: true, qos: 0},
         );
         expect(mockMQTTPublishAsync).toHaveBeenCalledWith(
             "zigbee2mqtt/remote",
             stringify({
-                action_duration: null,
-                battery: null,
                 brightness: 255,
-                linkquality: null,
-                update: {state: null, installed_version: -1, latest_version: -1},
+                update: {installed_version: -1, latest_version: -1},
             }),
+            {retain: true, qos: 0},
+        );
+    });
+
+    it("Should keep the versions of an update payload that already has them", async () => {
+        data.writeDefaultState({"0x000b57fffec6a5b2": {state: "ON", update: {state: "idle", installed_version: 1, latest_version: 2}}});
+        // @ts-expect-error private
+        extension.state.load();
+        await resetExtension();
+        await flushPromises();
+        mockMQTTPublishAsync.mockClear();
+        await mockMQTTEvents.message("homeassistant/status", "online");
+        await flushPromises();
+        await vi.runOnlyPendingTimersAsync();
+        await flushPromises();
+        expect(mockMQTTPublishAsync).toHaveBeenCalledWith(
+            "zigbee2mqtt/bulb",
+            stringify({state: "ON", update: {state: "idle", installed_version: 1, latest_version: 2}}),
             {retain: true, qos: 0},
         );
     });
@@ -2312,7 +2529,7 @@ describe("Extension: HomeAssistant", () => {
             device_class: "temperature",
             enabled_by_default: true,
             state_class: "measurement",
-            value_template: '{{ value_json["temperature"] }}',
+            value_template: '{% if "temperature" in value_json %}{{ value_json["temperature"] }}{% endif %}',
             state_topic: "zigbee2mqtt/weather_sensor",
             object_id: "weather_sensor_temperature",
             default_entity_id: "sensor.weather_sensor_temperature",
@@ -2321,6 +2538,7 @@ describe("Extension: HomeAssistant", () => {
             device: {
                 identifiers: ["zigbee2mqtt_0x0017880104e45522"],
                 name: "weather_sensor",
+                sw_version: version,
                 model: "Temperature and humidity sensor",
                 model_id: "WSDCGQ11LM",
                 manufacturer: "Aqara",
@@ -2382,7 +2600,7 @@ describe("Extension: HomeAssistant", () => {
             device_class: "temperature",
             state_class: "measurement",
             enabled_by_default: true,
-            value_template: '{{ value_json["temperature"] }}',
+            value_template: '{% if "temperature" in value_json %}{{ value_json["temperature"] }}{% endif %}',
             state_topic: "zigbee2mqtt/weather_sensor_renamed",
             object_id: "weather_sensor_renamed_temperature",
             default_entity_id: "sensor.weather_sensor_renamed_temperature",
@@ -2391,6 +2609,7 @@ describe("Extension: HomeAssistant", () => {
             device: {
                 identifiers: ["zigbee2mqtt_0x0017880104e45522"],
                 name: "weather_sensor_renamed",
+                sw_version: version,
                 model: "Temperature and humidity sensor",
                 model_id: "WSDCGQ11LM",
                 manufacturer: "Aqara",
@@ -2418,6 +2637,7 @@ describe("Extension: HomeAssistant", () => {
                 device: {
                     identifiers: ["zigbee2mqtt_0x0017880104e45522"],
                     name: "weather_sensor_renamed",
+                    sw_version: version,
                     model: "Temperature and humidity sensor",
                     model_id: "WSDCGQ11LM",
                     manufacturer: "Aqara",
@@ -2516,7 +2736,7 @@ describe("Extension: HomeAssistant", () => {
             device_class: "temperature",
             state_class: "measurement",
             enabled_by_default: true,
-            value_template: '{{ value_json["temperature"] }}',
+            value_template: '{% if "temperature" in value_json %}{{ value_json["temperature"] }}{% endif %}',
             state_topic: "zigbee2mqtt/weather_sensor_renamed",
             object_id: "weather_sensor_renamed_temperature",
             default_entity_id: "sensor.weather_sensor_renamed_temperature",
@@ -2525,6 +2745,7 @@ describe("Extension: HomeAssistant", () => {
             device: {
                 identifiers: ["zigbee2mqtt_0x0017880104e45522"],
                 name: "weather_sensor_renamed",
+                sw_version: version,
                 model: "Temperature and humidity sensor",
                 model_id: "WSDCGQ11LM",
                 manufacturer: "Aqara",
@@ -2549,6 +2770,7 @@ describe("Extension: HomeAssistant", () => {
                 model: "TRADFRI bulb E26/E27, white spectrum, globe, opal, 980 lm",
                 model_id: "LED1545G12",
                 name: "bulb",
+                sw_version: version,
                 via_device: "zigbee2mqtt_bridge_0x00124b00120144ae",
             },
             device_class: "firmware",
@@ -2562,7 +2784,7 @@ describe("Extension: HomeAssistant", () => {
             state_topic: "zigbee2mqtt/bulb",
             unique_id: "0x000b57fffec6a5b2_update_zigbee2mqtt",
             value_template:
-                "{\"latest_version\":\"{{ value_json['update']['latest_version'] }}\",\"installed_version\":\"{{ value_json['update']['installed_version'] }}\",\"update_percentage\":{{ value_json['update'].get('progress', 'null') }},\"in_progress\":{{ (value_json['update']['state'] == 'updating')|lower }}}",
+                "{% if \"update\" in value_json %}{\"latest_version\":\"{{ value_json['update']['latest_version'] }}\",\"installed_version\":\"{{ value_json['update']['installed_version'] }}\",\"update_percentage\":{{ value_json['update'].get('progress', 'null') }},\"in_progress\":{{ (value_json['update'].get('state') == 'updating')|lower }}}{% endif %}",
         };
 
         expect(mockMQTTPublishAsync).toHaveBeenCalledWith("homeassistant/update/0x000b57fffec6a5b2/update/config", stringify(payload), {
@@ -2592,6 +2814,7 @@ describe("Extension: HomeAssistant", () => {
             device: {
                 identifiers: ["zigbee2mqtt_0x0017880104e45520"],
                 name: "button",
+                sw_version: version,
                 model: "Wireless mini switch",
                 model_id: "WXKG11LM",
                 manufacturer: "Aqara",
@@ -2605,19 +2828,7 @@ describe("Extension: HomeAssistant", () => {
             {retain: true, qos: 1},
         );
 
-        expect(mockMQTTPublishAsync).toHaveBeenCalledWith(
-            "zigbee2mqtt/button",
-            stringify({
-                action: "single",
-                battery: null,
-                identify: null,
-                linkquality: null,
-                voltage: null,
-                power_outage_count: null,
-                device_temperature: null,
-            }),
-            {retain: false, qos: 0},
-        );
+        expect(mockMQTTPublishAsync).toHaveBeenCalledWith("zigbee2mqtt/button", stringify({action: "single"}), {retain: false, qos: 0});
 
         // Should only discover it once
         mockMQTTPublishAsync.mockClear();
@@ -2715,6 +2926,7 @@ describe("Extension: HomeAssistant", () => {
                 model: "Wireless mini switch",
                 model_id: "WXKG11LM",
                 name: "button",
+                sw_version: version,
                 via_device: "zigbee2mqtt_bridge_0x00124b00120144ae",
             },
             event_types: ["single", "double", "triple", "quadruple", "hold", "release"],
@@ -2741,30 +2953,56 @@ describe("Extension: HomeAssistant", () => {
 
         await mockMQTTEvents.message("zigbee2mqtt/U202DST600ZB/l2/set", stringify({state: "ON", brightness: 20}));
         await flushPromises();
-        expect(mockMQTTPublishAsync).toHaveBeenCalledWith(
-            "zigbee2mqtt/U202DST600ZB",
-            stringify({
-                state_l2: "ON",
-                brightness_l2: 20,
-                linkquality: null,
-                state_l1: null,
-                effect_l1: null,
-                effect_l2: null,
-                power_on_behavior_l1: null,
-                power_on_behavior_l2: null,
-            }),
-            {qos: 0, retain: false},
-        );
-        expect(mockMQTTPublishAsync).toHaveBeenCalledWith(
-            "zigbee2mqtt/U202DST600ZB/l2",
-            stringify({state: "ON", brightness: 20, effect: null, power_on_behavior: null}),
-            {},
-        );
-        expect(mockMQTTPublishAsync).toHaveBeenCalledWith(
-            "zigbee2mqtt/U202DST600ZB/l1",
-            stringify({state: null, effect: null, power_on_behavior: null}),
-            {},
-        );
+        expect(mockMQTTPublishAsync).toHaveBeenCalledWith("zigbee2mqtt/U202DST600ZB", stringify({state_l2: "ON", brightness_l2: 20}), {
+            qos: 0,
+            retain: false,
+        });
+        expect(mockMQTTPublishAsync).toHaveBeenCalledWith("zigbee2mqtt/U202DST600ZB/l2", stringify({state: "ON", brightness: 20}), {});
+        // `l1` has no attributes in this payload, so nothing is republished for it.
+        expect(mockMQTTPublishAsync).not.toHaveBeenCalledWith("zigbee2mqtt/U202DST600ZB/l1", expect.any(String), expect.any(Object));
+    });
+
+    it("Should not republish a light_type select as an endpoint light state", async () => {
+        const entity = getZ2MEntity(devices.bulb);
+        assert(entity.isDevice());
+        const definition = entity.definition;
+        assert(definition);
+        const originalExposes = definition.exposes;
+        const lightType = new zhc.Enum("light_type", zhc.access.STATE_SET, ["led", "incandescent", "halogen"]);
+        definition.exposes = (device, options) => {
+            const exposes = typeof originalExposes === "function" ? originalExposes(device, options) : originalExposes;
+            return [...exposes, lightType];
+        };
+
+        try {
+            await resetExtension();
+            expect(mockMQTTPublishAsync).toHaveBeenCalledWith(
+                "homeassistant/select/0x000b57fffec6a5b2/light_type/config",
+                expect.any(String),
+                expect.any(Object),
+            );
+
+            mockMQTTPublishAsync.mockClear();
+            await extension.onPublishEntityState({
+                entity,
+                message: {state: "OFF", brightness: 254, light_type: "led", linkquality: 255},
+                payload: {light_type: "led"},
+            });
+
+            expect(mockMQTTPublishAsync).not.toHaveBeenCalledWith("zigbee2mqtt/bulb/type", expect.any(String), expect.any(Object));
+
+            // Multi-endpoint covers still republish onto the endpoint topic.
+            const cover = getZ2MEntity(devices.TS130F_DUAL_COVER_SWITCH);
+            mockMQTTPublishAsync.mockClear();
+            await extension.onPublishEntityState({
+                entity: cover,
+                message: {state_left: "OPEN", position_left: 20},
+                payload: {position_left: 20},
+            });
+            expect(mockMQTTPublishAsync).toHaveBeenCalledWith("zigbee2mqtt/0xa4c138018cf95021/left", stringify({state: "OPEN", position: 20}), {});
+        } finally {
+            definition.exposes = originalExposes;
+        }
     });
 
     it("Shouldnt crash in onPublishEntityState on group publish", async () => {
@@ -3051,6 +3289,7 @@ describe("Extension: HomeAssistant", () => {
                 model: "TRADFRI bulb E26/E27, white spectrum, globe, opal, 980 lm",
                 model_id: "LED1545G12",
                 name: "bulb",
+                sw_version: version,
                 via_device: "zigbee2mqtt_bridge_0x00124b00120144ae",
             },
             effect: true,
@@ -3090,6 +3329,7 @@ describe("Extension: HomeAssistant", () => {
                 model: "TRADFRI bulb E26/E27, white spectrum, globe, opal, 980 lm",
                 model_id: "LED1545G12",
                 name: "bulb",
+                sw_version: version,
                 via_device: "zigbee2mqtt_bridge_0x00124b00120144ae",
             },
             enabled_by_default: false,
@@ -3100,7 +3340,7 @@ describe("Extension: HomeAssistant", () => {
             default_entity_id: "sensor.bulb_last_seen",
             unique_id: "0x000b57fffec6a5b2_last_seen_zigbee2mqtt",
             origin: origin,
-            value_template: "{{ value_json.last_seen }}",
+            value_template: '{% if "last_seen" in value_json %}{{ value_json["last_seen"] }}{% endif %}',
             device_class: "timestamp",
             entity_category: "diagnostic",
         };
@@ -3127,7 +3367,7 @@ describe("Extension: HomeAssistant", () => {
             device_class: "temperature",
             state_class: "measurement",
             enabled_by_default: true,
-            value_template: '{{ value_json["temperature"] }}',
+            value_template: '{% if "temperature" in value_json %}{{ value_json["temperature"] }}{% endif %}',
             state_topic: "zigbee2mqtt/weather_sensor",
             object_id: "weather_sensor_temperature",
             default_entity_id: "sensor.weather_sensor_temperature",
@@ -3136,6 +3376,7 @@ describe("Extension: HomeAssistant", () => {
             device: {
                 identifiers: ["zigbee2mqtt_0x0017880104e45522"],
                 name: "weather_sensor",
+                sw_version: version,
                 model: "Temperature and humidity sensor",
                 model_id: "WSDCGQ11LM",
                 manufacturer: "Aqara",
@@ -3466,6 +3707,23 @@ describe("Extension: HomeAssistant", () => {
         expect(mockMQTTPublishAsync).toHaveBeenCalledWith("homeassistant/light/0xf4ce368a38be56a1/light_l2/config", "", {retain: true, qos: 1});
     });
 
+    it("Should rediscover an entity whose expose comes back after it was removed", async () => {
+        const topic = "homeassistant/light/0xf4ce368a38be56a1/light_l2/config";
+        const discovery = mockMQTTPublishAsync.mock.calls.find((c) => c[0] === topic)?.[1];
+        assert(discovery);
+        const options = (enabled: string): string =>
+            stringify({id: "0xf4ce368a38be56a1", options: {dimmer_1_enabled: enabled, dimmer_1_dimming_enabled: enabled}});
+
+        mockMQTTEvents.message("zigbee2mqtt/bridge/request/device/options", options("false"));
+        await flushPromises();
+        expect(mockMQTTPublishAsync).toHaveBeenCalledWith(topic, "", {retain: true, qos: 1});
+
+        mockMQTTPublishAsync.mockClear();
+        mockMQTTEvents.message("zigbee2mqtt/bridge/request/device/options", options("true"));
+        await flushPromises();
+        expect(mockMQTTPublishAsync).toHaveBeenCalledWith(topic, discovery, {retain: true, qos: 1});
+    });
+
     it("Should publish discovery message when a converter announces changed exposes", async () => {
         mockMQTTPublishAsync.mockClear();
         const device = devices["BMCT-SLZ"];
@@ -3483,6 +3741,7 @@ describe("Extension: HomeAssistant", () => {
                 model: "Light/shutter control unit II",
                 model_id: "BMCT-SLZ",
                 name: "0x18fc26000000cafe",
+                sw_version: version,
                 via_device: "zigbee2mqtt_bridge_0x00124b00120144ae",
             },
             entity_category: "config",
@@ -3494,7 +3753,7 @@ describe("Extension: HomeAssistant", () => {
             origin: origin,
             state_topic: "zigbee2mqtt/0x18fc26000000cafe",
             unique_id: "0x18fc26000000cafe_device_mode_zigbee2mqtt",
-            value_template: '{{ value_json["device_mode"] }}',
+            value_template: '{% if "device_mode" in value_json %}{{ value_json["device_mode"] }}{% endif %}',
         };
         expect(mockMQTTPublishAsync).toHaveBeenCalledWith("homeassistant/select/0x18fc26000000cafe/device_mode/config", stringify(payload), {
             retain: true,
@@ -3525,23 +3784,11 @@ describe("Extension: HomeAssistant", () => {
         expect(mockMQTTPublishAsync.mock.calls[0][0]).toStrictEqual("zigbee2mqtt/button");
         expect(JSON.parse(mockMQTTPublishAsync.mock.calls[0][1])).toStrictEqual({
             action: "single",
-            battery: null,
-            identify: null,
-            linkquality: null,
-            voltage: null,
-            power_outage_count: null,
-            device_temperature: null,
         });
         expect(mockMQTTPublishAsync.mock.calls[0][2]).toStrictEqual({qos: 0, retain: false});
         expect(mockMQTTPublishAsync.mock.calls[1][0]).toStrictEqual("zigbee2mqtt/button");
         expect(JSON.parse(mockMQTTPublishAsync.mock.calls[1][1])).toStrictEqual({
             action: "",
-            battery: null,
-            identify: null,
-            linkquality: null,
-            voltage: null,
-            power_outage_count: null,
-            device_temperature: null,
         });
         expect(mockMQTTPublishAsync.mock.calls[1][2]).toStrictEqual({qos: 0, retain: false});
         expect(mockMQTTPublishAsync.mock.calls[2][0]).toStrictEqual("homeassistant/device_automation/0x0017880104e45520/action_single/config");
