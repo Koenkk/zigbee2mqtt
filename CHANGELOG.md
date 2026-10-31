@@ -1,5 +1,49 @@
 # Changelog
 
+## [2.14.3](https://github.com/Koenkk/zigbee2mqtt/compare/2.14.2...2.14.3) (2026-10-31)
+
+
+### Bug Fixes
+
+* Apply throttle and debounce to last seen updates from non-emitted frames ([#33423](https://github.com/Koenkk/zigbee2mqtt/issues/33423)) ([7234d5b](https://github.com/Koenkk/zigbee2mqtt/commit/7234d5bdbce680bfd9c7e74b69f4585c7b20c308))
+* **deps:** bump ip-address from 10.7.0 to 10.7.2 ([#33244](https://github.com/Koenkk/zigbee2mqtt/issues/33244)) ([992952c](https://github.com/Koenkk/zigbee2mqtt/commit/992952cdb3fda92becaea926db42f15e0772e06b))
+* Do not let a malformed WebSocket frame escape the message listener ([#33275](https://github.com/Koenkk/zigbee2mqtt/issues/33275)) ([6cd4aeb](https://github.com/Koenkk/zigbee2mqtt/commit/6cd4aeb032b4ea00c5ac021a5d4937eb62b2b631))
+* Drain the availability ping queue in a loop instead of recursing ([#33504](https://github.com/Koenkk/zigbee2mqtt/issues/33504)) ([ed2b5d3](https://github.com/Koenkk/zigbee2mqtt/commit/ed2b5d37e34365313316a579a2b58c7e0daa504b))
+* Home Assistant: don't treat light_type select as an endpoint light ([#33472](https://github.com/Koenkk/zigbee2mqtt/issues/33472)) ([fc7383b](https://github.com/Koenkk/zigbee2mqtt/commit/fc7383b9401cb96faea5f8464bfc6b0926574fac))
+* Home Assistant: fix `hw_version` and `sw_version` not being a string ([#33404](https://github.com/Koenkk/zigbee2mqtt/issues/33404)) ([68ebe78](https://github.com/Koenkk/zigbee2mqtt/commit/68ebe7815b8969d30d4a469d3ac0ce45d3a5ba77))
+* Home Assistant: guard value templates against missing properties ([#33071](https://github.com/Koenkk/zigbee2mqtt/issues/33071)) ([2dbb566](https://github.com/Koenkk/zigbee2mqtt/commit/2dbb566a8bb95418e1564645419b13dbbc9a08a6))
+* Home Assistant: log deprecation message when exposing switch as light ([#33412](https://github.com/Koenkk/zigbee2mqtt/issues/33412)) ([a26e4fc](https://github.com/Koenkk/zigbee2mqtt/commit/a26e4fc2fd31dd7e99843283c82a09be19793388))
+* Home Assistant: map `emergency_heating` system mode to `heat` ([#33453](https://github.com/Koenkk/zigbee2mqtt/issues/33453)) ([8e4b2cb](https://github.com/Koenkk/zigbee2mqtt/commit/8e4b2cba066a8cd151c75be5ea6dfc9168514257))
+* Home Assistant: note legacy_action_sensor is deprecated ([#33508](https://github.com/Koenkk/zigbee2mqtt/issues/33508)) ([af4d1d3](https://github.com/Koenkk/zigbee2mqtt/commit/af4d1d3ad0ebb95233cf9b01445df9bc4f6ac006))
+* Home Assistant: rediscover entities that return after their exposes were removed ([#33327](https://github.com/Koenkk/zigbee2mqtt/issues/33327)) ([c50e7cb](https://github.com/Koenkk/zigbee2mqtt/commit/c50e7cb47ba6f05f7f57f8b96bf3e83f8a6288f3))
+* Home Assistant: support fan entities on non-primary endpoints ([#33435](https://github.com/Koenkk/zigbee2mqtt/issues/33435)) ([f152398](https://github.com/Koenkk/zigbee2mqtt/commit/f152398c9d8cbe135947330a618224b01b041245))
+* **ignore:** bump fast-uri from 3.1.6 to 3.1.8 ([#33245](https://github.com/Koenkk/zigbee2mqtt/issues/33245)) ([cc10d3a](https://github.com/Koenkk/zigbee2mqtt/commit/cc10d3a1cbf39f79a17fe8015aecd208e7f32d11))
+* **ignore:** bump fast-uri from 3.1.6 to 3.1.9 ([#33534](https://github.com/Koenkk/zigbee2mqtt/issues/33534)) ([68b8f32](https://github.com/Koenkk/zigbee2mqtt/commit/68b8f3259e42cb3162c34d56402a85b2a3254002))
+* **ignore:** bump the minor-patch group across 1 directory with 3 updates ([#33310](https://github.com/Koenkk/zigbee2mqtt/issues/33310)) ([972f0be](https://github.com/Koenkk/zigbee2mqtt/commit/972f0be125b2037af511d32cc6cc01e5d9f8d020))
+* **ignore:** bump the minor-patch group with 3 updates ([#33387](https://github.com/Koenkk/zigbee2mqtt/issues/33387)) ([a86ca9e](https://github.com/Koenkk/zigbee2mqtt/commit/a86ca9e65af0f3f67035792817dc0fef0e2363db))
+* **ignore:** bump the minor-patch group with 3 updates ([#33461](https://github.com/Koenkk/zigbee2mqtt/issues/33461)) ([e699b47](https://github.com/Koenkk/zigbee2mqtt/commit/e699b47b7dff6bfb0eeebf91aa74cf6aa9a9e2e8))
+* **ignore:** update zigbee-herdsman to 11.0.1 ([#33309](https://github.com/Koenkk/zigbee2mqtt/issues/33309)) ([97c83c8](https://github.com/Koenkk/zigbee2mqtt/commit/97c83c80419b8369267cc2f88cceac5943eaf77d))
+* **ignore:** update zigbee-herdsman to 11.0.2 ([#33312](https://github.com/Koenkk/zigbee2mqtt/issues/33312)) ([86555f6](https://github.com/Koenkk/zigbee2mqtt/commit/86555f65804ebc86f1020a33e611a7a102a8c0b6))
+* **ignore:** update zigbee-herdsman to 11.0.3 ([#33331](https://github.com/Koenkk/zigbee2mqtt/issues/33331)) ([51ee02e](https://github.com/Koenkk/zigbee2mqtt/commit/51ee02e8d67e7c06b4fe5add62bf7f6ad12ff75e))
+* **ignore:** update zigbee-herdsman to 11.1.0 ([#33374](https://github.com/Koenkk/zigbee2mqtt/issues/33374)) ([fee6829](https://github.com/Koenkk/zigbee2mqtt/commit/fee68298cc26d9dbf71fe1134bc1aff9c71769db))
+* **ignore:** update zigbee-herdsman to 11.1.1 ([#33454](https://github.com/Koenkk/zigbee2mqtt/issues/33454)) ([11e14a2](https://github.com/Koenkk/zigbee2mqtt/commit/11e14a2616399959edde4a915b2a7c40690d728a))
+* **ignore:** update zigbee-herdsman to 11.2.0 ([#33550](https://github.com/Koenkk/zigbee2mqtt/issues/33550)) ([eb770fc](https://github.com/Koenkk/zigbee2mqtt/commit/eb770fc87ce817ab293f82b1d989d0144c3d5c44))
+* **ignore:** update zigbee-herdsman-converters to 26.115.2 ([#33251](https://github.com/Koenkk/zigbee2mqtt/issues/33251)) ([77bd457](https://github.com/Koenkk/zigbee2mqtt/commit/77bd457beff1748c19277782d835a4eb8a903652))
+* **ignore:** update zigbee-herdsman-converters to 26.116.0 ([#33261](https://github.com/Koenkk/zigbee2mqtt/issues/33261)) ([1d7d708](https://github.com/Koenkk/zigbee2mqtt/commit/1d7d708ad56ff7aace671e2316066f97e2306e0d))
+* **ignore:** update zigbee-herdsman-converters to 26.117.0 ([#33299](https://github.com/Koenkk/zigbee2mqtt/issues/33299)) ([2be83af](https://github.com/Koenkk/zigbee2mqtt/commit/2be83af6a806e45470ccf17c8e197b3a9bd155e7))
+* **ignore:** update zigbee-herdsman-converters to 26.118.0 ([#33326](https://github.com/Koenkk/zigbee2mqtt/issues/33326)) ([3ee6b54](https://github.com/Koenkk/zigbee2mqtt/commit/3ee6b54a1325f964064f5563f07be7554f6afb22))
+* **ignore:** update zigbee-herdsman-converters to 26.119.0 ([#33375](https://github.com/Koenkk/zigbee2mqtt/issues/33375)) ([4d65107](https://github.com/Koenkk/zigbee2mqtt/commit/4d651070ededf6e48e9e6793f1283c23e78b50fd))
+* **ignore:** update zigbee-herdsman-converters to 26.120.0 ([#33411](https://github.com/Koenkk/zigbee2mqtt/issues/33411)) ([e00a46a](https://github.com/Koenkk/zigbee2mqtt/commit/e00a46a2fb9602898725d0bbf52840ce7a477a03))
+* **ignore:** update zigbee-herdsman-converters to 26.121.0 ([#33424](https://github.com/Koenkk/zigbee2mqtt/issues/33424)) ([7f6f3c6](https://github.com/Koenkk/zigbee2mqtt/commit/7f6f3c62fb9070afd9f533ac12cd5c11bfc4dfc3))
+* **ignore:** update zigbee-herdsman-converters to 26.122.0 ([#33436](https://github.com/Koenkk/zigbee2mqtt/issues/33436)) ([08eea01](https://github.com/Koenkk/zigbee2mqtt/commit/08eea01db55ab36d2d8becd24f828a0dfd80d1e3))
+* **ignore:** update zigbee-herdsman-converters to 26.123.0 ([#33455](https://github.com/Koenkk/zigbee2mqtt/issues/33455)) ([0263513](https://github.com/Koenkk/zigbee2mqtt/commit/0263513d7bfa76c857d3e5838288386942dd8eed))
+* **ignore:** update zigbee-herdsman-converters to 26.124.0 ([#33491](https://github.com/Koenkk/zigbee2mqtt/issues/33491)) ([7fcc3ba](https://github.com/Koenkk/zigbee2mqtt/commit/7fcc3bab498bdec85c70c7c08011dcf18fb78742))
+* **ignore:** update zigbee-herdsman-converters to 26.125.0 ([#33519](https://github.com/Koenkk/zigbee2mqtt/issues/33519)) ([588e12e](https://github.com/Koenkk/zigbee2mqtt/commit/588e12e6a1a0ccd8d3b49bff38e434bef49d3db9))
+* Look up the endpoint name of a group member to check its state ([#33410](https://github.com/Koenkk/zigbee2mqtt/issues/33410)) ([c588eca](https://github.com/Koenkk/zigbee2mqtt/commit/c588eca20eaf7ee63cc864821291d08208a83dba))
+* OTA: respond to update requests within the update check interval ([#33334](https://github.com/Koenkk/zigbee2mqtt/issues/33334)) ([351da4f](https://github.com/Koenkk/zigbee2mqtt/commit/351da4f075ac0194e9a9a920e176aac881f999cf))
+* Preserve secret references when persisting environment overrides ([#33329](https://github.com/Koenkk/zigbee2mqtt/issues/33329)) ([0b76f28](https://github.com/Koenkk/zigbee2mqtt/commit/0b76f28d69c13d79e379829cf95f41bd2c158423))
+* update zigbee-herdsman to 11.0.0 with new transport ([#33116](https://github.com/Koenkk/zigbee2mqtt/issues/33116)) ([dc56658](https://github.com/Koenkk/zigbee2mqtt/commit/dc56658255d2fadfa4437342238285003c9e28c6))
+
 ## [2.14.2](https://github.com/Koenkk/zigbee2mqtt/compare/2.14.1...2.14.2) (2026-10-01)
 
 
