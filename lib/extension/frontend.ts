@@ -24,6 +24,7 @@ export class Frontend extends Extension {
     private wss!: WebSocket.Server;
     private baseUrl: string;
     private websocketPingInterval?: NodeJS.Timeout;
+    private readonly websocketPingIntervalMs: number;
     private readonly aliveClients = new WeakSet<WebSocket>();
 
     constructor(
@@ -42,6 +43,7 @@ export class Frontend extends Extension {
         assert(frontendSettings.enabled, `Frontend extension created with setting 'enabled: false'`);
         this.baseUrl = frontendSettings.base_url;
         this.mqttBaseTopic = settings.get().mqtt.base_topic;
+        this.websocketPingIntervalMs = utils.seconds(frontendSettings.websocket_ping_interval);
     }
 
     override async start(): Promise<void> {
@@ -186,12 +188,8 @@ export class Frontend extends Extension {
     }
 
     @bind private onWebSocketConnection(ws: WebSocket): void {
-        if (this.websocketPingInterval === undefined) {
-            const interval = utils.seconds(settings.get().frontend.websocket_ping_interval);
-
-            if (interval > 0) {
-                this.websocketPingInterval = setInterval(this.pingWebSocketClients, interval);
-            }
+        if (this.websocketPingInterval === undefined && this.websocketPingIntervalMs > 0) {
+            this.websocketPingInterval = setInterval(this.pingWebSocketClients, this.websocketPingIntervalMs);
         }
 
         this.aliveClients.add(ws);
