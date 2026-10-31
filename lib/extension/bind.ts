@@ -204,7 +204,7 @@ export default class Bind extends Extension {
         if (data.topic.match(this.#topicRegex)) {
             const type = data.topic.endsWith("unbind") ? "unbind" : "bind";
             let skipDisableReporting = false;
-            const message = JSON.parse(data.message) as Zigbee2MQTTAPI["bridge/request/device/bind"];
+            const message = utils.parseJSON(data.message, data.message) as Zigbee2MQTTAPI["bridge/request/device/bind"];
 
             if (typeof message !== "object" || message.from == null || message.to == null) {
                 return [message, {type, skipDisableReporting}, "Invalid payload"];
@@ -281,7 +281,7 @@ export default class Bind extends Extension {
 
     @bind private async onMQTTMessage(data: eventdata.MQTTMessage): Promise<void> {
         if (data.topic.endsWith("binds/clear")) {
-            const message = JSON.parse(data.message) as Zigbee2MQTTAPI["bridge/request/device/binds/clear"];
+            const message = utils.parseJSON(data.message, data.message) as Zigbee2MQTTAPI["bridge/request/device/binds/clear"];
 
             if (typeof message !== "object" || typeof message.target !== "string") {
                 await this.publishResponse("binds/clear", message, {}, "Invalid payload");
