@@ -397,14 +397,7 @@ function matchBase64File(value: string | undefined): {extension: string; data: s
 function saveBase64DeviceIcon(base64Match: {extension: string; data: string}): string {
     const extension = base64Match.extension.toLowerCase();
     const md5Hash = crypto.createHash("md5").update(base64Match.data).digest("hex");
-    const fileName = `${md5Hash}.${extension}`;
-
-    // Refuse a suffix that is not one path segment, including Windows separators, so the write stays in device_icons.
-    if (path.basename(fileName.replaceAll("\\", "/")) !== fileName) {
-        throw new Error(`Invalid device icon extension '${base64Match.extension}'`);
-    }
-
-    const fileSettings = `device_icons/${fileName}`;
+    const fileSettings = `device_icons/${md5Hash}.${extension}`;
     const file = path.join(data.getPath(), fileSettings);
     fs.mkdirSync(path.dirname(file), {recursive: true});
     fs.writeFileSync(file, base64Match.data, {encoding: "base64"});

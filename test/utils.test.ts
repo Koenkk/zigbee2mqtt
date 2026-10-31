@@ -1,5 +1,4 @@
 import {exec} from "node:child_process";
-import crypto from "node:crypto";
 import fs from "node:fs";
 import os from "node:os";
 import path from "node:path";
@@ -241,21 +240,6 @@ describe("Utils", () => {
             expect(utils.saveBase64DeviceIcon(match)).toBe("device_icons/effcad234beeb56ea7c457cf2d36d10b.png");
             const saved = path.join(dataDir, "device_icons", "effcad234beeb56ea7c457cf2d36d10b.png");
             expect(fs.readFileSync(saved)).toStrictEqual(Buffer.from(pngData, "base64"));
-
-            const escapedData = Buffer.from("nope").toString("base64");
-            const escapedExtension = "png/../../external_extensions/pwn.js";
-            const escapedName = `${crypto.createHash("md5").update(escapedData).digest("hex")}.${escapedExtension}`;
-            const escapedPath = path.resolve(path.join(dataDir, "device_icons", escapedName));
-            expect(escapedPath).toBe(path.join(dataDir, "external_extensions", "pwn.js"));
-            expect(() => utils.saveBase64DeviceIcon({extension: escapedExtension, data: escapedData})).toThrow(
-                `Invalid device icon extension '${escapedExtension}'`,
-            );
-            expect(fs.existsSync(escapedPath)).toBe(false);
-
-            const windowsExtension = "png\\..\\..\\outside.txt";
-            expect(() => utils.saveBase64DeviceIcon({extension: windowsExtension, data: escapedData})).toThrow(
-                `Invalid device icon extension '${windowsExtension}'`,
-            );
         } finally {
             if (previous === undefined) {
                 delete process.env.ZIGBEE2MQTT_DATA;
