@@ -10,7 +10,8 @@ import type {Zigbee2MQTTAPI, Zigbee2MQTTResponse, Zigbee2MQTTResponseEndpoints, 
 
 import data from "./data";
 
-const BASE64_IMAGE_REGEX = /data:image\/(?<extension>.+);base64,(?<data>.+)/;
+// The subtype is used as a filename suffix, so it is an allowlist rather than `.+` (which also matches `/` and `..`).
+const BASE64_IMAGE_REGEX = /data:image\/(?<extension>gif|jpe?g|png|svg\+xml|webp);base64,(?<data>.+)/i;
 
 export const DEFAULT_BIND_GROUP_ID = 901;
 
@@ -387,15 +388,23 @@ function matchBase64File(value: string | undefined): {extension: string; data: s
         const match = value.match(BASE64_IMAGE_REGEX);
         if (match) {
             assert(match.groups?.extension && match.groups?.data);
-            return {extension: match.groups.extension, data: match.groups.data};
+            return {extension: match.groups.extension.toLowerCase(), data: match.groups.data};
         }
     }
     return false;
 }
 
 function saveBase64DeviceIcon(base64Match: {extension: string; data: string}): string {
+    const extension = base64Match.extension.toLowerCase();
     const md5Hash = crypto.createHash("md5").update(base64Match.data).digest("hex");
-    const fileSettings = `device_icons/${md5Hash}.${base64Match.extension}`;
+    const fileName = `${md5Hash}.${extension}`;
+
+    // Refuse a suffix that is not one path segment, including Windows separators, so the write stays in device_icons.
+    if (path.basename(fileName.replaceAll("\\", "/")) !== fileName) {
+        throw new Error(`Invalid device icon extension '${base64Match.extension}'`);
+    }
+
+    const fileSettings = `device_icons/${fileName}`;
     const file = path.join(data.getPath(), fileSettings);
     fs.mkdirSync(path.dirname(file), {recursive: true});
     fs.writeFileSync(file, base64Match.data, {encoding: "base64"});
