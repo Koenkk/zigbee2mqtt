@@ -191,7 +191,7 @@ export default class Groups extends Extension {
             let resolvedGroup: Group | undefined;
             let groupKey: string | undefined;
             let skipDisableReporting = false;
-            const message = JSON.parse(data.message) as
+            const message = utils.parseJSON(data.message, data.message) as
                 | Zigbee2MQTTAPI["bridge/request/group/members/add"]
                 | Zigbee2MQTTAPI["bridge/request/group/members/remove"]
                 | Zigbee2MQTTAPI["bridge/request/group/members/remove_all"];
