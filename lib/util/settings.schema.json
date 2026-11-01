@@ -967,7 +967,10 @@
             "type": "object",
             "properties": {
                 "friendly_name": {
-                    "type": "string"
+                    "type": "string",
+                    "title": "Friendly name",
+                    "description": "Used in the MQTT topic of a group",
+                    "readOnly": true
                 },
                 "retain": {
                     "type": "boolean",
