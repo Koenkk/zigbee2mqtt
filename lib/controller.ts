@@ -20,6 +20,7 @@ import ExtensionReceive from "./extension/receive";
 import Mqtt, {type MqttPublishOptions} from "./mqtt";
 import State from "./state";
 import type {Zigbee2MQTTAPI} from "./types/api";
+import {normalizeColorMode} from "./util/colorMode";
 import logger from "./util/logger";
 import {initSdNotify} from "./util/sd-notify";
 import * as settings from "./util/settings";
@@ -388,6 +389,8 @@ export class Controller {
         if (settings.get().advanced.cache_state) {
             // Add cached state to payload
             message = newState;
+        } else {
+            normalizeColorMode(entity, message);
         }
 
         const options: MakePartialExcept<MqttPublishOptions, "clientOptions" | "meta"> = {
