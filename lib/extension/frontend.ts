@@ -23,6 +23,9 @@ export class Frontend extends Extension {
     private server: Server | undefined;
     private wss!: WebSocket.Server;
     private baseUrl: string;
+    private websocketPingInterval?: NodeJS.Timeout;
+    private readonly websocketPingIntervalMs: number;
+    private readonly aliveClients = new WeakSet<WebSocket>();
 
     constructor(
         zigbee: Zigbee,
@@ -40,6 +43,7 @@ export class Frontend extends Extension {
         assert(frontendSettings.enabled, `Frontend extension created with setting 'enabled: false'`);
         this.baseUrl = frontendSettings.base_url;
         this.mqttBaseTopic = settings.get().mqtt.base_topic;
+        this.websocketPingIntervalMs = utils.seconds(frontendSettings.websocket_ping_interval);
     }
 
     override async start(): Promise<void> {
@@ -124,6 +128,7 @@ export class Frontend extends Extension {
         }
 
         this.wss.on("connection", this.onWebSocketConnection);
+        this.wss.on("close", this.clearWebSocketPingInterval);
 
         this.eventBus.onMQTTMessagePublished(this, this.onMQTTPublishMessageOrEntityState);
         this.eventBus.onPublishEntityState(this, this.onMQTTPublishMessageOrEntityState);
@@ -131,6 +136,8 @@ export class Frontend extends Extension {
 
     override async stop(): Promise<void> {
         await super.stop();
+
+        this.clearWebSocketPingInterval();
 
         if (this.wss) {
             for (const client of this.wss.clients) {
@@ -158,7 +165,37 @@ export class Frontend extends Extension {
         });
     }
 
+    @bind private clearWebSocketPingInterval(): void {
+        clearInterval(this.websocketPingInterval);
+        this.websocketPingInterval = undefined;
+    }
+
+    @bind private pingWebSocketClients(): void {
+        if (this.wss.clients.size === 0) {
+            this.clearWebSocketPingInterval();
+            return;
+        }
+
+        for (const client of this.wss.clients) {
+            if (!this.aliveClients.has(client)) {
+                client.terminate();
+                continue;
+            }
+
+            this.aliveClients.delete(client);
+            client.ping();
+        }
+    }
+
     @bind private onWebSocketConnection(ws: WebSocket): void {
+        if (this.websocketPingInterval === undefined && this.websocketPingIntervalMs > 0) {
+            this.websocketPingInterval = setInterval(this.pingWebSocketClients, this.websocketPingIntervalMs);
+        }
+
+        this.aliveClients.add(ws);
+        ws.on("pong", () => {
+            this.aliveClients.add(ws);
+        });
         ws.on("error", (msg) => logger.error(`WebSocket error: ${msg.message}`));
         ws.on("message", (data: Buffer, isBinary: boolean) => {
             if (!isBinary && data) {
