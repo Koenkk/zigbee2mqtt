@@ -113,6 +113,7 @@ export const defaults = {
         network_key: [1, 3, 5, 7, 9, 11, 13, 15, 0, 2, 4, 6, 8, 10, 12, 13],
         timestamp_format: "YYYY-MM-DD HH:mm:ss",
         output: "json",
+        read_missing_config_on_reconnect: false,
         enable_external_js: true,
     },
     health: {
