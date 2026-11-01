@@ -743,6 +743,48 @@ describe("Extension: OTAUpdate", () => {
         );
     });
 
+    it("fails with Invalid payload when the message has no id", async () => {
+        mockMQTTEvents.message("zigbee2mqtt/bridge/request/device/ota_update/check", stringify({}));
+        await flushPromises();
+        expect(mockMQTTPublishAsync).toHaveBeenCalledWith(
+            "zigbee2mqtt/bridge/response/device/ota_update/check",
+            stringify({data: {}, status: "error", error: "Invalid payload"}),
+            {},
+        );
+    });
+
+    it("fails with Invalid payload on a null message", async () => {
+        mockMQTTEvents.message("zigbee2mqtt/bridge/request/device/ota_update/check", "null");
+        await flushPromises();
+        expect(mockMQTTPublishAsync).toHaveBeenCalledWith(
+            "zigbee2mqtt/bridge/response/device/ota_update/check",
+            stringify({data: {}, status: "error", error: "Invalid payload"}),
+            {},
+        );
+    });
+
+    it("fails with Invalid payload for hex update without data and does not block further requests", async () => {
+        mockMQTTEvents.message(
+            "zigbee2mqtt/bridge/request/device/ota_update/update",
+            stringify({id: "bulb", hex: {file_name: "test.hex"}}),
+        );
+        await flushPromises();
+        expect(mockMQTTPublishAsync).toHaveBeenCalledWith(
+            "zigbee2mqtt/bridge/response/device/ota_update/update",
+            stringify({data: {}, status: "error", error: "Invalid payload, 'hex.data' is required"}),
+            {},
+        );
+
+        // the failed request must not leave the device marked as in progress
+        mockMQTTEvents.message("zigbee2mqtt/bridge/request/device/ota_update/check", stringify({id: "bulb"}));
+        await flushPromises();
+        expect(mockMQTTPublishAsync).not.toHaveBeenCalledWith(
+            "zigbee2mqtt/bridge/response/device/ota_update/check",
+            stringify({data: {}, status: "error", error: `OTA update or check for update already in progress for 'bulb'`}),
+            {},
+        );
+    });
+
     it.each(["check", "update", "schedule"])("does not OTA %s when device does not support it", async (api) => {
         mockMQTTEvents.message(`zigbee2mqtt/bridge/request/device/ota_update/${api}`, stringify({id: "dimmer_wall_switch"}));
         await flushPromises();
