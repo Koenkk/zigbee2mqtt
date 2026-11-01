@@ -1,7 +1,9 @@
 import {exec} from "node:child_process";
 import fs from "node:fs";
+import os from "node:os";
 import path from "node:path";
 import {describe, expect, it, vi} from "vitest";
+import data from "../lib/util/data";
 import {stringify} from "../lib/util/stringify";
 import utils, {assertString} from "../lib/util/utils";
 
@@ -198,5 +200,55 @@ describe("Utils", () => {
 
         expect(stringify({data: emptyTypedArrayWithProperty})).toStrictEqual(JSON.stringify({data: {unit: "raw"}}));
         expect(stringify({data: new Uint8Array(0)})).toStrictEqual(JSON.stringify({data: {}}));
+    });
+
+    it("Accepts image data URLs with a known extension", () => {
+        const pngData = "iVBORw0KGgoAAAANSUhEUgAAAJ";
+        expect(utils.matchBase64File(`data:image/png;base64,${pngData}`)).toStrictEqual({extension: "png", data: pngData});
+        expect(utils.matchBase64File("data:image/JPEG;base64,QUJDRA==")).toStrictEqual({extension: "jpeg", data: "QUJDRA=="});
+        expect(utils.matchBase64File("data:image/jpg;base64,QUJDRA==")).toStrictEqual({extension: "jpg", data: "QUJDRA=="});
+        expect(utils.matchBase64File("data:image/gif;base64,R0lGODlh")).toStrictEqual({extension: "gif", data: "R0lGODlh"});
+        expect(utils.matchBase64File("data:image/webp;base64,UklGRg==")).toStrictEqual({extension: "webp", data: "UklGRg=="});
+        expect(utils.matchBase64File("data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDo")).toStrictEqual({
+            extension: "svg+xml",
+            data: "PHN2ZyB4bWxucz0iaHR0cDo",
+        });
+    });
+
+    it("Ignores icon data URLs whose extension is not an allowlisted image type", () => {
+        expect(utils.matchBase64File(undefined)).toBe(false);
+        expect(utils.matchBase64File("some_icon.png")).toBe(false);
+        expect(utils.matchBase64File("data:image/bmp;base64,QUJDRA==")).toBe(false);
+        expect(utils.matchBase64File("data:image/png/../../external_extensions/pwn.js;base64,QUJDRA==")).toBe(false);
+        expect(utils.matchBase64File("data:image/png\\..\\..\\external_extensions\\pwn.js;base64,QUJDRA==")).toBe(false);
+    });
+
+    it("Writes a device icon inside device_icons and refuses a path-like extension", () => {
+        const pngData = "iVBORw0KGgoAAAANSUhEUgAAAJ";
+        const dataDir = fs.mkdtempSync(path.join(os.tmpdir(), "z2m-icons-"));
+        const previous = process.env.ZIGBEE2MQTT_DATA;
+        process.env.ZIGBEE2MQTT_DATA = dataDir;
+        data._testReload();
+
+        try {
+            const match = utils.matchBase64File(`data:image/png;base64,${pngData}`);
+            expect(match).toStrictEqual({extension: "png", data: pngData});
+            if (match === false) {
+                throw new Error("expected a png data URL to match");
+            }
+
+            expect(utils.saveBase64DeviceIcon(match)).toBe("device_icons/effcad234beeb56ea7c457cf2d36d10b.png");
+            const saved = path.join(dataDir, "device_icons", "effcad234beeb56ea7c457cf2d36d10b.png");
+            expect(fs.readFileSync(saved)).toStrictEqual(Buffer.from(pngData, "base64"));
+        } finally {
+            if (previous === undefined) {
+                delete process.env.ZIGBEE2MQTT_DATA;
+            } else {
+                process.env.ZIGBEE2MQTT_DATA = previous;
+            }
+
+            data._testReload();
+            fs.rmSync(dataDir, {recursive: true, force: true});
+        }
     });
 });
