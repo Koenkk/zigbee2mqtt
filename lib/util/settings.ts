@@ -513,7 +513,9 @@ export function getGroup(IDorName: string | number): GroupOptions | undefined {
     const settings = get();
     const byID = settings.groups[IDorName];
 
-    if (byID) {
+    // every configured group has a friendly_name, Object.prototype members ("constructor", ...) don't;
+    // checking the field keeps names like "constructor" from resolving without an Object.hasOwn cost
+    if (byID && byID.friendly_name !== undefined) {
         return {...byID, ID: Number(IDorName)};
     }
 
@@ -540,7 +542,8 @@ export function getDevice(IDorName: string): DeviceOptionsWithId | undefined {
     const settings = get();
     const byID = settings.devices[IDorName];
 
-    if (byID) {
+    // same as getGroup: every configured device has a friendly_name, prototype members don't
+    if (byID && byID.friendly_name !== undefined) {
         return {...byID, ID: IDorName};
     }
 

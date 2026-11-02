@@ -577,6 +577,19 @@ describe("Settings", () => {
         });
     });
 
+    it("Should not resolve Object.prototype members as devices or groups", () => {
+        write(configurationFile, {});
+
+        expect(settings.getDevice("constructor")).toBeUndefined();
+        expect(settings.getDevice("toString")).toBeUndefined();
+        expect(settings.getGroup("constructor")).toBeUndefined();
+        expect(settings.getGroup("valueOf")).toBeUndefined();
+
+        // a friendly name colliding with a prototype member must be usable
+        settings.addGroup("constructor");
+        expect(settings.getGroup("constructor")?.friendly_name).toStrictEqual("constructor");
+    });
+
     it("Throw if removing non-existing group", () => {
         const content = {
             groups: {
