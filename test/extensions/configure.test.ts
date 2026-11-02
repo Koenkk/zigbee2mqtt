@@ -227,6 +227,26 @@ describe("Extension: Configure", () => {
         );
     });
 
+    it("Fail to configure via MQTT on a null payload", async () => {
+        await mockMQTTEvents.message("zigbee2mqtt/bridge/request/device/configure", "null");
+        await flushPromises();
+        expect(mockMQTTPublishAsync).toHaveBeenCalledWith(
+            "zigbee2mqtt/bridge/response/device/configure",
+            stringify({data: {}, status: "error", error: "Invalid payload"}),
+            {},
+        );
+    });
+
+    it("Fail to configure via MQTT on a null device id", async () => {
+        await mockMQTTEvents.message("zigbee2mqtt/bridge/request/device/configure", stringify({id: null}));
+        await flushPromises();
+        expect(mockMQTTPublishAsync).toHaveBeenCalledWith(
+            "zigbee2mqtt/bridge/response/device/configure",
+            stringify({data: {}, status: "error", error: "Invalid payload"}),
+            {},
+        );
+    });
+
     it("Fail to configure via MQTT when configure fails", async () => {
         devices.remote.getEndpoint(1)!.bind.mockRejectedValueOnce(new Error("Bind timeout after 10s"));
         await mockMQTTEvents.message("zigbee2mqtt/bridge/request/device/configure", stringify({id: "remote"}));
