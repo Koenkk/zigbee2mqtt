@@ -386,6 +386,12 @@ export default class Bridge extends Extension {
             time = Number.parseInt(message, 10);
         }
 
+        // `Number.parseInt` returns NaN for non-numeric input, which would be reported as
+        // `time: null` with `status: ok` while the join state is never actually changed
+        if (time === undefined || Number.isNaN(time)) {
+            throw new Error("Invalid payload");
+        }
+
         await this.zigbee.permitJoin(time, device);
 
         const response: {time: number; device?: string} = {time};
