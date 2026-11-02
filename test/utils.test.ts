@@ -84,6 +84,18 @@ describe("Utils", () => {
         expect(() => assertString(1, "property")).toThrow("property is not a string, got number (1)");
     });
 
+    it("getResponse handles a null request payload", () => {
+        expect(utils.getResponse(null, {healthy: true})).toStrictEqual({
+            data: {healthy: true},
+            status: "ok",
+        });
+        expect(utils.getResponse(null, {}, "Invalid payload")).toStrictEqual({
+            data: {},
+            status: "error",
+            error: "Invalid payload",
+        });
+    });
+
     it("Removes null properties from object", () => {
         const obj1 = {
             ab: 0,

@@ -126,7 +126,8 @@ function getResponse<T extends Zigbee2MQTTResponseEndpoints>(
             error: error,
         };
 
-        if (typeof request === "object" && request.transaction !== undefined) {
+        // `request` can be a raw `null` payload, and `typeof null === "object"`
+        if (request !== null && typeof request === "object" && request.transaction !== undefined) {
             response.transaction = request.transaction;
         }
 
@@ -138,7 +139,7 @@ function getResponse<T extends Zigbee2MQTTResponseEndpoints>(
         status: "ok",
     };
 
-    if (typeof request === "object" && request.transaction !== undefined) {
+    if (request !== null && typeof request === "object" && request.transaction !== undefined) {
         response.transaction = request.transaction;
     }
 
