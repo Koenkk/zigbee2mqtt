@@ -326,6 +326,10 @@ export default class Availability extends Extension {
 
                         // biome-ignore lint/style/noNonNullAssertion: doesn't change once valid
                         const converter = device.definition!.toZigbee.find((c) => !c.key || c.key.find((k) => item.keys.includes(k)));
+                        if (!converter?.convertGet) {
+                            continue;
+                        }
+
                         const options: KeyValue = device.options;
                         const state = this.state.get(device);
                         const meta: zhc.Tz.Meta = {
@@ -346,7 +350,7 @@ export default class Availability extends Extension {
                         try {
                             const endpoint = device.endpoint();
                             assert(endpoint);
-                            await converter?.convertGet?.(endpoint, item.keys[0], meta);
+                            await converter.convertGet(endpoint, item.keys[0], meta);
                         } catch (error) {
                             logger.error(`Failed to read state of '${device.name}' after reconnect (${(error as Error).message})`);
                         }
