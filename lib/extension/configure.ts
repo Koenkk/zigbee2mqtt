@@ -28,10 +28,11 @@ export default class Configure extends Extension {
     @bind private async onMQTTMessage(data: eventdata.MQTTMessage): Promise<void> {
         if (data.topic === this.topic) {
             const message = utils.parseJSON(data.message, data.message) as Zigbee2MQTTAPI["bridge/request/device/configure"];
-            const ID = typeof message === "object" ? message.id : message;
+            // `typeof null === "object"`, so a raw `null` payload must not be read like a message object
+            const ID = message !== null && typeof message === "object" ? message.id : message;
             let error: string | undefined;
 
-            if (ID === undefined) {
+            if (ID === undefined || ID === null || typeof ID === "object") {
                 error = "Invalid payload";
             } else {
                 const device = this.zigbee.resolveEntity(ID);
@@ -49,7 +50,8 @@ export default class Configure extends Extension {
                 }
             }
 
-            const response = utils.getResponse<"bridge/response/device/configure">(message, {id: ID}, error);
+            // a raw `null` payload has no transaction to echo, let getResponse see a string
+            const response = utils.getResponse<"bridge/response/device/configure">(message ?? "", {id: ID}, error);
 
             await this.mqtt.publish("bridge/response/device/configure", stringify(response));
         }
