@@ -786,6 +786,16 @@ describe("Extension: Publish", () => {
         expect(endpoint.command).toHaveBeenCalledWith("genOnOff", "on", {}, {});
     });
 
+    it("Should control a device with a friendly name starting with bridge", async () => {
+        const device = devices.bulb_color;
+        const endpoint = device.getEndpoint(1)!;
+        settings.set(["devices", device.ieeeAddr, "friendly_name"], "bridge_light");
+        await mockMQTTEvents.message("zigbee2mqtt/bridge_light/set", stringify({state: "ON"}));
+        await flushPromises();
+        expect(endpoint.command).toHaveBeenCalledTimes(1);
+        expect(endpoint.command).toHaveBeenCalledWith("genOnOff", "on", {}, {});
+    });
+
     it("Should parse set with color attribute topic", async () => {
         const device = devices.bulb_color;
         const endpoint = device.getEndpoint(1)!;
