@@ -131,6 +131,17 @@ describe("Extension: Bind", () => {
         );
     });
 
+    it("Should respond with error on non-JSON payload", async () => {
+        mockMQTTPublishAsync.mockClear();
+        mockMQTTEvents.message("zigbee2mqtt/bridge/request/device/bind", "not json");
+        await flushPromises();
+        expect(mockMQTTPublishAsync).toHaveBeenCalledWith(
+            "zigbee2mqtt/bridge/response/device/bind",
+            stringify({data: {}, status: "error", error: "Invalid payload"}),
+            {},
+        );
+    });
+
     it("Filters out unsupported clusters for reporting setup", async () => {
         const device = devices.remote;
         const target = devices.bulb_color.getEndpoint(1)!;
@@ -851,6 +862,21 @@ describe("Extension: Bind", () => {
 
         device.mockClear();
         mockMQTTEvents.message("zigbee2mqtt/bridge/request/device/binds/clear", stringify({targetz: "remote"}));
+        await flushPromises();
+
+        expect(device.clearAllBindings).toHaveBeenCalledTimes(0);
+        expect(mockMQTTPublishAsync).toHaveBeenCalledWith(
+            "zigbee2mqtt/bridge/response/device/binds/clear",
+            stringify({data: {}, status: "error", error: "Invalid payload"}),
+            {},
+        );
+    });
+
+    it("responds with error on non-JSON clears bindings payload", async () => {
+        const device = devices.remote;
+
+        device.mockClear();
+        mockMQTTEvents.message("zigbee2mqtt/bridge/request/device/binds/clear", "not json");
         await flushPromises();
 
         expect(device.clearAllBindings).toHaveBeenCalledTimes(0);
