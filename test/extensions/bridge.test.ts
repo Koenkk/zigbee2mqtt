@@ -3856,6 +3856,17 @@ describe("Extension: Bridge", () => {
         );
     });
 
+    it("Should throw error when add with a non-numeric group id", async () => {
+        mockMQTTPublishAsync.mockClear();
+        mockMQTTEvents.message("zigbee2mqtt/bridge/request/group/add", stringify({friendly_name: "group_broken", id: "abc"}));
+        await flushPromises();
+        expect(mockMQTTPublishAsync).toHaveBeenCalledWith(
+            "zigbee2mqtt/bridge/response/group/add",
+            stringify({data: {}, status: "error", error: "Group ID must be a number"}),
+            {},
+        );
+    });
+
     it("Should allow to touchlink factory reset (succeeds)", async () => {
         mockMQTTPublishAsync.mockClear();
         mockZHController.touchlink.factoryResetFirst.mockClear();

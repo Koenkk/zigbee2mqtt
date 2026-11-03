@@ -303,6 +303,13 @@ export default class Bridge extends Extension {
 
         const friendlyName = typeof message === "object" ? message.friendly_name : message;
         const ID = typeof message === "object" && message.id !== undefined ? message.id : null;
+
+        // a non-numeric ID would get persisted but can never resolve to a herdsman group,
+        // leaving a broken entry that makes every later publishGroups throw
+        if (ID !== null && Number.isNaN(Number(ID))) {
+            throw new Error("Group ID must be a number");
+        }
+
         const group = settings.addGroup(friendlyName, ID);
         this.zigbee.createGroup(group.ID);
         await this.publishGroups();
