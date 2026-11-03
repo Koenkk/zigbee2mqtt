@@ -54,11 +54,11 @@ importers:
         specifier: ^8.22.0
         version: 8.22.0
       zigbee-herdsman:
-        specifier: 11.1.1
-        version: 11.1.1(supports-color@7.2.0)
+        specifier: 11.2.0
+        version: 11.2.0(supports-color@7.2.0)
       zigbee-herdsman-converters:
-        specifier: 26.124.0
-        version: 26.124.0(supports-color@7.2.0)
+        specifier: 26.125.0
+        version: 26.125.0(supports-color@7.2.0)
       zigbee2mqtt-frontend:
         specifier: 0.9.21
         version: 0.9.21
@@ -847,8 +847,8 @@ packages:
     resolution: {integrity: sha512-nDA9ADeINN8SA2u2wCtU+siWFTTDqQR37XvgPIDDmboWQeExz7X0mImxuaN+kJddliIqy2FpVRmnvRZ+j8i1/A==}
     engines: {node: '>=18.2.0'}
 
-  fast-uri@3.1.8:
-    resolution: {integrity: sha512-GZMtZUTNRpOVIECoXwLNZS5xUGE+mVNbTB8h/7Rwh2TFWcBQiPzTgyZi05BF9UMZKkLJv8XBRJTlU7zg8+ZfMg==}
+  fast-uri@3.1.9:
+    resolution: {integrity: sha512-hS/0Wt3Ya043oKXs0sIxrMpKQITXhMLIrVAKKXi4gozGC9v7YRWVnXIZzjNPTO02M9BdxLCWqK1yRXgNziVyJQ==}
 
   fdir@6.5.0:
     resolution: {integrity: sha512-tIbYtZbucOs0BRGqPJkshJUYdL+SDH7dVM8gjy+ERp3WAUjLEFJE+02kanyHtwjWOnwrKYBiwAmM0p4kLJAnXg==}
@@ -903,8 +903,8 @@ packages:
   inherits@2.0.4:
     resolution: {integrity: sha512-k/vGaX4/Yla3WzyMCvTQOXYeIHvqOKtnqBduzTHpzpQZzAskKMhZ2K+EnBiSM9zGSoIFeMpXKxa4dYeZIQqewQ==}
 
-  ip-address@10.7.2:
-    resolution: {integrity: sha512-7H/2gFSIitxc0hG3nOI1glS8QLo/EHBFFLk8vEUjXY/xu0AdL8jZ9U1IzO2PUm0d2D/ofQcAifb0g6OBkt8U7w==}
+  ip-address@10.7.5:
+    resolution: {integrity: sha512-t2v0rkILYv9WXmSL7TpAaU3HXgaFYOPUcH3QHgwQ++gpJuH3bqyMy4Fvt/DJCTKwzH3Cf+bAp5W/mFL39KPLzA==}
     engines: {node: '>= 12'}
 
   is-stream@2.0.1:
@@ -1275,12 +1275,12 @@ packages:
       utf-8-validate:
         optional: true
 
-  zigbee-herdsman-converters@26.124.0:
-    resolution: {integrity: sha512-xOZ2svp/9NfnAJfwn0VJljbEHh/54YdWbrjhXdNL9BM7nSXw+oZcCaGV1WSdg0emq9Nzku9aHS8PvGeiRXiemw==}
+  zigbee-herdsman-converters@26.125.0:
+    resolution: {integrity: sha512-ZHOPORTkaWnGYuwFhK0EldJzUqQOl+fDhNx9yEte7zjp8I9vw7+XPZis6MBCTnaWxKcunifOfg4e6/nfaUIiUw==}
     engines: {node: ^22.2.0 || ^24 || <=26.2}
 
-  zigbee-herdsman@11.1.1:
-    resolution: {integrity: sha512-8/keN//8VW6E/CbeUUlmwSZBYfCk8+qUXM9OHscdnnsv5/8RqoIb5qS7Cc1fJNWOPgPBvr4xHOZCVqAF6Q6f9Q==}
+  zigbee-herdsman@11.2.0:
+    resolution: {integrity: sha512-aHDSk8Opv3DKTaN6HPmrP+KssHxr/6pknHUWHJ5UsQIaFg4x+blk19FONoj0Had2HmMlVPRFyhxUnS4aK/eKcA==}
     engines: {node: ^22.2.0 || ^24 || <=26.2}
 
   zigbee-on-host@0.3.2:
@@ -1705,7 +1705,7 @@ snapshots:
   ajv@8.20.0:
     dependencies:
       fast-deep-equal: 3.1.3
-      fast-uri: 3.1.8
+      fast-uri: 3.1.9
       json-schema-traverse: 1.0.0
       require-from-string: 2.0.2
 
@@ -1852,7 +1852,7 @@ snapshots:
       '@babel/runtime': 7.29.7
       tslib: 2.8.1
 
-  fast-uri@3.1.8: {}
+  fast-uri@3.1.9: {}
 
   fdir@6.5.0(picomatch@4.0.7):
     optionalDependencies:
@@ -1888,7 +1888,7 @@ snapshots:
 
   inherits@2.0.4: {}
 
-  ip-address@10.7.2: {}
+  ip-address@10.7.5: {}
 
   is-stream@2.0.1: {}
 
@@ -2076,7 +2076,7 @@ snapshots:
 
   socks@2.8.9:
     dependencies:
-      ip-address: 10.7.2
+      ip-address: 10.7.5
       smart-buffer: 4.2.0
 
   source-map-js@1.2.1: {}
@@ -2266,15 +2266,15 @@ snapshots:
 
   ws@8.22.0: {}
 
-  zigbee-herdsman-converters@26.124.0(supports-color@7.2.0):
+  zigbee-herdsman-converters@26.125.0(supports-color@7.2.0):
     dependencies:
       iconv-lite: 0.7.3
       semver: 7.8.5
-      zigbee-herdsman: 11.1.1(supports-color@7.2.0)
+      zigbee-herdsman: 11.2.0(supports-color@7.2.0)
     transitivePeerDependencies:
       - supports-color
 
-  zigbee-herdsman@11.1.1(supports-color@7.2.0):
+  zigbee-herdsman@11.2.0(supports-color@7.2.0):
     dependencies:
       '@date-fns/tz': 1.5.0
       '@serialport/bindings-cpp': 13.0.1(supports-color@7.2.0)
