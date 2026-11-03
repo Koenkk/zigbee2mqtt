@@ -3021,6 +3021,17 @@ describe("Extension: Bridge", () => {
         );
     });
 
+    it("Should not allow permit join with a non-numeric time", async () => {
+        mockMQTTEvents.message("zigbee2mqtt/bridge/request/permit_join", stringify({time: "abc"}));
+        await flushPromises();
+        expect(mockZHController.permitJoin).toHaveBeenCalledTimes(0);
+        expect(mockMQTTPublishAsync).toHaveBeenCalledWith(
+            "zigbee2mqtt/bridge/response/permit_join",
+            stringify({data: {}, status: "error", error: "Invalid payload"}),
+            {},
+        );
+    });
+
     it("Should republish bridge info when permit join changes", async () => {
         mockMQTTPublishAsync.mockClear();
         await mockZHEvents.permitJoinChanged({permitted: false, timeout: 10});
