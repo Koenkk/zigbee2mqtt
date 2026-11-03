@@ -804,6 +804,19 @@ describe("Extension: Groups", () => {
         );
     });
 
+    it("Error when payload is not valid JSON", async () => {
+        mockLogger.error.mockClear();
+        mockMQTTPublishAsync.mockClear();
+        mockMQTTEvents.message("zigbee2mqtt/bridge/request/group/members/add", "not json");
+        await flushPromises();
+        expect(mockMQTTPublishAsync).not.toHaveBeenCalledWith("zigbee2mqtt/bridge/groups", expect.any(String), expect.any(Object));
+        expect(mockMQTTPublishAsync).toHaveBeenCalledWith(
+            "zigbee2mqtt/bridge/response/group/members/add",
+            stringify({data: {}, status: "error", error: "Invalid payload"}),
+            {},
+        );
+    });
+
     it("Should only include relevant properties when publishing member states", async () => {
         const bulbColor = devices.bulb_color;
         const bulbColorTemp = devices.bulb;
