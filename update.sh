@@ -31,8 +31,15 @@ else
             sudo systemctl stop zigbee2mqtt
             NEED_RESTART=1
         fi
+    elif which rc-service 2> /dev/null > /dev/null; then
+        echo "Checking Zigbee2MQTT status..."
+        if rc-service -qq zigbee2mqtt status; then
+            echo "Stopping Zigbee2MQTT..."
+            sudo rc-service zigbee2mqtt stop
+            NEED_RESTART=1
+        fi
     else
-        echo "Skipped stopping Zigbee2MQTT, no systemctl found"
+        echo "Skipped stopping Zigbee2MQTT, no supported service manager found"
     fi
 fi
 
@@ -57,6 +64,8 @@ if [ $NEED_RESTART -eq 1 ]; then
     echo "Starting Zigbee2MQTT..."
     if [ "$OSNAME" == "FreeBSD" ]; then
         service zigbee2mqtt start
+    elif which rc-service 2> /dev/null > /dev/null; then
+        sudo rc-service zigbee2mqtt start
     else
         sudo systemctl start zigbee2mqtt
     fi
