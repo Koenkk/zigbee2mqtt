@@ -7,7 +7,7 @@ updates:
           interval: weekly
       target-branch: dev
       commit-message:
-        prefix: fix(ignore)
+          prefix: fix(ignore)
       groups:
           minor-patch:
               applies-to: version-updates
@@ -17,14 +17,14 @@ updates:
     - package-ecosystem: docker
       directory: /docker
       schedule:
-        interval: weekly
+          interval: weekly
       target-branch: dev
       commit-message:
-        prefix: fix(ignore)
+          prefix: fix(ignore)
     - package-ecosystem: github-actions
       directory: /
       schedule:
-        interval: weekly
+          interval: weekly
       target-branch: dev
       commit-message:
-        prefix: chore
+          prefix: chore

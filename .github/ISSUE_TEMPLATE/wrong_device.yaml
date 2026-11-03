@@ -1,15 +1,15 @@
 name: Wrong device picture/vendor/model/description
 description: Use if device is detected as supported and is fully functional but has a wrong picture, vendor, model or description
-title: '[Wrong device]: '
+title: "[Wrong device]: "
 labels: [wrong device]
 body:
     - type: markdown
       attributes:
           value: |
-            Submit this issue only if your device is detected as **supported** and works **fully**, but displays an incorrect picture, vendor, model, or description.
+              Submit this issue only if your device is detected as **supported** and works **fully**, but displays an incorrect picture, vendor, model, or description.
 
-            **IMPORTANT**: Before opening this issue, please review the [guide](https://www.zigbee2mqtt.io/advanced/support-new-devices/02_support_new_tuya_devices.html#fixing-tuya-device-detection) for instructions on fixing the device detection yourself.
-            This usually only takes 5 minutes.
+              **IMPORTANT**: Before opening this issue, please review the [guide](https://www.zigbee2mqtt.io/advanced/support-new-devices/02_support_new_tuya_devices.html#fixing-tuya-device-detection) for instructions on fixing the device detection yourself.
+              This usually only takes 5 minutes.
     - type: input
       id: link
       attributes:
