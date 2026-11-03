@@ -216,6 +216,8 @@ export type Zigbee2MQTTSettings = {
         timestamp_format: string;
         output: "json" | "attribute" | "attribute_and_json";
         transmit_power?: number;
+        /** Timeout in milliseconds for ZDO requests (LQI table, routing table, etc.). @defaultValue 15000 */
+        zdo_request_timeout?: number;
         /** 3.0: default to false (JSON schema & settings `defaults`) */
         enable_external_js: boolean;
     };
