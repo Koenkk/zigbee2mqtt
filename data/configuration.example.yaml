@@ -12,7 +12,6 @@ homeassistant:
 frontend:
     enabled: true
     # port: 8080
-
 # MQTT settings
 mqtt:
     # MQTT base topic for zigbee2mqtt MQTT messages
@@ -22,7 +21,6 @@ mqtt:
     # MQTT server authentication, uncomment if required:
     # user: my_user
     # password: my_password
-
 # Serial settings, only required when Zigbee2MQTT fails to start with:
 #   USB adapter discovery error (No valid USB adapter found).
 #   Specify valid 'adapter' and 'port' in your configuration.
