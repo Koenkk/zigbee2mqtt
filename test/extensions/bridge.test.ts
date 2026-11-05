@@ -145,6 +145,7 @@ describe("Extension: Bridge", () => {
                         pan_id: 6754,
                         timestamp_format: "YYYY-MM-DD HH:mm:ss",
                         enable_external_js: true,
+                        read_missing_config_on_reconnect: false,
                     },
                     blocklist: [],
                     device_options: {},
