@@ -1,5 +1,25 @@
 # Changelog
 
+## [2.14.4](https://github.com/Koenkk/zigbee2mqtt/compare/2.14.3...2.14.4) (2026-11-06)
+
+
+### Bug Fixes
+
+* Add OpenRC support to update script ([#33571](https://github.com/Koenkk/zigbee2mqtt/issues/33571)) ([1a6cfd0](https://github.com/Koenkk/zigbee2mqtt/commit/1a6cfd085729548dbb35c6e731d8f28120c153ac))
+* Fix set/get being rejected for device names starting with `bridge` ([#33526](https://github.com/Koenkk/zigbee2mqtt/issues/33526)) ([7d95fc8](https://github.com/Koenkk/zigbee2mqtt/commit/7d95fc8c527d0498f7aeea950b9cd0b17dd7c067))
+* **ignore:** bump the minor-patch group across 1 directory with 4 updates ([#33603](https://github.com/Koenkk/zigbee2mqtt/issues/33603)) ([c252e2a](https://github.com/Koenkk/zigbee2mqtt/commit/c252e2a4e351747ab068f6b52df0e3bbe03c3c29))
+* **ignore:** update zigbee-herdsman to 11.2.1 ([#33604](https://github.com/Koenkk/zigbee2mqtt/issues/33604)) ([45e6d67](https://github.com/Koenkk/zigbee2mqtt/commit/45e6d673100f6cc1960d2814cef9800ec6d8fe1e))
+* **ignore:** update zigbee-herdsman-converters to 26.126.0 ([#33605](https://github.com/Koenkk/zigbee2mqtt/issues/33605)) ([4caab64](https://github.com/Koenkk/zigbee2mqtt/commit/4caab644e26610b8fb253035e35ade1a73f52100))
+* **ignore:** update zigbee-herdsman-converters to 26.127.0 ([#33610](https://github.com/Koenkk/zigbee2mqtt/issues/33610)) ([a24569b](https://github.com/Koenkk/zigbee2mqtt/commit/a24569b765d0a371c1d9cf1dd3ada3929ad049ef))
+* **ignore:** update zigbee-herdsman-converters to 26.128.0 ([#33626](https://github.com/Koenkk/zigbee2mqtt/issues/33626)) ([e9432ee](https://github.com/Koenkk/zigbee2mqtt/commit/e9432ee0fbee0408f69fd8b48c6418e96085e37b))
+* Make getResponse null-safe so error responses are published for null payloads ([#33580](https://github.com/Koenkk/zigbee2mqtt/issues/33580)) ([16ee941](https://github.com/Koenkk/zigbee2mqtt/commit/16ee941a1fa3255852d060621ca8d6ea475fbe35))
+* Reject non-numeric group/add id before persisting an unresolvable group ([#33583](https://github.com/Koenkk/zigbee2mqtt/issues/33583)) ([ecad9d0](https://github.com/Koenkk/zigbee2mqtt/commit/ecad9d0b5050fcba9c61514db06da01020431752))
+* Reject non-numeric permit_join time instead of reporting ok with time null ([#33582](https://github.com/Koenkk/zigbee2mqtt/issues/33582)) ([2a5696a](https://github.com/Koenkk/zigbee2mqtt/commit/2a5696a20b1902494a6391044968f838454f8d88))
+* Respond with error instead of throwing on non-JSON bind payload ([#33554](https://github.com/Koenkk/zigbee2mqtt/issues/33554)) ([060727f](https://github.com/Koenkk/zigbee2mqtt/commit/060727fbd47e28095a378b5f34d94c3f0a68c4f3))
+* Respond with error instead of throwing on non-JSON group members payload ([#33555](https://github.com/Koenkk/zigbee2mqtt/issues/33555)) ([87bdd76](https://github.com/Koenkk/zigbee2mqtt/commit/87bdd7636f9708bf11af465c4e3e68d7370a1832))
+* Respond with error instead of throwing on null device/configure payloads ([#33581](https://github.com/Koenkk/zigbee2mqtt/issues/33581)) ([24f9888](https://github.com/Koenkk/zigbee2mqtt/commit/24f98880fb3ae4d4174859778edd87599e97e68b))
+* Restrict device icon extensions to image types ([#33545](https://github.com/Koenkk/zigbee2mqtt/issues/33545)) ([592c2fc](https://github.com/Koenkk/zigbee2mqtt/commit/592c2fcc2e53c2c1365e46120c3187e3487929d2))
+
 ## [2.14.3](https://github.com/Koenkk/zigbee2mqtt/compare/2.14.2...2.14.3) (2026-10-31)
 
 
