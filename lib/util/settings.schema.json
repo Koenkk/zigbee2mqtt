@@ -478,6 +478,14 @@
                     "title": "Disable UI serving",
                     "description": "If true, the frontend UI is not served, only the WebSocket is maintained by Zigbee2MQTT (you are required to serve a standalone UI yourself as needed).",
                     "requiresRestart": true
+                },
+                "websocket_ping_interval": {
+                    "type": "number",
+                    "minimum": 0,
+                    "title": "WebSocket ping interval",
+                    "description": "Interval in seconds between WebSocket pings sent to connected frontend clients. Keeps the socket alive through reverse proxies that drop idle connections (for example Home Assistant Ingress, about 40 seconds). Set to 0 to disable.",
+                    "default": 30,
+                    "requiresRestart": true
                 }
             },
             "required": []

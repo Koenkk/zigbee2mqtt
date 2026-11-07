@@ -47,13 +47,15 @@ const mockWSClient = {
         mockWSClientEvents[event] = handler;
     },
     send: vi.fn<(data: string) => void>(),
+    ping: vi.fn<() => void>(),
     terminate: vi.fn<() => void>(),
     readyState: "close",
 };
 const mockWSEvents: Record<string, EventHandler> = {};
-const mockWSClients: (typeof mockWSClient)[] = [];
 const mockWS = {
-    clients: mockWSClients,
+    clients: new Set<typeof mockWSClient>(),
+    // Present so `disable_ui_serving` can log the standalone server address and finish startup.
+    options: {host: "127.0.0.1", port: 8081, path: "/api"},
     on: (event: string, handler: EventHandler): void => {
         mockWSEvents[event] = handler;
     },
@@ -118,6 +120,7 @@ const mocksClear = [
     mockWS.handleUpgrade,
     mockWS.emit,
     mockWSClient.send,
+    mockWSClient.ping,
     mockWSClient.terminate,
     mockSendNotFound,
     mockRedirectResponse.writeHead,
@@ -135,7 +138,7 @@ describe("Extension: Frontend", () => {
 
     beforeEach(() => {
         mockNodeStatic = {};
-        mockWS.clients = [];
+        mockWS.clients = new Set();
         data.writeDefaultConfiguration();
         data.writeDefaultState();
         settings.reRead();
@@ -161,7 +164,7 @@ describe("Extension: Frontend", () => {
         await controller.start();
         expect(Object.keys(mockNodeStatic)).toStrictEqual([frontendPath, deviceIconsPath]);
         expect(mockHTTP.listen).toHaveBeenCalledWith(8081, "127.0.0.1");
-        mockWS.clients.push(mockWSClient);
+        mockWS.clients.add(mockWSClient);
         await controller.stop();
         expect(mockWSClient.terminate).toHaveBeenCalledTimes(1);
         expect(mockHTTP.close).toHaveBeenCalledTimes(1);
@@ -174,7 +177,7 @@ describe("Extension: Frontend", () => {
         await controller.start();
         expect(Object.keys(mockNodeStatic)).toStrictEqual([frontendPath, deviceIconsPath]);
         expect(mockHTTP.listen).toHaveBeenCalledWith(8081);
-        mockWS.clients.push(mockWSClient);
+        mockWS.clients.add(mockWSClient);
         await controller.stop();
         expect(mockWSClient.terminate).toHaveBeenCalledTimes(1);
         expect(mockHTTP.close).toHaveBeenCalledTimes(1);
@@ -187,7 +190,7 @@ describe("Extension: Frontend", () => {
         await controller.start();
         expect(Object.keys(mockNodeStatic)).toStrictEqual([frontendPath, deviceIconsPath]);
         expect(mockHTTP.listen).toHaveBeenCalledWith("/tmp/zigbee2mqtt.sock");
-        mockWS.clients.push(mockWSClient);
+        mockWS.clients.add(mockWSClient);
         await controller.stop();
         expect(mockWSClient.terminate).toHaveBeenCalledTimes(1);
         expect(mockHTTP.close).toHaveBeenCalledTimes(1);
@@ -227,7 +230,7 @@ describe("Extension: Frontend", () => {
         controller = new Controller(vi.fn(), vi.fn());
         await controller.start();
         mockWSClient.readyState = "open";
-        mockWS.clients.push(mockWSClient);
+        mockWS.clients.add(mockWSClient);
         await mockWSEvents.connection(mockWSClient);
         devices.bulb_color.linkquality = 20;
 
@@ -315,7 +318,7 @@ describe("Extension: Frontend", () => {
         mockWSClient.send.mockClear();
         mockWSClient.readyState = "open";
         settings.set(["advanced"], {last_seen: "ISO_8601"});
-        mockWS.clients.push(mockWSClient);
+        mockWS.clients.add(mockWSClient);
         await mockWSEvents.connection(mockWSClient);
         expect(mockWSClient.send).toHaveBeenCalledWith(
             stringify({topic: "remote", payload: {brightness: 255, last_seen: "1970-01-01T00:00:01.000Z"}}),
@@ -482,10 +485,126 @@ describe("Extension: Frontend", () => {
         await controller.start();
 
         expect(mockHTTP.listen).toHaveBeenCalledTimes(0);
-        mockWS.clients.push(mockWSClient);
+        mockWS.clients.add(mockWSClient);
         await controller.stop();
         expect(mockWSClient.terminate).toHaveBeenCalledTimes(1);
         expect(mockHTTP.close).toHaveBeenCalledTimes(0);
         expect(mockWS.close).toHaveBeenCalledTimes(1);
+    });
+
+    describe("WebSocket ping", () => {
+        const DEFAULT_PING_INTERVAL = 30 * 1000;
+
+        async function startFrontend(disableUiServing = false): Promise<void> {
+            if (disableUiServing) {
+                settings.set(["frontend", "disable_ui_serving"], true);
+            }
+
+            controller = new Controller(vi.fn(), vi.fn());
+            await controller.start();
+        }
+
+        async function connectClient(): Promise<void> {
+            mockWS.clients.add(mockWSClient);
+            await mockWSEvents.connection(mockWSClient);
+        }
+
+        it.each([false, true])("starts the interval only after a client connects when disable_ui_serving=%s", async (disableUiServing) => {
+            await startFrontend(disableUiServing);
+
+            await vi.advanceTimersByTimeAsync(DEFAULT_PING_INTERVAL * 2);
+            expect(mockWSClient.ping).not.toHaveBeenCalled();
+
+            await connectClient();
+            // A second connection must not start another interval.
+            await mockWSEvents.connection(mockWSClient);
+            expect(mockWSClient.ping).not.toHaveBeenCalled();
+            await vi.advanceTimersByTimeAsync(DEFAULT_PING_INTERVAL);
+            expect(mockWSClient.ping).toHaveBeenCalledTimes(1);
+            expect(mockWSClient.terminate).not.toHaveBeenCalled();
+        });
+
+        it("uses the configured ping interval", async () => {
+            settings.set(["frontend", "websocket_ping_interval"], 10);
+            await startFrontend();
+            await connectClient();
+
+            await vi.advanceTimersByTimeAsync(10 * 1000 - 1);
+            expect(mockWSClient.ping).not.toHaveBeenCalled();
+            await vi.advanceTimersByTimeAsync(1);
+            expect(mockWSClient.ping).toHaveBeenCalledTimes(1);
+        });
+
+        it("does not ping when the interval is 0", async () => {
+            settings.set(["frontend", "websocket_ping_interval"], 0);
+            await startFrontend();
+            await connectClient();
+
+            await vi.advanceTimersByTimeAsync(DEFAULT_PING_INTERVAL * 4);
+            expect(mockWSClient.ping).not.toHaveBeenCalled();
+            expect(mockWSClient.terminate).not.toHaveBeenCalled();
+        });
+
+        it("stops the interval when no clients remain and restarts it on reconnect", async () => {
+            await startFrontend();
+            await connectClient();
+            await vi.advanceTimersByTimeAsync(DEFAULT_PING_INTERVAL);
+            expect(mockWSClient.ping).toHaveBeenCalledTimes(1);
+
+            mockWS.clients.clear();
+            mockWSClient.ping.mockClear();
+            await vi.advanceTimersByTimeAsync(DEFAULT_PING_INTERVAL);
+            expect(mockWSClient.ping).not.toHaveBeenCalled();
+
+            await vi.advanceTimersByTimeAsync(DEFAULT_PING_INTERVAL * 2);
+            expect(mockWSClient.ping).not.toHaveBeenCalled();
+
+            await connectClient();
+            await vi.advanceTimersByTimeAsync(DEFAULT_PING_INTERVAL);
+            expect(mockWSClient.ping).toHaveBeenCalledTimes(1);
+        });
+
+        it("terminates a client that does not pong", async () => {
+            await startFrontend();
+            await connectClient();
+            await vi.advanceTimersByTimeAsync(DEFAULT_PING_INTERVAL);
+            expect(mockWSClient.ping).toHaveBeenCalledTimes(1);
+            expect(mockWSClient.terminate).not.toHaveBeenCalled();
+
+            await vi.advanceTimersByTimeAsync(DEFAULT_PING_INTERVAL);
+            expect(mockWSClient.terminate).toHaveBeenCalledTimes(1);
+            expect(mockWSClient.ping).toHaveBeenCalledTimes(1);
+        });
+
+        it("keeps a client that responds with pong", async () => {
+            await startFrontend();
+            await connectClient();
+            await vi.advanceTimersByTimeAsync(DEFAULT_PING_INTERVAL);
+            expect(mockWSClient.ping).toHaveBeenCalledTimes(1);
+            mockWSClientEvents.pong();
+
+            await vi.advanceTimersByTimeAsync(DEFAULT_PING_INTERVAL);
+            expect(mockWSClient.terminate).not.toHaveBeenCalled();
+            expect(mockWSClient.ping).toHaveBeenCalledTimes(2);
+        });
+
+        it("clears the ping interval on stop and when the server closes", async () => {
+            await startFrontend();
+            await connectClient();
+            await vi.advanceTimersByTimeAsync(DEFAULT_PING_INTERVAL);
+            expect(mockWSClient.ping).toHaveBeenCalledTimes(1);
+
+            await controller.stop();
+            mockWSClient.ping.mockClear();
+            await vi.advanceTimersByTimeAsync(DEFAULT_PING_INTERVAL * 2);
+            expect(mockWSClient.ping).not.toHaveBeenCalled();
+
+            await startFrontend(true);
+            await connectClient();
+            mockWSEvents.close();
+            mockWSClient.ping.mockClear();
+            await vi.advanceTimersByTimeAsync(DEFAULT_PING_INTERVAL * 2);
+            expect(mockWSClient.ping).not.toHaveBeenCalled();
+        });
     });
 });
