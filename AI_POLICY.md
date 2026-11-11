@@ -46,6 +46,7 @@ Contributions should not "read" as being written by an AI.
 
 Some areas require specific expertise or care when touching.
 AI generated code, even with human review, is prohibited for:
+
 - none
 
 We view AI as providing a way to improve quality and will hold AI-assisted contributions to a higher standard.
