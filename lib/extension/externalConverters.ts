@@ -36,6 +36,7 @@ export default class ExternalConverters extends ExternalJSExtension<TModule> {
         removeExternalDefinitions(name);
 
         await this.zigbee.resolveDevicesDefinitions(true);
+        this.eventBus.emitDevicesChanged();
     }
 
     protected async loadJS(name: string, mod: TModule, newName?: string): Promise<void> {
@@ -52,6 +53,7 @@ export default class ExternalConverters extends ExternalJSExtension<TModule> {
             }
 
             await this.zigbee.resolveDevicesDefinitions(true);
+            this.eventBus.emitDevicesChanged();
         } catch (error) {
             logger.error(
                 /* v8 ignore next */

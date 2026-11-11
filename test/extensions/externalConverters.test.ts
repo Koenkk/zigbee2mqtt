@@ -425,6 +425,9 @@ describe("Extension: ExternalConverters", () => {
         });
 
         it("MJS: saves and removes", async () => {
+            await controller.start();
+            await flushPromises();
+
             const converterName = "foo.mjs";
             const converterCode = getFileCode("mjs", "mock-external-converter.mjs");
 
@@ -470,6 +473,17 @@ describe("Extension: ExternalConverters", () => {
                 },
             );
 
+            await flushPromises();
+            const publishedDevice = () => {
+                const calls = mockMQTTPublishAsync.mock.calls.filter(([topic]) => topic === "zigbee2mqtt/bridge/devices");
+                expect(calls.length).toBeGreaterThan(0);
+                return JSON.parse(calls.at(-1)![1] as string).find(
+                    (device: {ieee_address: string}) => device.ieee_address === devices.external_converter_device.ieeeAddr,
+                );
+            };
+            expect(publishedDevice().definition).toMatchObject({source: "external", vendor: "external"});
+            mockMQTTPublishAsync.mockClear();
+
             //-- REMOVE
             await (controller.getExtension("ExternalConverters")! as ExternalConverters).onMQTTMessage({
                 topic: "zigbee2mqtt/bridge/request/converter/remove",
@@ -486,6 +500,8 @@ describe("Extension: ExternalConverters", () => {
             expect(zhcRemoveExternalDefinitionsSpy).toHaveBeenCalledTimes(2);
             expect(zhcRemoveExternalDefinitionsSpy).toHaveBeenNthCalledWith(2, converterName);
             expect(mockMQTTPublishAsync).toHaveBeenCalledWith("zigbee2mqtt/bridge/converters", stringify([]), {retain: true});
+            await flushPromises();
+            expect(publishedDevice().definition).toMatchObject({source: "generated", vendor: ""});
         });
 
         it("returns error on invalid name", async () => {
