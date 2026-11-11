@@ -861,6 +861,11 @@
                     "description": "Used in the MQTT topic of a device. By default this is the device ID",
                     "readOnly": true
                 },
+                "description": {
+                    "type": "string",
+                    "title": "Description",
+                    "description": "Customizable description for the device"
+                },
                 "retain": {
                     "type": "boolean",
                     "title": "Retain",
