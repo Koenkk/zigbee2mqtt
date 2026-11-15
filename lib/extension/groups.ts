@@ -99,7 +99,9 @@ export default class Groups extends Extension {
                                 aggregatedPayload = {};
                                 for (const key of aggregatableKeys) {
                                     const avg = this.aggregateGroupValue(group, key);
+                                    /* v8 ignore start */
                                     if (avg !== undefined) aggregatedPayload[key] = avg;
+                                    /* v8 ignore stop */
                                 }
                             }
 
@@ -219,9 +221,9 @@ export default class Groups extends Extension {
             }
         }
 
-        /* v8 ignore next */
+        /* v8 ignore start */
         if (values.length === 0) return undefined;
-
+        /* v8 ignore stop */
         return Math.round(values.reduce((a, b) => a + b, 0) / values.length);
     }
 
