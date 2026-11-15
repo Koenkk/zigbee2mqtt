@@ -1,7 +1,9 @@
 import {exec} from "node:child_process";
 import fs from "node:fs";
+import os from "node:os";
 import path from "node:path";
 import {describe, expect, it, vi} from "vitest";
+import data from "../lib/util/data";
 import {stringify} from "../lib/util/stringify";
 import utils, {assertString} from "../lib/util/utils";
 
@@ -84,6 +86,18 @@ describe("Utils", () => {
         expect(() => assertString(1, "property")).toThrow("property is not a string, got number (1)");
     });
 
+    it("getResponse handles a null request payload", () => {
+        expect(utils.getResponse(null, {healthy: true})).toStrictEqual({
+            data: {healthy: true},
+            status: "ok",
+        });
+        expect(utils.getResponse(null, {}, "Invalid payload")).toStrictEqual({
+            data: {},
+            status: "error",
+            error: "Invalid payload",
+        });
+    });
+
     it("Removes null properties from object", () => {
         const obj1 = {
             ab: 0,
@@ -164,14 +178,19 @@ describe("Utils", () => {
                 b: 2,
                 3: "c",
                 d: Buffer.from([1, 2]),
-                e: new Int16Array([0xfffd, 0xff11]),
+                e: new Int16Array([0xfffd, 0xff11, 0x0001, 0x7fff]),
                 beef: 0xfacen,
-                zed: new BigUint64Array([1n, 0xffffffffn]),
+                zed: new BigUint64Array([1n, 0xffffffffn, 42n]),
                 ris: [1, undefined, "b", 0xfeefn, Number.NaN, undefined],
                 ls: undefined,
+                // one and two elements, on both the number and the bigint branch
+                one: new Uint8Array([7]),
+                two: new Int16Array([0x0001, 0x7fff]),
+                oneBig: new BigInt64Array([-9n]),
+                twoBig: new BigUint64Array([1n, 42n]),
             }),
         ).toStrictEqual(
-            `{"3":"c","a":"a","b":2,"beef":"64206","d":{"data":[1,2],"type":"Buffer"},"e":{"0":-3,"1":-239},"ris":[1,null,"b","65263",null,null],"zed":{"0":"1","1":"4294967295"}}`,
+            `{"3":"c","a":"a","b":2,"beef":"64206","d":{"data":[1,2],"type":"Buffer"},"e":{"0":-3,"1":-239,"2":1,"3":32767},"one":{"0":7},"oneBig":{"0":"-9"},"ris":[1,null,"b","65263",null,null],"two":{"0":1,"1":32767},"twoBig":{"0":"1","1":"42"},"zed":{"0":"1","1":"4294967295","2":"42"}}`,
         );
         // @ts-expect-error intentional to reach code for coverage
         expect(stringify(undefined)).toStrictEqual("null");
@@ -188,5 +207,60 @@ describe("Utils", () => {
         const toJSONIsNull = {a: 1, toJSON: () => null};
 
         expect(stringify(toJSONIsNull)).toStrictEqual("null");
+
+        const emptyTypedArrayWithProperty = Object.assign(new Uint8Array(0), {unit: "raw"});
+
+        expect(stringify({data: emptyTypedArrayWithProperty})).toStrictEqual(JSON.stringify({data: {unit: "raw"}}));
+        expect(stringify({data: new Uint8Array(0)})).toStrictEqual(JSON.stringify({data: {}}));
+    });
+
+    it("Accepts image data URLs with a known extension", () => {
+        const pngData = "iVBORw0KGgoAAAANSUhEUgAAAJ";
+        expect(utils.matchBase64File(`data:image/png;base64,${pngData}`)).toStrictEqual({extension: "png", data: pngData});
+        expect(utils.matchBase64File("data:image/JPEG;base64,QUJDRA==")).toStrictEqual({extension: "jpeg", data: "QUJDRA=="});
+        expect(utils.matchBase64File("data:image/jpg;base64,QUJDRA==")).toStrictEqual({extension: "jpg", data: "QUJDRA=="});
+        expect(utils.matchBase64File("data:image/gif;base64,R0lGODlh")).toStrictEqual({extension: "gif", data: "R0lGODlh"});
+        expect(utils.matchBase64File("data:image/webp;base64,UklGRg==")).toStrictEqual({extension: "webp", data: "UklGRg=="});
+        expect(utils.matchBase64File("data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDo")).toStrictEqual({
+            extension: "svg+xml",
+            data: "PHN2ZyB4bWxucz0iaHR0cDo",
+        });
+    });
+
+    it("Ignores icon data URLs whose extension is not an allowlisted image type", () => {
+        expect(utils.matchBase64File(undefined)).toBe(false);
+        expect(utils.matchBase64File("some_icon.png")).toBe(false);
+        expect(utils.matchBase64File("data:image/bmp;base64,QUJDRA==")).toBe(false);
+        expect(utils.matchBase64File("data:image/png/../../external_extensions/pwn.js;base64,QUJDRA==")).toBe(false);
+        expect(utils.matchBase64File("data:image/png\\..\\..\\external_extensions\\pwn.js;base64,QUJDRA==")).toBe(false);
+    });
+
+    it("Writes a device icon inside device_icons and refuses a path-like extension", () => {
+        const pngData = "iVBORw0KGgoAAAANSUhEUgAAAJ";
+        const dataDir = fs.mkdtempSync(path.join(os.tmpdir(), "z2m-icons-"));
+        const previous = process.env.ZIGBEE2MQTT_DATA;
+        process.env.ZIGBEE2MQTT_DATA = dataDir;
+        data._testReload();
+
+        try {
+            const match = utils.matchBase64File(`data:image/png;base64,${pngData}`);
+            expect(match).toStrictEqual({extension: "png", data: pngData});
+            if (match === false) {
+                throw new Error("expected a png data URL to match");
+            }
+
+            expect(utils.saveBase64DeviceIcon(match)).toBe("device_icons/effcad234beeb56ea7c457cf2d36d10b.png");
+            const saved = path.join(dataDir, "device_icons", "effcad234beeb56ea7c457cf2d36d10b.png");
+            expect(fs.readFileSync(saved)).toStrictEqual(Buffer.from(pngData, "base64"));
+        } finally {
+            if (previous === undefined) {
+                delete process.env.ZIGBEE2MQTT_DATA;
+            } else {
+                process.env.ZIGBEE2MQTT_DATA = previous;
+            }
+
+            data._testReload();
+            fs.rmSync(dataDir, {recursive: true, force: true});
+        }
     });
 });

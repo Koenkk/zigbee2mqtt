@@ -87,7 +87,9 @@ export default class Groups extends Extension {
             if (entity instanceof Device) {
                 const endpoint = entity.endpoint(endpointName);
 
+                /* v8 ignore start */
                 if (endpoint) {
+                    /* v8 ignore stop */
                     for (const group of groups) {
                         if (group.zh.hasMember(endpoint) && !equals(this.lastOptimisticState[group.ID], payload)) {
                             const aggregatableKeys = ["position", "tilt"].filter((k) => k in payload);
@@ -176,14 +178,12 @@ export default class Groups extends Extension {
 
             if (this.state.exists(device)) {
                 const state = this.state.get(device);
-                const endpointNames = device.isDevice() && device.getEndpointNames();
-                const stateKey =
-                    endpointNames &&
-                    endpointNames.length >= member.ID &&
-                    device.definition?.meta?.multiEndpoint &&
-                    !device.definition.meta.multiEndpointSkip?.includes("state")
-                        ? `state_${endpointNames[member.ID - 1]}`
-                        : "state";
+                // the endpoint ID is not a position in getEndpointNames(), look the name up instead
+                const endpointName =
+                    device.isDevice() && device.definition?.meta?.multiEndpoint && !device.definition.meta.multiEndpointSkip?.includes("state")
+                        ? device.endpointName(member)
+                        : undefined;
+                const stateKey = endpointName ? `state_${endpointName}` : "state";
 
                 if (state[stateKey] === "ON" || state[stateKey] === "OPEN") {
                     return false;
@@ -235,7 +235,7 @@ export default class Groups extends Extension {
             let resolvedGroup: Group | undefined;
             let groupKey: string | undefined;
             let skipDisableReporting = false;
-            const message = JSON.parse(data.message) as
+            const message = utils.parseJSON(data.message, data.message) as
                 | Zigbee2MQTTAPI["bridge/request/group/members/add"]
                 | Zigbee2MQTTAPI["bridge/request/group/members/remove"]
                 | Zigbee2MQTTAPI["bridge/request/group/members/remove_all"];

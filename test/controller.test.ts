@@ -105,7 +105,7 @@ describe("Controller", () => {
             backupPath: path.join(data.mockDir, "coordinator_backup.json"),
             acceptJoiningDeviceHandler: expect.any(Function),
             adapter: {concurrent: undefined, delay: undefined, disableLED: false, transmitPower: 14},
-            serialPort: {baudRate: undefined, rtscts: undefined, path: "/dev/dummy"},
+            transport: {baudRate: undefined, rtscts: undefined, path: "/dev/dummy"},
         });
         expect(mockZHController.start).toHaveBeenCalledTimes(1);
         expect(mockLogger.info).toHaveBeenCalledWith(`Currently ${Object.values(devices).length - 1} devices are joined.`);
@@ -1061,6 +1061,17 @@ describe("Controller", () => {
         );
     });
 
+    it("Publish entity state attribute output with a null color", async () => {
+        await controller.start();
+        settings.set(["advanced", "output"], "attribute_and_json");
+        mockMQTTPublishAsync.mockClear();
+        const device = getZ2MDevice("bulb");
+        await controller.publishEntityState(device, {state: "ON", color: null});
+        await flushPromises();
+        expect(mockMQTTPublishAsync).toHaveBeenCalledWith("zigbee2mqtt/bulb/state", "ON", {qos: 0, retain: true});
+        expect(mockMQTTPublishAsync).toHaveBeenCalledWith("zigbee2mqtt/bulb/color", "", {qos: 0, retain: true});
+    });
+
     it("Publish entity state attribute_json output filtered", async () => {
         await controller.start();
         settings.set(["advanced", "output"], "attribute_and_json");
@@ -1087,6 +1098,28 @@ describe("Controller", () => {
         expect(mockMQTTPublishAsync).toHaveBeenCalledWith("zigbee2mqtt/bulb/state", "ON", {qos: 0, retain: true});
         expect(mockMQTTPublishAsync).toHaveBeenCalledWith("zigbee2mqtt/bulb/brightness", "200", {qos: 0, retain: true});
         expect(mockMQTTPublishAsync).toHaveBeenCalledWith("zigbee2mqtt/bulb", stringify({state: "ON", brightness: 200}), {qos: 0, retain: true});
+    });
+
+    it("Publish entity state caches a duration reported by the device", async () => {
+        await controller.start();
+        mockMQTTPublishAsync.mockClear();
+
+        const device = getZ2MDevice("bulb");
+        await controller.publishEntityState(device, {state: "ON", duration: 30});
+        await flushPromises();
+
+        expect(controller.state.get(device)).toStrictEqual({brightness: 50, color_temp: 370, linkquality: 99, state: "ON", duration: 30});
+    });
+
+    it("Publish entity state keeps an action_duration out of the cache", async () => {
+        await controller.start();
+        mockMQTTPublishAsync.mockClear();
+
+        const device = getZ2MDevice("bulb");
+        await controller.publishEntityState(device, {state: "ON", action_duration: 1500});
+        await flushPromises();
+
+        expect(controller.state.get(device)).toStrictEqual({brightness: 50, color_temp: 370, linkquality: 99, state: "ON"});
     });
 
     it("Publish entity state attribute_json output filtered cache", async () => {
@@ -1324,6 +1357,55 @@ describe("Controller", () => {
         await vi.advanceTimersByTimeAsync(2500); // before any startup configure triggers
 
         expect(mockMQTTPublishAsync).toHaveBeenCalledTimes(0);
+    });
+
+    it("Should republish retained messages on MQTT reconnect", async () => {
+        await controller.start();
+        await flushPromises();
+        // broker kept retained messages on initial connect, no republish
+        await mockMQTTEvents.message("zigbee2mqtt/bridge/info", "dummy");
+
+        const retainedMessages = Object.keys(controller.mqtt.retainedMessages).length;
+
+        mockMQTTPublishAsync.mockClear();
+        await mockMQTTEvents.connect();
+        await vi.advanceTimersByTimeAsync(2500); // before any startup configure triggers
+
+        // bridge/state from onConnect + all retained messages
+        expect(mockMQTTPublishAsync).toHaveBeenCalledTimes(retainedMessages + 1);
+        expect(mockMQTTPublishAsync).toHaveBeenCalledWith("zigbee2mqtt/bridge/info", expect.any(String), {retain: true});
+        expect(mockMQTTPublishAsync).toHaveBeenCalledWith("zigbee2mqtt/bridge/devices", expect.any(String), {retain: true});
+    });
+
+    it("Should not republish retained messages on MQTT reconnect when retained message are sent", async () => {
+        await controller.start();
+        await flushPromises();
+        await mockMQTTEvents.message("zigbee2mqtt/bridge/info", "dummy");
+
+        mockMQTTPublishAsync.mockClear();
+        await mockMQTTEvents.connect();
+        await mockMQTTEvents.message("zigbee2mqtt/bridge/info", "dummy");
+        await vi.advanceTimersByTimeAsync(2500); // before any startup configure triggers
+
+        expect(mockMQTTPublishAsync).toHaveBeenCalledTimes(1);
+        expect(mockMQTTPublishAsync).toHaveBeenCalledWith("zigbee2mqtt/bridge/state", stringify({state: "online"}), {retain: true, qos: 1});
+    });
+
+    it("Should not republish retained messages on MQTT reconnect when retained message arrives while publishing bridge state", async () => {
+        await controller.start();
+        await flushPromises();
+        await mockMQTTEvents.message("zigbee2mqtt/bridge/info", "dummy");
+
+        mockMQTTPublishAsync.mockClear();
+        // mqtt.js resubscribes on reconnect before onConnect runs, retained messages arrive during its first publish
+        mockMQTTPublishAsync.mockImplementationOnce(async () => {
+            await mockMQTTEvents.message("zigbee2mqtt/bridge/info", "dummy");
+        });
+        await mockMQTTEvents.connect();
+        await vi.advanceTimersByTimeAsync(2500); // before any startup configure triggers
+
+        expect(mockMQTTPublishAsync).toHaveBeenCalledTimes(1);
+        expect(mockMQTTPublishAsync).toHaveBeenCalledWith("zigbee2mqtt/bridge/state", stringify({state: "online"}), {retain: true, qos: 1});
     });
 
     it("Should prevent any message being published with retain flag when force_disable_retain is set", async () => {

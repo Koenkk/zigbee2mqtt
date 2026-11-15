@@ -1,13 +1,13 @@
 name: CI
 
 on:
-  push:
-    tags:        
-      - '[0-9]+.[0-9]+.[0-9]+' 
-    branches:
-      - dev
-      - master
-  pull_request:
+    push:
+        tags:
+            - "[0-9]+.[0-9]+.[0-9]+"
+        branches:
+            - dev
+            - master
+    pull_request:
 
 permissions:
     contents: write
@@ -55,11 +55,11 @@ jobs:
               if: github.ref == 'refs/heads/dev' || (github.event_name == 'pull_request' && !startsWith(github.head_ref, 'release-please-'))
               uses: Nerivec/action-ci-bench@main
               with:
-                token: ${{ secrets.GITHUB_TOKEN }}
-                compare-against: dev
-                base-cmd: npx vitest bench --run --config ./test/vitest.config.mts --outputJson bench.json
-                compare-cmd: npx vitest bench --run --config ./test/vitest.config.mts --compare bench.json
-                base-result: bench.json
+                  token: ${{ secrets.GITHUB_TOKEN }}
+                  compare-against: dev
+                  base-cmd: npx vitest bench --run --config ./test/vitest.config.mts --outputJson bench.json
+                  compare-cmd: npx vitest bench --run --config ./test/vitest.config.mts --compare bench.json
+                  base-result: bench.json
 
             - name: Log in to the Docker container registry
               if: (github.ref == 'refs/heads/dev' || startsWith(github.ref, 'refs/tags/')) && github.event_name == 'push'
@@ -106,23 +106,23 @@ jobs:
             - name: dev - Publish types
               if: github.ref == 'refs/heads/dev' && github.event_name == 'push'
               run: |
-                pnpm run build:types
-                temp_dir=$(mktemp -d)
-                cp -R package.json LICENSE dist $temp_dir
-                git fetch --unshallow
-                git checkout dev-types
-                rm -rf *
-                cp -R $temp_dir/* .
-                # remove unnecessary dependencies
-                KEEP_DEPS='["zigbee-herdsman","zigbee-herdsman-converters"]'
-                tmp_pkg=$(mktemp)
-                jq --indent 4 --argjson keep "$KEEP_DEPS" 'def filterDeps: (. // {}) | with_entries(select(.key as $k | $keep | index($k))); .dependencies |= filterDeps | .devDependencies |= filterDeps | .optionalDependencies |= filterDeps' package.json > "$tmp_pkg"
-                mv "$tmp_pkg" package.json
-                git add -A
-                git config --local user.email "41898282+github-actions[bot]@users.noreply.github.com"
-                git config --local user.name "github-actions[bot]"
-                git commit -m "$GITHUB_SHA" || echo 'Nothing to commit'
-                git push --force --set-upstream origin dev-types
+                  pnpm run build:types
+                  temp_dir=$(mktemp -d)
+                  cp -R package.json LICENSE dist $temp_dir
+                  git fetch --unshallow
+                  git checkout dev-types
+                  rm -rf *
+                  cp -R $temp_dir/* .
+                  # remove unnecessary dependencies
+                  KEEP_DEPS='["zigbee-herdsman","zigbee-herdsman-converters"]'
+                  tmp_pkg=$(mktemp)
+                  jq --indent 4 --argjson keep "$KEEP_DEPS" 'def filterDeps: (. // {}) | with_entries(select(.key as $k | $keep | index($k))); .dependencies |= filterDeps | .devDependencies |= filterDeps | .optionalDependencies |= filterDeps' package.json > "$tmp_pkg"
+                  mv "$tmp_pkg" package.json
+                  git add -A
+                  git config --local user.email "41898282+github-actions[bot]@users.noreply.github.com"
+                  git config --local user.name "github-actions[bot]"
+                  git commit -m "$GITHUB_SHA" || echo 'Nothing to commit'
+                  git push --force --set-upstream origin dev-types
 
             - name: release - Docker meta
               if: startsWith(github.ref, 'refs/tags/') && github.event_name == 'push'
@@ -151,14 +151,14 @@ jobs:
                       VERSION=${{ github.ref_name }}
                       DATE=${{ github.event.repository.updated_at }}
 
-            - name: 'release: Publish to npm'
+            - name: "release: Publish to npm"
               if: startsWith(github.ref, 'refs/tags/') && github.event_name == 'push'
               run: pnpm publish --no-git-checks
               env:
                   NODE_AUTH_TOKEN: ${{secrets.NPM_TOKEN }}
                   NPM_CONFIG_PROVENANCE: true
 
-            - name: 'dev: Trigger zigbee2mqtt/hassio-zigbee2mqtt build'
+            - name: "dev: Trigger zigbee2mqtt/hassio-zigbee2mqtt build"
               if: github.ref == 'refs/heads/dev' && github.event_name == 'push'
               run: |
                   curl \
@@ -168,7 +168,7 @@ jobs:
                     https://api.github.com/repos/zigbee2mqtt/hassio-zigbee2mqtt/actions/workflows/ci.yml/dispatches \
                     -d '{"ref":"master","inputs":{}}'
 
-            - name: 'release: Trigger zigbee2mqtt/hassio-zigbee2mqtt build'
+            - name: "release: Trigger zigbee2mqtt/hassio-zigbee2mqtt build"
               if: startsWith(github.ref, 'refs/tags/') && github.event_name == 'push'
               run: |
                   TAG=${GITHUB_REF#refs/*/}
@@ -181,7 +181,7 @@ jobs:
                     https://api.github.com/repos/zigbee2mqtt/hassio-zigbee2mqtt/dispatches \
                     --data "{\"event_type\": \"release\", \"client_payload\": { \"version\": \"$TAG-1\"}}"
 
-            - name: 'release: Trigger zigbee2mqtt-chart image update'
+            - name: "release: Trigger zigbee2mqtt-chart image update"
               if: startsWith(github.ref, 'refs/tags/') && github.event_name == 'push'
               run: |
                   TAG=${GITHUB_REF#refs/*/}
@@ -194,7 +194,7 @@ jobs:
                     https://api.github.com/repos/Koenkk/zigbee2mqtt-chart/actions/workflows/on_zigbee2mqtt_release.yaml/dispatches \
                     --data "{\"ref\": \"main\", \"inputs\": { \"zigbee2mqtt_version\": \"$TAG\"}}"
 
-            - name: 'release: merge dev -> master and promote dev'
+            - name: "release: merge dev -> master and promote dev"
               if: startsWith(github.ref, 'refs/tags/') && github.event_name == 'push'
               run: |
                   TAG=${GITHUB_REF#refs/*/}

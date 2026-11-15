@@ -1,6 +1,6 @@
 blank_issues_enabled: false
 contact_links:
-    - name: 'IMPORTANT: Check development branch changelog first!!'
+    - name: "IMPORTANT: Check development branch changelog first!!"
       url: https://gist.github.com/Koenkk/bfd4c3d1725a2cccacc11d6ba51008ba
       about: Before submitting an issue, check that it has not already been solved in the development branch. Click here to see the release notes of the development branch.
     - name: Switch to the development branch

@@ -12,7 +12,8 @@ import Extension from "./extension";
 let topicGetSetRegex: RegExp;
 // Used by `publish.test.ts` to reload regex when changing `mqtt.base_topic`.
 export const loadTopicGetSetRegex = (): void => {
-    topicGetSetRegex = new RegExp(`^${settings.get().mqtt.base_topic}/(?!bridge)(.+?)/(get|set)(?:/(.+))?$`);
+    // Only exclude the bridge namespace itself; device names may legitimately start with "bridge"
+    topicGetSetRegex = new RegExp(`^${settings.get().mqtt.base_topic}/(?!bridge/)(.+?)/(get|set)(?:/(.+))?$`);
 };
 
 const STATE_VALUES: ReadonlyArray<string> = ["on", "off", "toggle", "open", "close", "stop", "lock", "unlock"];
@@ -224,6 +225,11 @@ export default class Publish extends Extension {
                 state: entityState,
                 membersState,
                 mapped: definition,
+                /* v8 ignore start */
+                deviceExposesChanged: (): void => {
+                    if (re instanceof Device) this.eventBus.emitExposesAndDevicesChanged(re);
+                },
+                /* v8 ignore stop */
                 /* v8 ignore next */
                 publish: (payload: KeyValue) => this.publishEntityState(re, payload),
             };

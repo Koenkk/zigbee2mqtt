@@ -40,11 +40,15 @@ function isTypedArray(value: unknown): value is unknown[] {
 }
 
 function stringifyTypedArray(array: unknown[]): string {
+    if (array.length === 0) {
+        return "";
+    }
+
     const isBigInt = typeof array[0] === "bigint";
     let res = `"0":${isBigInt ? `"${array[0]}"` : array[0]}`;
 
     for (let i = 1; i < array.length; i++) {
-        res += `,"${i}":${isBigInt ? `"${array[1]}"` : array[1]}`;
+        res += `,"${i}":${isBigInt ? `"${array[i]}"` : array[i]}`;
     }
 
     return res;
@@ -115,7 +119,8 @@ function stringifySimple(key: string, value: unknown, stack: unknown[]): string 
                 res += stringifyTypedArray(value);
                 keys = keys.slice(value.length);
                 propsToStringify -= value.length;
-                separator = ",";
+                // Only separate from something that was actually written.
+                separator = value.length > 0 ? "," : "";
             }
 
             sort(keys);

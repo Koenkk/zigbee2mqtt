@@ -146,11 +146,15 @@ const POLL_ON_MESSAGE = [
                 const supportedAttrs = await getColorCapabilities(endpoint);
                 const readAttrs: TClusterAttributeKeys<"lightingColorCtrl"> = [];
 
+                /* v8 ignore start */
                 if (supportedAttrs.colorXY) {
+                    /* v8 ignore stop */
                     readAttrs.push("currentX", "currentY");
                 }
 
+                /* v8 ignore start */
                 if (supportedAttrs.colorTemperature) {
+                    /* v8 ignore stop */
                     readAttrs.push("colorTemperature");
                 }
 
@@ -200,7 +204,7 @@ export default class Bind extends Extension {
         if (data.topic.match(this.#topicRegex)) {
             const type = data.topic.endsWith("unbind") ? "unbind" : "bind";
             let skipDisableReporting = false;
-            const message = JSON.parse(data.message) as Zigbee2MQTTAPI["bridge/request/device/bind"];
+            const message = utils.parseJSON(data.message, data.message) as Zigbee2MQTTAPI["bridge/request/device/bind"];
 
             if (typeof message !== "object" || message.from == null || message.to == null) {
                 return [message, {type, skipDisableReporting}, "Invalid payload"];
@@ -277,7 +281,7 @@ export default class Bind extends Extension {
 
     @bind private async onMQTTMessage(data: eventdata.MQTTMessage): Promise<void> {
         if (data.topic.endsWith("binds/clear")) {
-            const message = JSON.parse(data.message) as Zigbee2MQTTAPI["bridge/request/device/binds/clear"];
+            const message = utils.parseJSON(data.message, data.message) as Zigbee2MQTTAPI["bridge/request/device/binds/clear"];
 
             if (typeof message !== "object" || typeof message.target !== "string") {
                 await this.publishResponse("binds/clear", message, {}, "Invalid payload");
@@ -404,7 +408,9 @@ export default class Bind extends Extension {
             failed: failedClusters,
         };
 
+        /* v8 ignore start */
         if (successfulClusters.length !== 0) {
+            /* v8 ignore stop */
             if (type === "bind") {
                 await this.setupReporting(
                     resolvedSourceEndpoint.binds.filter((b) => successfulClusters.includes(b.cluster.name) && b.target === resolvedBindTarget),
@@ -479,7 +485,9 @@ export default class Bind extends Extension {
         const coordinatorEndpoint = this.zigbee.firstCoordinatorEndpoint();
 
         for (const bind of binds) {
+            /* v8 ignore start */
             if (bind.cluster.name in REPORT_CLUSTERS) {
+                /* v8 ignore stop */
                 for (const endpoint of this.getSetupReportingEndpoints(bind, coordinatorEndpoint)) {
                     // biome-ignore lint/style/noNonNullAssertion: TODO: biome migration: ???
                     const resolvedDevice = this.zigbee.resolveEntity(endpoint.getDevice())!;
@@ -492,7 +500,9 @@ export default class Bind extends Extension {
 
                         // biome-ignore lint/style/noNonNullAssertion: valid from outer `if`
                         for (const c of REPORT_CLUSTERS[bind.cluster.name as keyof typeof REPORT_CLUSTERS]!) {
+                            /* v8 ignore start */
                             if (!("condition" in c) || !c.condition || (await c.condition(endpoint))) {
+                                /* v8 ignore stop */
                                 const {attribute, minimumReportInterval, maximumReportInterval, reportableChange} = c;
 
                                 items.push({attribute, minimumReportInterval, maximumReportInterval, reportableChange});
@@ -535,7 +545,9 @@ export default class Bind extends Extension {
             }
 
             for (const b of endpoint.binds) {
+                /* v8 ignore start */
                 if (b.target === coordinator && !requiredClusters.includes(b.cluster.name) && b.cluster.name in REPORT_CLUSTERS) {
+                    /* v8 ignore stop */
                     boundClusters.push(b.cluster.name);
                 }
             }
@@ -548,7 +560,9 @@ export default class Bind extends Extension {
 
                     // biome-ignore lint/style/noNonNullAssertion: valid from loop (pushed to array only if in)
                     for (const item of REPORT_CLUSTERS[cluster as keyof typeof REPORT_CLUSTERS]!) {
+                        /* v8 ignore start */
                         if (!("condition" in item) || !item.condition || (await item.condition(endpoint))) {
+                            /* v8 ignore stop */
                             const {attribute, minimumReportInterval, reportableChange} = item;
 
                             items.push({attribute, minimumReportInterval, maximumReportInterval: 0xffff, reportableChange});
@@ -595,7 +609,9 @@ export default class Bind extends Extension {
                 // If message is published to a group, add members of the group
                 const group = this.zigbee.groupByID(data.groupID);
 
+                /* v8 ignore start */
                 if (group) {
+                    /* v8 ignore stop */
                     for (const member of group.zh.members) {
                         toPoll.add(member);
                     }

@@ -10,6 +10,12 @@ declare global {
     const removeEventListener: import("node:events").EventEmitter["removeListener"];
     /** @deprecated DOM SHIM, DO NOT USE */
     const postMessage: import("node:worker_threads").MessagePort["postMessage"];
+    /**
+     * Required by `srvx` <= 0.12.5, remove once a release including https://github.com/h3js/srvx/pull/288 is out.
+     *
+     * @deprecated DOM SHIM, DO NOT USE
+     */
+    type HeadersInit = string[][] | Record<string, string> | Headers;
 }
 
 export {};

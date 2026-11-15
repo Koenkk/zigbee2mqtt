@@ -21,6 +21,29 @@ export default class Receive extends Extension {
     override async start(): Promise<void> {
         this.eventBus.onPublishEntityState(this, this.onPublishEntityState);
         this.eventBus.onDeviceMessage(this, this.onDeviceMessage);
+        this.eventBus.onLastSeenChanged(this, this.onLastSeenChanged);
+    }
+
+    /**
+     * Frames that zigbee-herdsman does not emit as a message (e.g. default responses) only fire a
+     * lastSeenChanged event. For devices with debounce or throttle set, publish those through the same
+     * per-device debounce/throttle as regular messages instead of publishing the full state right away.
+     * See `utils.publishLastSeen()`, which skips them for these devices.
+     */
+    @bind async onLastSeenChanged(data: eventdata.LastSeenChanged): Promise<void> {
+        const lastSeen = settings.get().advanced.last_seen;
+
+        if (data.reason !== "messageNonEmitted" || !lastSeen || lastSeen === "disable") {
+            return;
+        }
+
+        const {debounce, debounce_ignore, throttle} = data.device.options;
+
+        if (debounce) {
+            this.publishDebounce(data.device, {}, debounce, debounce_ignore);
+        } else if (throttle) {
+            await this.publishThrottle(data.device, {}, throttle);
+        }
     }
 
     @bind onPublishEntityState(data: eventdata.PublishEntityState): void {
@@ -100,8 +123,9 @@ export default class Receive extends Extension {
     }
 
     @bind async onDeviceMessage(data: eventdata.DeviceMessage): Promise<void> {
-        /* v8 ignore next */
+        /* v8 ignore start */
         if (!data.device) return;
+        /* v8 ignore stop */
 
         if (!data.device.definition || !data.device.interviewed) {
             logger.debug("Skipping message, still interviewing");
@@ -180,8 +204,11 @@ export default class Receive extends Extension {
 
         if (!utils.objectIsEmpty(payload)) {
             await publish(payload);
-        } else {
-            await utils.publishLastSeen({device: data.device, reason: "messageEmitted"}, settings.get(), true, this.publishEntityState);
+        } else if (settings.get().advanced.last_seen && settings.get().advanced.last_seen !== "disable") {
+            // A message was received that produced no payload (e.g. a frame the converter has no data
+            // for). Publish through the regular publish() path so the per-device debounce/throttle
+            // still applies, instead of publishing the full cached state immediately via publishLastSeen.
+            await publish({});
         }
     }
 }

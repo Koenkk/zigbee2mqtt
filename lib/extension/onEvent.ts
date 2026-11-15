@@ -27,7 +27,9 @@ export default class OnEvent extends Extension {
             await this.callOnEvent(data.device, {type: "deviceJoined", data: this.#getOnEventBaseData(data.device)});
         });
         this.eventBus.onDeviceLeave(this, async (data) => {
+            /* v8 ignore start */
             if (data.device) {
+                /* v8 ignore stop */
                 await this.callOnEvent(data.device, {type: "stop", data: {ieeeAddr: data.device.ieeeAddr}});
             }
         });

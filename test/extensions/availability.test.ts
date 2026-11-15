@@ -384,6 +384,28 @@ describe("Extension: Availability", () => {
         devices.bulb_color.ping = vi.fn(); // ensure reset
     });
 
+    it("Should drain the ping queue in one run instead of re-entering per device", async () => {
+        // Re-entering after every ping kept each finished ping's promise pending until the queue ran empty. A queue
+        // that never runs empty (unreachable routers pinged back-to-back) grew that chain without bound.
+        const availability = controller.getExtension("Availability")! as Availability;
+        // @ts-expect-error private
+        const executeNextSpy = vi.spyOn(availability, "pingQueueExecuteNext");
+
+        for (const zh of [devices.bulb_color, devices.bulb_2, devices.ZNCZ02LM]) {
+            // @ts-expect-error private
+            availability.addToPingQueue(controller.zigbee.resolveEntity(zh));
+        }
+        await flushPromises();
+
+        expect(devices.bulb_color.ping).toHaveBeenCalledTimes(1);
+        expect(devices.bulb_2.ping).toHaveBeenCalledTimes(1);
+        expect(devices.ZNCZ02LM.ping).toHaveBeenCalledTimes(1);
+        // @ts-expect-error private
+        expect(availability.pingQueue).toEqual([]);
+        // once per addToPingQueue, none from inside the run
+        expect(executeNextSpy).toHaveBeenCalledTimes(3);
+    });
+
     it("Should prevent instance restart", async () => {
         const availability = controller.getExtension("Availability")! as Availability;
 
@@ -631,6 +653,19 @@ describe("Extension: Availability", () => {
         await setTimeAndAdvanceTimers(utils.minutes(10.5));
         expect(devices.bulb_color.ping).toHaveBeenCalledTimes(5);
         expect(devices.QBKG03LM.ping).toHaveBeenCalledTimes(4);
+    });
+
+    it("clamps the ping delay to the maximum supported timeout", async () => {
+        // `setTimeout` takes a 32-bit signed integer and coerces anything above it to `1`. A delay can exceed
+        // that either directly, through a long `timeout`, or gradually, once `backoff` has multiplied a normal
+        // one over successive failures. Unclamped, that turns an ever-longer wait into a tight ping loop.
+        settings.set(["devices", devices.bulb_color.ieeeAddr, "availability"], {timeout: 40000, max_jitter: 0}); // ~27.8 days
+        await resetExtension();
+
+        // unclamped, the delay collapses to 1ms, so pings would already be looping by now
+        await setTimeAndAdvanceTimers(utils.seconds(1));
+
+        expect(devices.bulb_color.ping).not.toHaveBeenCalled();
     });
 
     it("allows to disable backoff", async () => {

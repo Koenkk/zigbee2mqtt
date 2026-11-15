@@ -10,7 +10,8 @@ import type {Zigbee2MQTTAPI, Zigbee2MQTTResponse, Zigbee2MQTTResponseEndpoints, 
 
 import data from "./data";
 
-const BASE64_IMAGE_REGEX = /data:image\/(?<extension>.+);base64,(?<data>.+)/;
+// The subtype is used as a filename suffix, so it is an allowlist rather than `.+` (which also matches `/` and `..`).
+const BASE64_IMAGE_REGEX = /data:image\/(?<extension>gif|jpe?g|png|svg\+xml|webp);base64,(?<data>.+)/i;
 
 export const DEFAULT_BIND_GROUP_ID = 901;
 
@@ -126,7 +127,8 @@ function getResponse<T extends Zigbee2MQTTResponseEndpoints>(
             error: error,
         };
 
-        if (typeof request === "object" && request.transaction !== undefined) {
+        // `request` can be a raw `null` payload, and `typeof null === "object"`
+        if (request !== null && typeof request === "object" && request.transaction !== undefined) {
             response.transaction = request.transaction;
         }
 
@@ -138,7 +140,7 @@ function getResponse<T extends Zigbee2MQTTResponseEndpoints>(
         status: "ok",
     };
 
-    if (typeof request === "object" && request.transaction !== undefined) {
+    if (request !== null && typeof request === "object" && request.transaction !== undefined) {
         response.transaction = request.transaction;
     }
 
@@ -288,6 +290,10 @@ export const hours = (hours: number): number => 1000 * 60 * 60 * hours;
 export const minutes = (minutes: number): number => 1000 * 60 * minutes;
 export const seconds = (seconds: number): number => 1000 * seconds;
 
+function isDebouncedOrThrottled(device: Device): boolean {
+    return Boolean(device.options.debounce || device.options.throttle);
+}
+
 async function publishLastSeen(
     data: eventdata.LastSeenChanged,
     settings: Settings,
@@ -300,8 +306,12 @@ async function publishLastSeen(
      *      message based on the received zigbee message. In this case allowMessageEmitted has to be true.
      * - In case reason !== messageEmitted, controller.ts will call this based on the zigbee-herdsman
      *      lastSeenChanged event.
+     * - In case reason == messageNonEmitted and the device has debounce or throttle set, receive.ts publishes
+     *      it through the per-device debounce/throttle, so skip it here.
      */
-    const allow = data.reason !== "messageEmitted" || (data.reason === "messageEmitted" && allowMessageEmitted);
+    const allow =
+        (data.reason !== "messageEmitted" || (data.reason === "messageEmitted" && allowMessageEmitted)) &&
+        !(data.reason === "messageNonEmitted" && isDebouncedOrThrottled(data.device));
     if (settings.advanced.last_seen && settings.advanced.last_seen !== "disable" && allow) {
         await publishEntityState(data.device, {}, "lastSeenChanged");
     }
@@ -383,15 +393,16 @@ function matchBase64File(value: string | undefined): {extension: string; data: s
         const match = value.match(BASE64_IMAGE_REGEX);
         if (match) {
             assert(match.groups?.extension && match.groups?.data);
-            return {extension: match.groups.extension, data: match.groups.data};
+            return {extension: match.groups.extension.toLowerCase(), data: match.groups.data};
         }
     }
     return false;
 }
 
 function saveBase64DeviceIcon(base64Match: {extension: string; data: string}): string {
+    const extension = base64Match.extension.toLowerCase();
     const md5Hash = crypto.createHash("md5").update(base64Match.data).digest("hex");
-    const fileSettings = `device_icons/${md5Hash}.${base64Match.extension}`;
+    const fileSettings = `device_icons/${md5Hash}.${extension}`;
     const file = path.join(data.getPath(), fileSettings);
     fs.mkdirSync(path.dirname(file), {recursive: true});
     fs.writeFileSync(file, base64Match.data, {encoding: "base64"});

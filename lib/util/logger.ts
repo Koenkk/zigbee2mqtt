@@ -44,6 +44,10 @@ class Logger {
             levels: winston.config.syslog.levels,
         });
 
+        // prevent unhandled exception crash from within logger transports
+        /* v8 ignore next */
+        this.logger.on("error", console.error);
+
         const consoleSilenced = !this.output.includes("console");
         // Print to user what logging is active
         let logging = `Logging to console${consoleSilenced ? " (silenced)" : ""}`;

@@ -203,7 +203,7 @@ export class Controller {
         }
 
         this.eventBus.onLastSeenChanged(this, (data) => {
-            utils.publishLastSeen(data, settings.get(), false, this.publishEntityState).catch(() => {});
+            utils.publishLastSeen(data, settings.get(), false, this.publishEntityState).catch(/* v8 ignore next */ () => {});
         });
 
         logger.info("Zigbee2MQTT started!");
@@ -465,7 +465,10 @@ export class Controller {
             let message: string | undefined;
 
             // Special cases
-            if (key === "color" && utils.objectHasProperties(subPayload, ["r", "g", "b"])) {
+            // `objectHasProperties` indexes its argument, so it has to be given an object.
+            // The null check three lines below is too late: `color` is nullable like any
+            // other attribute, and a null one reaches here before that branch runs.
+            if (key === "color" && subPayload != null && utils.objectHasProperties(subPayload, ["r", "g", "b"])) {
                 subPayload = [subPayload.r, subPayload.g, subPayload.b];
             }
 

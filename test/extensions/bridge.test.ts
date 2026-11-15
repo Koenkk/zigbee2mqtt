@@ -2,7 +2,7 @@
 import {afterAll, beforeAll, beforeEach, describe, expect, it, vi} from "vitest";
 import {Zdo} from "zigbee-herdsman";
 import * as data from "../mocks/data";
-import {mockJSZipFile, mockJSZipGenerateAsync} from "../mocks/jszip";
+import {mockFflateZip, mockFflateZipFailOnce} from "../mocks/fflate";
 import {mockLogger} from "../mocks/logger";
 import {events as mockMQTTEvents, mockMQTTPublishAsync} from "../mocks/mqtt";
 import {flushPromises} from "../mocks/utils";
@@ -785,6 +785,16 @@ describe("Extension: Bridge", () => {
                                 type: "text",
                             },
                             {
+                                access: 2,
+                                category: "config",
+                                description: "Initiate device identification",
+                                label: "Identify",
+                                name: "identify",
+                                property: "identify",
+                                type: "enum",
+                                values: ["identify"],
+                            },
+                            {
                                 access: 1,
                                 category: "diagnostic",
                                 description: "Link quality (signal strength)",
@@ -830,6 +840,17 @@ describe("Extension: Bridge", () => {
                                 type: "numeric",
                                 value_min: 0,
                                 value_step: 0.1,
+                            },
+                            {
+                                access: 2,
+                                description:
+                                    "Sets the duration of the identification procedure in seconds (i.e., how long the device would flash).The value ranges from 1 to 30 seconds (default: 3).",
+                                label: "Identify timeout",
+                                name: "identify_timeout",
+                                property: "identify_timeout",
+                                type: "numeric",
+                                value_max: 30,
+                                value_min: 1,
                             },
                             {
                                 access: 2,
@@ -1026,6 +1047,62 @@ describe("Extension: Bridge", () => {
                         description: "Automatically generated definition",
                         exposes: [
                             {
+                                access: 5,
+                                description: "Analog Input my_sensor_name on endpoint 1",
+                                endpoint: "1",
+                                homeassistant: {name: "my_sensor_name"},
+                                label: "my_sensor_name",
+                                name: "analog_in_temperature",
+                                property: "analog_in_temperature_1",
+                                type: "numeric",
+                                unit: "°C",
+                            },
+                            {
+                                access: 5,
+                                description: "Analog Input my_sensor2_name on endpoint 2",
+                                endpoint: "2",
+                                homeassistant: {name: "my_sensor2_name"},
+                                label: "my_sensor2_name",
+                                name: "analog_in_temperature",
+                                property: "analog_in_temperature_2",
+                                type: "numeric",
+                                unit: "°C",
+                            },
+                            {
+                                access: 7,
+                                description: "Analog Output my_number_name on endpoint 2",
+                                endpoint: "2",
+                                homeassistant: {name: "my_number_name"},
+                                label: "my_number_name",
+                                name: "analog_output",
+                                property: "analog_output_2",
+                                type: "numeric",
+                            },
+                            {
+                                access: 5,
+                                description: "Binary Input my_binary_name on endpoint 2",
+                                endpoint: "2",
+                                homeassistant: {name: "my_binary_name"},
+                                label: "my_binary_name",
+                                name: "binary_input",
+                                property: "binary_input_2",
+                                type: "binary",
+                                value_off: "OFF",
+                                value_on: "ON",
+                            },
+                            {
+                                access: 7,
+                                description: "Binary Output my_switch_name on endpoint 2",
+                                endpoint: "2",
+                                homeassistant: {name: "my_switch_name"},
+                                label: "my_switch_name",
+                                name: "binary_output",
+                                property: "binary_output_2",
+                                type: "binary",
+                                value_off: "OFF",
+                                value_on: "ON",
+                            },
+                            {
                                 access: 1,
                                 category: "diagnostic",
                                 description: "Triggered action (e.g. a button click)",
@@ -1099,9 +1176,17 @@ describe("Extension: Bridge", () => {
                     endpoints: {
                         "1": {
                             bindings: [],
-                            clusters: {input: ["genBasic"], output: ["genBasic", "genOnOff", "genLevelCtrl", "genScenes"]},
+                            clusters: {input: ["genBasic", "genAnalogInput"], output: ["genBasic", "genOnOff", "genLevelCtrl", "genScenes"]},
                             configured_reportings: [],
                             scenes: [],
+                            name: "1",
+                        },
+                        "2": {
+                            bindings: [],
+                            clusters: {input: ["genBasic", "genAnalogInput", "genAnalogOutput", "genBinaryInput", "genBinaryOutput"], output: []},
+                            configured_reportings: [],
+                            scenes: [],
+                            name: "2",
                         },
                     },
                     friendly_name: "0x0017880104e45518",
@@ -1163,6 +1248,17 @@ describe("Extension: Bridge", () => {
                                 type: "numeric",
                             },
                             {
+                                access: 2,
+                                category: "config",
+                                description:
+                                    "Initiate device identification. This device is asleep by default.You may need to wake it up first before sending the identify command.",
+                                label: "Identify",
+                                name: "identify",
+                                property: "identify",
+                                type: "enum",
+                                values: ["identify"],
+                            },
+                            {
                                 access: 1,
                                 category: "diagnostic",
                                 description: "Triggered action (e.g. a button click)",
@@ -1195,6 +1291,17 @@ describe("Extension: Bridge", () => {
                                 property: "device_temperature_calibration",
                                 type: "numeric",
                                 value_step: 0.1,
+                            },
+                            {
+                                access: 2,
+                                description:
+                                    "Sets the duration of the identification procedure in seconds (i.e., how long the device would flash).The value ranges from 1 to 30 seconds (default: 3).",
+                                label: "Identify timeout",
+                                name: "identify_timeout",
+                                property: "identify_timeout",
+                                type: "numeric",
+                                value_max: 30,
+                                value_min: 1,
                             },
                         ],
                         supports_ota: false,
@@ -1962,7 +2069,8 @@ describe("Extension: Bridge", () => {
                             },
                             {
                                 access: 2,
-                                description: "Inverts the cover position, false: open=100,close=0, true: open=0,close=100 (default false).",
+                                description:
+                                    "Inverts the reported cover position and the state derived from it, false: open=100,close=0, true: open=0,close=100 (default false).",
                                 label: "Invert cover",
                                 name: "invert_cover",
                                 property: "invert_cover",
@@ -2720,6 +2828,62 @@ describe("Extension: Bridge", () => {
                         description: "Automatically generated definition",
                         exposes: [
                             {
+                                access: 5,
+                                description: "Analog Input my_sensor_name on endpoint 1",
+                                endpoint: "1",
+                                homeassistant: {name: "my_sensor_name"},
+                                label: "my_sensor_name",
+                                name: "analog_in_temperature",
+                                property: "analog_in_temperature_1",
+                                type: "numeric",
+                                unit: "°C",
+                            },
+                            {
+                                access: 5,
+                                description: "Analog Input my_sensor2_name on endpoint 2",
+                                endpoint: "2",
+                                homeassistant: {name: "my_sensor2_name"},
+                                label: "my_sensor2_name",
+                                name: "analog_in_temperature",
+                                property: "analog_in_temperature_2",
+                                type: "numeric",
+                                unit: "°C",
+                            },
+                            {
+                                access: 7,
+                                description: "Analog Output my_number_name on endpoint 2",
+                                endpoint: "2",
+                                homeassistant: {name: "my_number_name"},
+                                label: "my_number_name",
+                                name: "analog_output",
+                                property: "analog_output_2",
+                                type: "numeric",
+                            },
+                            {
+                                access: 5,
+                                description: "Binary Input my_binary_name on endpoint 2",
+                                endpoint: "2",
+                                homeassistant: {name: "my_binary_name"},
+                                label: "my_binary_name",
+                                name: "binary_input",
+                                property: "binary_input_2",
+                                type: "binary",
+                                value_off: "OFF",
+                                value_on: "ON",
+                            },
+                            {
+                                access: 7,
+                                description: "Binary Output my_switch_name on endpoint 2",
+                                endpoint: "2",
+                                homeassistant: {name: "my_switch_name"},
+                                label: "my_switch_name",
+                                name: "binary_output",
+                                property: "binary_output_2",
+                                type: "binary",
+                                value_off: "OFF",
+                                value_on: "ON",
+                            },
+                            {
                                 access: 1,
                                 category: "diagnostic",
                                 description: "Triggered action (e.g. a button click)",
@@ -2848,6 +3012,17 @@ describe("Extension: Bridge", () => {
 
     it("Should not allow permit join with invalid payload", async () => {
         mockMQTTEvents.message("zigbee2mqtt/bridge/request/permit_join", stringify({time_bla: false}));
+        await flushPromises();
+        expect(mockZHController.permitJoin).toHaveBeenCalledTimes(0);
+        expect(mockMQTTPublishAsync).toHaveBeenCalledWith(
+            "zigbee2mqtt/bridge/response/permit_join",
+            stringify({data: {}, status: "error", error: "Invalid payload"}),
+            {},
+        );
+    });
+
+    it("Should not allow permit join with a non-numeric time", async () => {
+        mockMQTTEvents.message("zigbee2mqtt/bridge/request/permit_join", stringify({time: "abc"}));
         await flushPromises();
         expect(mockZHController.permitJoin).toHaveBeenCalledTimes(0);
         expect(mockMQTTPublishAsync).toHaveBeenCalledWith(
@@ -2988,7 +3163,7 @@ describe("Extension: Bridge", () => {
         expect(mockMQTTPublishAsync).toHaveBeenCalledWith("zigbee2mqtt/bridge/devices", expect.any(String), expect.any(Object));
         expect(mockMQTTPublishAsync).toHaveBeenCalledWith(
             "zigbee2mqtt/bridge/response/device/remove",
-            stringify({data: {id: "bulb", block: false, force: false, clear_cache: false}, status: "ok"}),
+            stringify({data: {id: "bulb", block: false, force: false, keep_config: false, clear_cache: false}, status: "ok"}),
             {},
         );
         expect(settings.get().blocklist).toStrictEqual([]);
@@ -3009,7 +3184,7 @@ describe("Extension: Bridge", () => {
         expect(mockMQTTPublishAsync).toHaveBeenCalledWith("zigbee2mqtt/bridge/devices", expect.any(String), expect.any(Object));
         expect(mockMQTTPublishAsync).toHaveBeenCalledWith(
             "zigbee2mqtt/bridge/response/device/remove",
-            stringify({data: {id: "bulb", block: false, force: false, clear_cache: false}, status: "ok"}),
+            stringify({data: {id: "bulb", block: false, force: false, keep_config: false, clear_cache: false}, status: "ok"}),
             {},
         );
     });
@@ -3027,7 +3202,7 @@ describe("Extension: Bridge", () => {
         expect(mockMQTTPublishAsync).toHaveBeenCalledWith("zigbee2mqtt/bridge/devices", expect.any(String), expect.any(Object));
         expect(mockMQTTPublishAsync).toHaveBeenCalledWith(
             "zigbee2mqtt/bridge/response/device/remove",
-            stringify({data: {id: "bulb", block: false, force: true, clear_cache: false}, status: "ok"}),
+            stringify({data: {id: "bulb", block: false, force: true, keep_config: false, clear_cache: false}, status: "ok"}),
             {},
         );
     });
@@ -3044,10 +3219,28 @@ describe("Extension: Bridge", () => {
         expect(mockMQTTPublishAsync).toHaveBeenCalledWith("zigbee2mqtt/bridge/devices", expect.any(String), expect.any(Object));
         expect(mockMQTTPublishAsync).toHaveBeenCalledWith(
             "zigbee2mqtt/bridge/response/device/remove",
-            stringify({data: {id: "bulb", block: true, force: true, clear_cache: false}, status: "ok"}),
+            stringify({data: {id: "bulb", block: true, force: true, keep_config: false, clear_cache: false}, status: "ok"}),
             {},
         );
         expect(settings.get().blocklist).toStrictEqual(["0x000b57fffec6a5b2"]);
+    });
+
+    it("Should allow to keep configuration when removing device", async () => {
+        const device = devices.bulb;
+        const removeSpy = vi.spyOn(controller.zigbee, "removeDeviceFromLookup");
+        mockMQTTPublishAsync.mockClear();
+        mockMQTTEvents.message("zigbee2mqtt/bridge/request/device/remove", stringify({id: "bulb", keep_config: true}));
+        await flushPromises();
+        expect(device.removeFromDatabase).not.toHaveBeenCalled();
+        expect(device.removeFromNetwork).toHaveBeenCalledTimes(1);
+        expect(settings.getDevice("bulb")).toBeDefined();
+        expect(removeSpy).not.toHaveBeenCalled();
+        expect(mockMQTTPublishAsync).toHaveBeenCalledWith("zigbee2mqtt/bridge/devices", expect.any(String), expect.any(Object));
+        expect(mockMQTTPublishAsync).toHaveBeenCalledWith(
+            "zigbee2mqtt/bridge/response/device/remove",
+            stringify({data: {id: "bulb", block: false, force: false, keep_config: true, clear_cache: false}, status: "ok"}),
+            {},
+        );
     });
 
     it("Should allow to clear cache when removing device", async () => {
@@ -3063,7 +3256,7 @@ describe("Extension: Bridge", () => {
         expect(mockMQTTPublishAsync).toHaveBeenCalledWith("zigbee2mqtt/bridge/devices", expect.any(String), expect.any(Object));
         expect(mockMQTTPublishAsync).toHaveBeenCalledWith(
             "zigbee2mqtt/bridge/response/device/remove",
-            stringify({data: {id: "bulb", block: false, force: false, clear_cache: true}, status: "ok"}),
+            stringify({data: {id: "bulb", block: false, force: false, keep_config: false, clear_cache: true}, status: "ok"}),
             {},
         );
     });
@@ -3135,7 +3328,7 @@ describe("Extension: Bridge", () => {
             stringify({
                 data: {},
                 status: "error",
-                error: "Failed to remove device 'bulb' (block: false, force: false, clear cache: false) (Error: device timeout)",
+                error: "Failed to remove device 'bulb' (block: false, force: false, keep config: false, clear cache: false) (Error: device timeout)",
             }),
             {},
         );
@@ -3402,7 +3595,7 @@ describe("Extension: Bridge", () => {
                         "    model: 'lumi.plug',\n" +
                         "    vendor: '',\n" +
                         "    description: 'Automatically generated definition',\n" +
-                        '    extend: [m.onOff({"powerOnBehavior":false})],\n' +
+                        "    extend: [m.onOff()],\n" +
                         "};\n",
                 },
                 status: "ok",
@@ -3585,6 +3778,36 @@ describe("Extension: Bridge", () => {
         );
     });
 
+    it("Should warn on unsupported device option", async () => {
+        mockMQTTPublishAsync.mockClear();
+        mockLogger.warning.mockClear();
+
+        const device = controller.zigbee.resolveEntity(devices.bulb.ieeeAddr);
+        assert(device && "definition" in device);
+        const definitionOptions = device.definition?.options;
+        device.definition!.options = undefined;
+
+        mockMQTTEvents.message("zigbee2mqtt/bridge/request/device/options", stringify({options: {unsupported: true}, id: "bulb"}));
+        await flushPromises();
+        device.definition!.options = definitionOptions;
+
+        expect(settings.getDevice("bulb")).toHaveProperty("unsupported");
+        expect(mockLogger.warning).toHaveBeenCalledWith("Device 'bulb' does not support option 'unsupported'");
+        expect(mockMQTTPublishAsync).toHaveBeenCalledWith(
+            "zigbee2mqtt/bridge/response/device/options",
+            stringify({
+                data: {
+                    from: {retain: true, description: "this is my bulb"},
+                    to: {retain: true, description: "this is my bulb", unsupported: true},
+                    id: "bulb",
+                    restart_required: false,
+                },
+                status: "ok",
+            }),
+            {},
+        );
+    });
+
     it("Should allow to add group by string", async () => {
         mockMQTTPublishAsync.mockClear();
         mockMQTTEvents.message("zigbee2mqtt/bridge/request/group/add", "group_193");
@@ -3629,6 +3852,17 @@ describe("Extension: Bridge", () => {
         expect(mockMQTTPublishAsync).toHaveBeenCalledWith(
             "zigbee2mqtt/bridge/response/group/add",
             stringify({data: {}, status: "error", error: "Invalid payload"}),
+            {},
+        );
+    });
+
+    it("Should throw error when add with a non-numeric group id", async () => {
+        mockMQTTPublishAsync.mockClear();
+        mockMQTTEvents.message("zigbee2mqtt/bridge/request/group/add", stringify({friendly_name: "group_broken", id: "abc"}));
+        await flushPromises();
+        expect(mockMQTTPublishAsync).toHaveBeenCalledWith(
+            "zigbee2mqtt/bridge/response/group/add",
+            stringify({data: {}, status: "error", error: "Group ID must be a number"}),
             {},
         );
     });
@@ -4193,16 +4427,39 @@ describe("Extension: Bridge", () => {
         mockMQTTEvents.message("zigbee2mqtt/bridge/request/backup", "");
         await flushPromises();
         expect(mockZHController.backup).toHaveBeenCalledTimes(1);
-        expect(mockJSZipFile).toHaveBeenCalledTimes(4);
-        expect(mockJSZipFile).toHaveBeenNthCalledWith(1, "configuration.yaml", expect.any(Object));
-        expect(mockJSZipFile).toHaveBeenNthCalledWith(2, path.join("ext_converters", "123", "myfile.js"), expect.any(Object));
-        expect(mockJSZipFile).toHaveBeenNthCalledWith(3, path.join("ext_converters", "afile.js"), expect.any(Object));
-        expect(mockJSZipFile).toHaveBeenNthCalledWith(4, "state.json", expect.any(Object));
-        expect(mockJSZipGenerateAsync).toHaveBeenCalledTimes(1);
-        expect(mockJSZipGenerateAsync).toHaveBeenNthCalledWith(1, {type: "base64"});
+        expect(mockFflateZip).toHaveBeenCalledTimes(1);
+        expect(mockFflateZip).toHaveBeenNthCalledWith(
+            1,
+            {
+                "configuration.yaml": expect.any(Buffer),
+                [path.join("ext_converters", "123", "myfile.js")]: expect.any(Buffer),
+                [path.join("ext_converters", "afile.js")]: expect.any(Buffer),
+                "state.json": expect.any(Buffer),
+            },
+            {level: 6},
+            expect.any(Function),
+        );
+        expect(Object.keys(mockFflateZip.mock.calls[0][0])).toStrictEqual([
+            "configuration.yaml",
+            path.join("ext_converters", "123", "myfile.js"),
+            path.join("ext_converters", "afile.js"),
+            "state.json",
+        ]);
         expect(mockMQTTPublishAsync).toHaveBeenCalledWith(
             "zigbee2mqtt/bridge/response/backup",
             stringify({data: {zip: "THISISBASE64"}, status: "ok"}),
+            {},
+        );
+    });
+
+    it("Should return an error when the backup archive cannot be created", async () => {
+        mockMQTTPublishAsync.mockClear();
+        mockFflateZipFailOnce(new Error("invalid zip data"));
+        mockMQTTEvents.message("zigbee2mqtt/bridge/request/backup", "");
+        await flushPromises();
+        expect(mockMQTTPublishAsync).toHaveBeenCalledWith(
+            "zigbee2mqtt/bridge/response/backup",
+            stringify({data: {}, status: "error", error: "invalid zip data"}),
             {},
         );
     });

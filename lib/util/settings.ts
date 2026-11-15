@@ -1,8 +1,8 @@
 import path from "node:path";
 import type {ValidateFunction} from "ajv";
 import Ajv from "ajv";
-import objectAssignDeep from "object-assign-deep";
 import data from "./data";
+import {objectAssignDeep} from "./objectAssignDeep";
 import schemaJson from "./settings.schema.json";
 import utils from "./utils";
 import yaml from "./yaml";
@@ -210,28 +210,13 @@ export function write(): void {
     // Read settings to check if we have to split devices/groups into separate file.
     const actual = yaml.read(CONFIG_FILE_PATH);
 
-    // In case the setting is defined in a separate file (e.g. !secret network_key) update it there.
-    for (const [ns, key] of [
-        ["mqtt", "server"],
-        ["mqtt", "user"],
-        ["mqtt", "password"],
-        ["advanced", "network_key"],
-        ["frontend", "auth_token"],
-    ]) {
-        if (actual[ns]?.[key]) {
-            const ref = parseValueRef(actual[ns][key]);
-            if (ref) {
-                yaml.updateIfChanged(data.joinPath(ref.filename), ref.key, toWrite[ns][key]);
-                toWrite[ns][key] = actual[ns][key];
-            }
-        }
-    }
-
     // Write devices/groups to separate file if required.
     const writeDevicesOrGroups = (type: "devices" | "groups"): void => {
         if (typeof actual[type] === "string" || (Array.isArray(actual[type]) && actual[type].length > 0)) {
             const fileToWrite = Array.isArray(actual[type]) ? actual[type][0] : actual[type];
-            const content = objectAssignDeep({}, settings[type]);
+            // `readDevicesOrGroups()` already set this to an object whenever the config points at separate files, but the
+            // persisted settings are `Partial`, so the fallback is only here to satisfy the type
+            const content = objectAssignDeep({}, /* v8 ignore next */ settings[type] ?? {});
 
             // If an array, only write to first file and only devices which are not in the other files.
             if (Array.isArray(actual[type])) {
@@ -252,6 +237,26 @@ export function write(): void {
     writeDevicesOrGroups("groups");
 
     applyEnvironmentVariables(toWrite);
+
+    // In case the setting is defined in a separate file (e.g. !secret network_key) update it there.
+    for (const [ns, key] of [
+        ["mqtt", "server"],
+        ["mqtt", "user"],
+        ["mqtt", "password"],
+        ["advanced", "network_key"],
+        ["frontend", "auth_token"],
+    ]) {
+        if (actual[ns]?.[key]) {
+            const ref = parseValueRef(actual[ns][key]);
+            const value = toWrite[ns][key];
+            // An environment override may itself be a reference; never write it into another secret.
+            const valueIsReference = typeof value === "string" && parseValueRef(value) !== null;
+            if (ref && !valueIsReference) {
+                yaml.updateIfChanged(data.joinPath(ref.filename), ref.key, value);
+                toWrite[ns][key] = actual[ns][key];
+            }
+        }
+    }
 
     yaml.writeIfChanged(CONFIG_FILE_PATH, toWrite);
 
@@ -368,8 +373,7 @@ function read(): Partial<Settings> {
             s[type] = {};
             for (const file of files) {
                 const content = yaml.readIfExists(data.joinPath(file));
-                // @ts-expect-error noMutate not typed properly
-                s[type] = objectAssignDeep.noMutate(s[type], content);
+                s[type] = objectAssignDeep({}, s[type], content);
             }
         }
     };
@@ -412,7 +416,9 @@ function applyEnvironmentVariables(settings: Partial<Settings>): void {
                             // biome-ignore lint/suspicious/noExplicitAny: auto-parsing
                             setting[key as keyof Settings] = (envVariable.toLowerCase() === "true") as any;
                         } else {
+                            /* v8 ignore start */
                             if (type.indexOf("string") >= 0) {
+                                /* v8 ignore stop */
                                 // biome-ignore lint/suspicious/noExplicitAny: auto-parsing
                                 setting[key as keyof Settings] = envVariable as any;
                             }
@@ -479,9 +485,7 @@ export function set(path: string[], value: string | number | boolean | KeyValue)
 }
 
 export function apply(settings: Record<string, unknown>, throwOnError = true): boolean {
-    getPersistedSettings(); // Ensure _settings is initialized.
-    // @ts-expect-error noMutate not typed properly
-    const newSettings = objectAssignDeep.noMutate(_settings, settings);
+    const newSettings = objectAssignDeep({}, getPersistedSettings(), settings);
 
     utils.removeNullPropertiesFromObject(newSettings, NULLABLE_SETTINGS);
 

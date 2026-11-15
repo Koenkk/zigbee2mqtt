@@ -1,30 +1,14 @@
 import {existsSync, mkdirSync, writeFileSync} from "node:fs";
-import type {ServerResponse} from "node:http";
 import {createServer} from "node:http";
 import path from "node:path";
-import expressStaticGzip from "express-static-gzip";
-import finalhandler from "finalhandler";
-import JSZip from "jszip";
+import {type Unzipped, unzip} from "fflate";
 import {findAllDevices} from "zigbee-herdsman/dist/adapter/adapterDiscovery";
 import type {OnboardData, OnboardFailureData, OnboardSubmitResponse, Zigbee2MQTTSettings} from "../types/api";
 import {stringify} from "../util/stringify";
 import data from "./data";
 import * as settings from "./settings";
+import {createStaticFileServer} from "./staticFileServer";
 import {YAMLFileException} from "./yaml";
-
-/** same as extension/frontend */
-const FILE_SERVER_OPTIONS: expressStaticGzip.ExpressStaticGzipOptions = {
-    enableBrotli: true,
-    serveStatic: {
-        /* v8 ignore start */
-        setHeaders: (res: ServerResponse, path: string): void => {
-            if (path.endsWith("index.html")) {
-                res.setHeader("Cache-Control", "no-store");
-            }
-        },
-        /* v8 ignore stop */
-    },
-};
 
 function getServerUrl(): URL {
     return new URL(process.env.Z2M_ONBOARD_URL ?? "http://0.0.0.0:8080");
@@ -49,20 +33,22 @@ function getZipEntryTargetPath(entryName: string): string {
 }
 
 async function extractZipDataToDataPath(zipContent: Buffer): Promise<void> {
-    const zip = await JSZip.loadAsync(zipContent);
+    const entries = await new Promise<Unzipped>((resolve, reject) => {
+        unzip(zipContent, (error, data) => (error ? reject(error) : resolve(data)));
+    });
 
-    for (const key in zip.files) {
-        const entry = zip.files[key];
-        const targetPath = getZipEntryTargetPath(entry.name);
+    for (const name in entries) {
+        const targetPath = getZipEntryTargetPath(name);
 
-        if (entry.dir) {
+        // directory entries are identified by a trailing slash
+        if (name.endsWith("/")) {
             mkdirSync(targetPath, {recursive: true});
 
             continue;
         }
 
         mkdirSync(path.dirname(targetPath), {recursive: true});
-        writeFileSync(targetPath, await entry.async("nodebuffer"));
+        writeFileSync(targetPath, entries[name]);
     }
 }
 
@@ -70,11 +56,11 @@ async function startOnboardingServer(): Promise<boolean> {
     const currentSettings = settings.get();
     const serverUrl = getServerUrl();
     let server: ReturnType<typeof createServer> | undefined;
-    const fileServer = expressStaticGzip((await import("zigbee2mqtt-windfront")).default.getOnboardingPath(), FILE_SERVER_OPTIONS);
+    const fileServer = createStaticFileServer((await import("zigbee2mqtt-windfront")).default.getOnboardingPath(), console.error);
 
     const success = await new Promise<boolean>((resolve) => {
         server = createServer(async (req, res) => {
-            const pathname = new URL(req.url /* v8 ignore next */ ?? "/", serverUrl).pathname;
+            const pathname = new URL(/* v8 ignore next */ req.url ?? "/", serverUrl).pathname;
 
             if (req.method === "GET" && pathname === "/data") {
                 const payload: OnboardData = {
@@ -145,7 +131,9 @@ async function startOnboardingServer(): Promise<boolean> {
                     return;
                 }
 
+                /* v8 ignore start */
                 if (pathname === "/submit-zip") {
+                    /* v8 ignore stop */
                     let body = "";
 
                     req.on("data", (chunk) => {
@@ -194,9 +182,7 @@ async function startOnboardingServer(): Promise<boolean> {
                 }
             }
 
-            const next = finalhandler(req, res);
-
-            fileServer(req, res, next);
+            fileServer(req, res);
         });
 
         server.on("error", (error: Error) => {
@@ -217,11 +203,11 @@ async function startOnboardingServer(): Promise<boolean> {
 async function startFailureServer(errors: string[]): Promise<void> {
     const serverUrl = getServerUrl();
     let server: ReturnType<typeof createServer> | undefined;
-    const fileServer = expressStaticGzip((await import("zigbee2mqtt-windfront")).default.getOnboardingPath(), FILE_SERVER_OPTIONS);
+    const fileServer = createStaticFileServer((await import("zigbee2mqtt-windfront")).default.getOnboardingPath(), console.error);
 
     await new Promise<void>((resolve) => {
         server = createServer((req, res) => {
-            const pathname = new URL(req.url /* v8 ignore next */ ?? "/", serverUrl).pathname;
+            const pathname = new URL(/* v8 ignore next */ req.url ?? "/", serverUrl).pathname;
 
             if (req.method === "GET" && pathname === "/data") {
                 const payload: OnboardFailureData = {page: "failure", errors};
@@ -242,9 +228,7 @@ async function startFailureServer(errors: string[]): Promise<void> {
                 return;
             }
 
-            const next = finalhandler(req, res);
-
-            fileServer(req, res, next);
+            fileServer(req, res);
         });
 
         server.listen(Number.parseInt(serverUrl.port, 10), serverUrl.hostname, () => {
@@ -267,7 +251,9 @@ async function onSettingsErrors(errors: string[]): Promise<void> {
     console.error("\nIf you don't know how to solve this, read https://www.zigbee2mqtt.io/guide/configuration");
     console.error("\n!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!\n\n");
 
+    /* v8 ignore start */
     if (!process.env.Z2M_ONBOARD_NO_SERVER && !process.env.Z2M_ONBOARD_NO_FAILURE_PAGE) {
+        /* v8 ignore stop */
         await startFailureServer(errors);
     }
 }

@@ -1,16 +1,16 @@
 {
     "name": "zigbee2mqtt",
-    "version": "2.12.1-dev",
+    "version": "2.14.3-dev",
     "description": "Zigbee to MQTT bridge using Zigbee-herdsman",
     "main": "index.js",
     "types": "dist/types/api.d.ts",
-    "packageManager": "pnpm@10.18.3",
+    "packageManager": "pnpm@11.26.0",
     "repository": {
         "type": "git",
         "url": "git+https://github.com/Koenkk/zigbee2mqtt.git"
     },
     "engines": {
-        "node": "^22.2.0 || ^24 || ^26"
+        "node": "^22.2.0 || ^24 || <=26.2"
     },
     "keywords": [
         "xiaomi",
@@ -45,54 +45,46 @@
         "ajv": "^8.20.0",
         "bind-decorator": "^1.0.11",
         "debounce": "^3.0.0",
-        "express-static-gzip": "^3.0.1",
         "fast-deep-equal": "^3.1.3",
-        "finalhandler": "^2.1.1",
-        "humanize-duration": "^3.34.0",
-        "js-yaml": "^5.2.1",
-        "jszip": "^3.10.1",
-        "mqtt": "^5.15.2",
-        "object-assign-deep": "^0.4.0",
-        "semver": "^7.8.5",
+        "fflate": "^0.8.3",
+        "humanize-duration": "^3.35.1",
+        "js-yaml": "^5.5.0",
+        "mqtt": "^5.16.1",
+        "semver": "^7.8.6",
+        "srvx": "^1.0.8",
         "throttleit": "^3.0.0",
         "winston": "^3.19.0",
         "winston-syslog": "^2.7.1",
         "winston-transport": "^4.9.0",
-        "ws": "^8.21.1",
-        "zigbee-herdsman": "10.7.0",
-        "zigbee-herdsman-converters": "26.88.0",
+        "ws": "^8.22.2",
+        "zigbee-herdsman": "11.2.1",
+        "zigbee-herdsman-converters": "26.132.0",
         "zigbee2mqtt-frontend": "0.9.21",
-        "zigbee2mqtt-windfront": "2.13.0"
+        "zigbee2mqtt-windfront": "2.15.2"
     },
     "devDependencies": {
-        "@biomejs/biome": "^2.5.3",
-        "@types/finalhandler": "^1.2.3",
+        "@biomejs/biome": "^2.6.6",
         "@types/humanize-duration": "^3.27.4",
-        "@types/node": "^26.1.1",
-        "@types/object-assign-deep": "^0.4.3",
-        "@types/readable-stream": "4.0.24",
-        "@types/serve-static": "^2.2.0",
-        "@types/ws": "8.18.1",
-        "@vitest/coverage-v8": "^3.1.1",
+        "@types/node": "^26.6.6",
+        "@types/readable-stream": "4.0.25",
+        "@types/ws": "8.18.2",
+        "@vitest/coverage-v8": "^4.1.11",
         "tmp": "^0.2.7",
         "typescript": "^7.0.2",
-        "vitest": "^3.1.1"
-    },
-    "pnpm": {
-        "overrides": {
-            "zigbee-herdsman": "$zigbee-herdsman"
-        },
-        "onlyBuiltDependencies": [
-            "@biomejs/biome",
-            "@serialport/bindings-cpp",
-            "esbuild",
-            "unix-dgram"
-        ]
+        "vitest": "^4.1.11"
     },
     "bin": {
         "zigbee2mqtt": "cli.js"
     },
     "optionalDependencies": {
         "unix-dgram": "^2.0.7"
-    }
+    },
+    "files": [
+        "data/configuration.example.yaml",
+        "dist",
+        "cli.js",
+        "index.js",
+        "pnpm-workspace.yaml",
+        "CHANGELOG.md"
+    ]
 }

@@ -32,7 +32,7 @@
                 "legacy_action_sensor": {
                     "type": "boolean",
                     "title": "Home Assistant legacy action sensors",
-                    "description": "Home Assistant legacy actions sensor, when enabled a action sensor will be discoverd and an empty `action` will be send after every published action.",
+                    "description": "When enabled, an action sensor will be discovered, and an empty `action` will be send after every published action. (Deprecated, use MQTT device triggers instead)",
                     "requiresRestart": true,
                     "default": false
                 },
