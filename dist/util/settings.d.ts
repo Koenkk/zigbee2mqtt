@@ -29,6 +29,7 @@ export declare const defaults: {
         package: "zigbee2mqtt-windfront";
         port: number;
         base_url: string;
+        websocket_ping_interval: number;
     };
     mqtt: {
         base_topic: string;
@@ -157,6 +158,7 @@ export declare const testing: {
             package: "zigbee2mqtt-windfront";
             port: number;
             base_url: string;
+            websocket_ping_interval: number;
         };
         mqtt: {
             base_topic: string;

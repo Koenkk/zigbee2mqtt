@@ -7,10 +7,15 @@ export declare class Frontend extends Extension {
     private server;
     private wss;
     private baseUrl;
+    private websocketPingInterval?;
+    private readonly websocketPingIntervalMs;
+    private readonly aliveClients;
     constructor(zigbee: Zigbee, mqtt: Mqtt, state: State, publishEntityState: PublishEntityState, eventBus: EventBus, enableDisableExtension: (enable: boolean, name: string) => Promise<void>, restartCallback: () => Promise<void>, addExtension: (extension: Extension) => Promise<void>);
     start(): Promise<void>;
     stop(): Promise<void>;
     private onUpgrade;
+    private clearWebSocketPingInterval;
+    private pingWebSocketClients;
     private onWebSocketConnection;
     private onMQTTPublishMessageOrEntityState;
 }
