@@ -264,6 +264,8 @@ const NUMERIC_DISCOVERY_LOOKUP: {[s: string]: KeyValue} = {
     power_phase_b: {device_class: "power", state_class: "measurement"},
     power_phase_c: {device_class: "power", state_class: "measurement"},
     power_factor: {device_class: "power_factor", enabled_by_default: false, entity_category: "diagnostic", state_class: "measurement"},
+    power_factor_phase_b: {device_class: "power_factor", state_class: "measurement"},
+    power_factor_phase_c: {device_class: "power_factor", state_class: "measurement"},
     power_outage_count: {icon: "mdi:counter", enabled_by_default: false, state_class: "measurement"},
     precipitation: {device_class: "precipitation", icon: "mdi:weather-rainy", state_class: "total_increasing"},
     precision: {entity_category: "config", icon: "mdi:decimal-comma-increase"},
