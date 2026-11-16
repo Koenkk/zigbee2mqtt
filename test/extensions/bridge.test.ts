@@ -292,6 +292,7 @@ describe("Extension: Bridge", () => {
                         package: "zigbee2mqtt-windfront",
                         port: 8080,
                         base_url: "/",
+                        websocket_ping_interval: 30,
                     },
                     map_options: {
                         graphviz: {
