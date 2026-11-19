@@ -2,6 +2,7 @@ import assert from "node:assert";
 import bind from "bind-decorator";
 import debounce from "debounce";
 import type * as zhc from "zigbee-herdsman-converters";
+import {toZigbee} from "zigbee-herdsman-converters";
 import type {Zigbee2MQTTAPI} from "../types/api";
 
 import logger from "../util/logger";
@@ -15,11 +16,7 @@ import Extension from "./extension";
  */
 const MAX_TIMEOUT = 2147483647;
 
-const RETRIEVE_ON_RECONNECT: readonly {keys: string[]; condition?: (state: KeyValue) => boolean}[] = [
-    {keys: ["state"]},
-    {keys: ["brightness"], condition: (state: KeyValue): boolean => state.state === "ON"},
-    {keys: ["color", "color_temp"], condition: (state: KeyValue): boolean => state.state === "ON"},
-];
+const RETRIEVE_ON_RECONNECT = [["state"], ["brightness"], ["color", "color_temp"]];
 
 export default class Availability extends Extension {
     /** Mapped by IEEE address */
@@ -32,6 +29,7 @@ export default class Availability extends Extension {
     private readonly backoffPausedDevices = new Set<string>();
     /** Mapped by IEEE address */
     private readonly retrieveStateDebouncers = new Map<string, () => void>();
+    private readonly pendingStateReads = new Map<zh.Endpoint, (state?: unknown) => void>();
     private pingQueue: Device[] = [];
     private pingQueueExecuting = false;
     private stopped = false;
@@ -221,6 +219,7 @@ export default class Availability extends Extension {
         });
         this.eventBus.onEntityRemoved(this, (data) => data.entity.isDevice() && this.clearTimer(data.entity.ID));
         this.eventBus.onDeviceLeave(this, (data) => this.clearTimer(data.ieeeAddr));
+        this.eventBus.onDeviceReportedState(this, ({endpoint, state}) => this.pendingStateReads.get(endpoint)?.(state));
         this.eventBus.onDeviceAnnounce(this, (data) => this.retrieveState(data.device));
         this.eventBus.onLastSeenChanged(this, this.onLastSeenChanged);
         this.eventBus.onGroupMembersChanged(this, (data) => this.publishAvailability(data.group, false));
@@ -298,6 +297,8 @@ export default class Availability extends Extension {
 
     override async stop(): Promise<void> {
         this.stopped = true;
+        for (const resolve of this.pendingStateReads.values()) resolve();
+        this.pendingStateReads.clear();
         this.pingQueue = [];
 
         for (const [, t] of this.timers) {
@@ -305,6 +306,39 @@ export default class Availability extends Extension {
         }
 
         await super.stop();
+    }
+
+    private async readReconnectState(endpoint: zh.Endpoint, converter: zhc.Tz.Converter | undefined, meta: zhc.Tz.Meta): Promise<boolean> {
+        if (!converter?.convertGet) return false;
+
+        // The standard getters discard the attribute returned by this exact read.
+        if (converter.convertGet === toZigbee.on_off.convertGet || converter.convertGet === toZigbee.light_onoff_brightness.convertGet) {
+            return (await endpoint.read("genOnOff", ["onOff"]))?.onOff === 1;
+        }
+
+        // Vendor getters may return/publish the state or deliver it via an inbound converter.
+        const previous = this.pendingStateReads.get(endpoint);
+        previous?.();
+        const {promise, resolve} = Promise.withResolvers<unknown>();
+        this.pendingStateReads.set(endpoint, resolve);
+        let timeout: NodeJS.Timeout | undefined;
+        try {
+            const reply = await converter.convertGet(endpoint, "state", {
+                ...meta,
+                publish: (payload) => {
+                    if ("state" in payload) resolve(payload.state);
+                    return meta.publish(payload);
+                },
+            });
+            if (reply?.state && "state" in reply.state) return reply.state.state === "ON" && this.pendingStateReads.get(endpoint) === resolve;
+            // A converter can finish before its response has passed through the inbound converter.
+            // Bound only the missing-response case; a confirmed state proceeds immediately.
+            timeout = setTimeout(resolve, utils.seconds(10));
+            return (await promise) === "ON" && this.pendingStateReads.get(endpoint) === resolve;
+        } finally {
+            clearTimeout(timeout);
+            if (this.pendingStateReads.get(endpoint) === resolve) this.pendingStateReads.delete(endpoint);
+        }
     }
 
     private retrieveState(device: Device): void {
@@ -319,13 +353,9 @@ export default class Availability extends Extension {
                     logger.debug(`Retrieving state of '${device.name}' after reconnect`);
 
                     // Color and color temperature converters do both, only needs to be called once.
-                    for (const item of RETRIEVE_ON_RECONNECT) {
-                        if (item.condition && this.state.get(device) && !item.condition(this.state.get(device))) {
-                            continue;
-                        }
-
+                    for (const keys of RETRIEVE_ON_RECONNECT) {
                         // biome-ignore lint/style/noNonNullAssertion: doesn't change once valid
-                        const converter = device.definition!.toZigbee.find((c) => !c.key || c.key.find((k) => item.keys.includes(k)));
+                        const converter = device.definition!.toZigbee.find((c) => !c.key || c.key.find((k) => keys.includes(k)));
                         const options: KeyValue = device.options;
                         const state = this.state.get(device);
                         const meta: zhc.Tz.Meta = {
@@ -346,12 +376,15 @@ export default class Availability extends Extension {
                         try {
                             const endpoint = device.endpoint();
                             assert(endpoint);
-                            await converter?.convertGet?.(endpoint, item.keys[0], meta);
+                            if (keys[0] === "state") {
+                                if (!(await this.readReconnectState(endpoint, converter, meta))) return;
+                            } else {
+                                await converter?.convertGet?.(endpoint, keys[0], meta);
+                            }
                         } catch (error) {
                             logger.error(`Failed to read state of '${device.name}' after reconnect (${(error as Error).message})`);
+                            if (keys[0] === "state") return;
                         }
-
-                        await utils.sleep(500);
                     }
                 }, utils.seconds(2)),
             );

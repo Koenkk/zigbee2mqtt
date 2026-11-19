@@ -7,6 +7,7 @@ import {flushPromises} from "../mocks/utils";
 import {devices, events as mockZHEvents, returnDevices} from "../mocks/zigbeeHerdsman";
 
 import assert from "node:assert";
+import {toZigbee} from "zigbee-herdsman-converters";
 import {stringify} from "../../lib/util/stringify";
 import {Controller} from "../../lib/controller";
 import Availability from "../../lib/extension/availability";
@@ -310,6 +311,120 @@ describe("Extension: Availability", () => {
         await setTimeAndAdvanceTimers(utils.seconds(3));
         expect(endpoint.read).toHaveBeenCalledTimes(1);
     });
+
+    it.each([1, 0, undefined, "error"])("uses the On/Off reply %s before reading other light attributes", async (onOff) => {
+        const device = controller.zigbee.resolveEntity(devices.bulb_color.ieeeAddr);
+        assert(device?.isDevice());
+        // Start with a stale cache, as if the bulb changed state while it was offline.
+        // Only a fresh ON reply should trigger the brightness and colour reads.
+        controller.state.set(device, {state: onOff === 1 ? "OFF" : "ON", brightness: 172});
+        const endpoint = devices.bulb_color.getEndpoint(1)!;
+        endpoint.read.mockClear();
+        endpoint.read.mockImplementationOnce(() => {
+            if (onOff === "error") return Promise.reject(new Error("Read failed"));
+            if (onOff !== undefined) {
+                mockZHEvents.message({type: "readResponse", cluster: "genOnOff", data: {onOff}, device: devices.bulb_color, endpoint});
+            }
+            return Promise.resolve({onOff});
+        });
+        const sleep = vi.mocked(utils.sleep);
+        sleep.mockClear();
+        controller.eventBus.emitDeviceAnnounce({device});
+        await setTimeAndAdvanceTimers(utils.seconds(2));
+        expect(endpoint.read.mock.calls.map(([cluster]) => cluster)).toEqual(
+            onOff === 1 ? ["genOnOff", "genLevelCtrl", "lightingColorCtrl"] : ["genOnOff"],
+        );
+        expect(sleep).not.toHaveBeenCalledWith(500);
+    });
+
+    it.each([
+        ["on_off", 1],
+        ["light_onoff_brightness", 0],
+    ] as const)("reads the confirmed attribute for the standard %s getter", async (name, onOff) => {
+        const device = controller.zigbee.resolveEntity(devices.bulb_color.ieeeAddr);
+        assert(device?.isDevice() && device.definition);
+        const original = device.definition;
+        const endpoint = devices.bulb_color.getEndpoint(1)!;
+        endpoint.read.mockClear();
+        endpoint.read.mockResolvedValueOnce({onOff});
+        device.definition = {...original, toZigbee: [toZigbee[name], toZigbee.light_onoff_brightness]};
+        try {
+            controller.eventBus.emitDeviceAnnounce({device});
+            await setTimeAndAdvanceTimers(utils.seconds(2));
+            expect(endpoint.read.mock.calls.map(([cluster]) => cluster)).toEqual(onOff ? ["genOnOff", "genLevelCtrl"] : ["genOnOff"]);
+        } finally {
+            device.definition = original;
+        }
+    });
+
+    // Vendor converters can return the bulb's state, publish it, or handle its reply later.
+    // In each case the brightness read should wait until the bulb confirms it is on.
+    it.each(["return", "publish", "receive", "missing", "unsupported", "stop", "overlap", "named", "namedFallback", "unsolicited", "levelError"])(
+        "handles a vendor state getter (%s)",
+        async (mode) => {
+            const device = controller.zigbee.resolveEntity(devices.bulb_color.ieeeAddr);
+            assert(device?.isDevice() && device.definition);
+            const original = device.definition;
+            const endpoint = device.endpoint()!;
+            const level = vi.fn(() => {
+                if (mode === "levelError") return Promise.reject(new Error("level read failed"));
+                return Promise.resolve();
+            });
+            const getState = vi.fn<NonNullable<(typeof original.toZigbee)[number]["convertGet"]>>((_endpoint, _key, meta) => {
+                if (mode === "return" || mode === "levelError") return Promise.resolve({state: {state: "ON"}});
+                if (mode === "publish") {
+                    meta.publish({linkquality: 90});
+                    meta.publish({state: "ON"});
+                }
+                return Promise.resolve();
+            });
+            device.definition = {
+                ...original,
+                endpoint: mode.startsWith("named") ? () => ({left: endpoint.ID}) : original.endpoint,
+                fromZigbee:
+                    mode === "named" ? [{cluster: "genOnOff", type: ["readResponse"], convert: () => ({state_left: "ON"})}] : original.fromZigbee,
+                toZigbee: [
+                    {key: ["state"], convertGet: mode === "unsupported" ? undefined : getState},
+                    {key: ["brightness"], convertGet: level},
+                ],
+            };
+            try {
+                controller.eventBus.emitDeviceAnnounce({device});
+                await setTimeAndAdvanceTimers(utils.seconds(2));
+                if (mode === "overlap") {
+                    controller.eventBus.emitDeviceAnnounce({device});
+                    await setTimeAndAdvanceTimers(utils.seconds(2));
+                }
+                if (["receive", "overlap", "named", "namedFallback", "unsolicited"].includes(mode)) {
+                    await mockZHEvents.message({
+                        type: mode === "unsolicited" ? "attributeReport" : "readResponse",
+                        cluster: "genOnOff",
+                        data: {onOff: 1},
+                        device: devices.bulb_color,
+                        endpoint,
+                    });
+                    await flushPromises();
+                } else if (mode === "missing") {
+                    await mockZHEvents.message({
+                        type: "readResponse",
+                        cluster: "genLevelCtrl",
+                        data: {currentLevel: 172},
+                        device: devices.bulb_color,
+                        endpoint,
+                    });
+                    await flushPromises();
+                } else if (mode === "stop") {
+                    await resetExtension();
+                }
+                await setTimeAndAdvanceTimers(utils.seconds(11));
+                expect(level).toHaveBeenCalledTimes(
+                    ["return", "publish", "receive", "overlap", "named", "namedFallback", "levelError"].includes(mode) ? 1 : 0,
+                );
+            } finally {
+                device.definition = original;
+            }
+        },
+    );
 
     it("Should republish availability when device is renamed", async () => {
         mockMQTTPublishAsync.mockClear();
