@@ -1,6 +1,6 @@
 import assert from "node:assert";
 import bind from "bind-decorator";
-import debounce from "debounce";
+import debounce, {type DebouncedFunction} from "debounce";
 import type * as zhc from "zigbee-herdsman-converters";
 import type {Zigbee2MQTTAPI} from "../types/api";
 
@@ -31,7 +31,7 @@ export default class Availability extends Extension {
     /** IEEE addresses, waiting for last seen changes to take them out of "availability sleep" */
     private readonly backoffPausedDevices = new Set<string>();
     /** Mapped by IEEE address */
-    private readonly retrieveStateDebouncers = new Map<string, () => void>();
+    private readonly retrieveStateDebouncers = new Map<string, DebouncedFunction<() => Promise<void>>>();
     private pingQueue: Device[] = [];
     private pingQueueExecuting = false;
     private stopped = false;
@@ -131,6 +131,8 @@ export default class Availability extends Extension {
     private clearTimer(ieeeAddress: string): void {
         clearTimeout(this.timers.get(ieeeAddress));
         this.timers.delete(ieeeAddress);
+        this.retrieveStateDebouncers.get(ieeeAddress)?.clear();
+        this.retrieveStateDebouncers.delete(ieeeAddress);
     }
 
     private addToPingQueue(device: Device): void {
@@ -304,22 +306,38 @@ export default class Availability extends Extension {
             clearTimeout(t);
         }
 
+        for (const retrieve of this.retrieveStateDebouncers.values()) {
+            retrieve.clear();
+        }
+        this.retrieveStateDebouncers.clear();
+
         await super.stop();
     }
 
-    private retrieveState(device: Device): void {
+    private retrieveState({ieeeAddr}: Device): void {
         /**
          * Retrieve state of a device in a debounced manner, this function is called on a 'deviceAnnounce' which a
          * device can send multiple times after each other.
          */
-        if (device.definition && device.interviewed && !this.retrieveStateDebouncers.get(device.ieeeAddr)) {
+        if (!this.retrieveStateDebouncers.has(ieeeAddr)) {
             this.retrieveStateDebouncers.set(
-                device.ieeeAddr,
+                ieeeAddr,
                 debounce(async () => {
+                    const device = this.zigbee.resolveEntity(ieeeAddr);
+                    if (!device?.isDevice() || !device.definition || !device.interviewed) {
+                        return;
+                    }
+
+                    const retrieve = this.retrieveStateDebouncers.get(ieeeAddr);
                     logger.debug(`Retrieving state of '${device.name}' after reconnect`);
 
                     // Color and color temperature converters do both, only needs to be called once.
                     for (const item of RETRIEVE_ON_RECONNECT) {
+                        // Leave/removal or a replacement between reads invalidates the rest of this batch.
+                        if (this.retrieveStateDebouncers.get(ieeeAddr) !== retrieve || this.zigbee.resolveEntity(ieeeAddr) !== device) {
+                            return;
+                        }
+
                         if (item.condition && this.state.get(device) && !item.condition(this.state.get(device))) {
                             continue;
                         }
@@ -357,6 +375,6 @@ export default class Availability extends Extension {
             );
         }
 
-        this.retrieveStateDebouncers.get(device.ieeeAddr)?.();
+        this.retrieveStateDebouncers.get(ieeeAddr)?.();
     }
 }
