@@ -18,6 +18,7 @@ interface EventBusMap {
     entityOptionsChanged: [data: eventdata.EntityOptionsChanged];
     exposesChanged: [data: eventdata.ExposesChanged];
     deviceLeave: [data: eventdata.DeviceLeave];
+    deviceReportedState: [data: {endpoint: zh.Endpoint; state: unknown}];
     deviceMessage: [data: eventdata.DeviceMessage];
     mqttMessage: [data: eventdata.MQTTMessage];
     mqttMessagePublished: [data: eventdata.MQTTMessagePublished];
@@ -168,6 +169,13 @@ export default class EventBus {
     }
     public onDeviceLeave(key: ListenerKey, callback: (data: eventdata.DeviceLeave) => void): void {
         this.on("deviceLeave", callback, key);
+    }
+
+    public emitDeviceReportedState(endpoint: zh.Endpoint, state: unknown): void {
+        this.emitter.emit("deviceReportedState", {endpoint, state});
+    }
+    public onDeviceReportedState(key: ListenerKey, callback: EventBusListener<"deviceReportedState">): void {
+        this.on("deviceReportedState", callback, key);
     }
 
     public emitDeviceMessage(data: eventdata.DeviceMessage): void {
