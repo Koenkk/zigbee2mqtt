@@ -1,5 +1,6 @@
 import {existsSync, readFileSync, writeFileSync} from "node:fs";
 
+import {normalizeColorMode} from "./util/colorMode";
 import data from "./util/data";
 import logger from "./util/logger";
 import {objectAssignDeep} from "./util/objectAssignDeep";
@@ -115,6 +116,9 @@ class State {
     set(entity: Group | Device, update: KeyValue, reason?: string): KeyValue {
         const fromState = this.state.get(entity.ID) || {};
         const toState = objectAssignDeep({}, fromState, update);
+        // Applied to the merged state so a stale cached `color_mode` is corrected, before it's cached, published and passed
+        // to converters (as `meta.state`).
+        normalizeColorMode(entity, toState);
         const newCache = {...toState};
         const entityDontCacheProperties = entity.options.filtered_cache || [];
 

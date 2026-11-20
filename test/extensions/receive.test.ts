@@ -53,6 +53,60 @@ describe("Extension: Receive", () => {
         });
     });
 
+    describe("color_mode", () => {
+        // https://github.com/Koenkk/zigbee2mqtt/issues/28757
+        const published = (topic: string): Record<string, unknown>[] =>
+            mockMQTTPublishAsync.mock.calls.filter((c) => c[0] === topic).map((c) => JSON.parse(c[1] as string));
+        const report = async (data: Record<string, unknown>, cluster = "lightingColorCtrl"): Promise<void> => {
+            const device = devices.bulb_2;
+            await mockZHEvents.message({data, cluster, device, endpoint: device.getEndpoint(1), type: "attributeReport", linkquality: 10});
+            await flushPromises();
+        };
+
+        it("Should publish color_temp when a color temperature only light reports hs", async () => {
+            await report({colorMode: 0, colorTemperature: 300});
+            expect(published("zigbee2mqtt/bulb_2").at(-1)).toMatchObject({color_mode: "color_temp", color_temp: 300});
+            expect(published("zigbee2mqtt/group_with_tradfri").at(-1)).toMatchObject({color_mode: "color_temp"});
+        });
+
+        it("Should not publish color_mode when a color temperature only light reports hs without color_temp", async () => {
+            await report({colorMode: 0});
+            for (const message of published("zigbee2mqtt/bulb_2")) {
+                expect(message).not.toHaveProperty("color_mode");
+            }
+        });
+
+        it("Should correct a stale cached color_mode on an unrelated update", async () => {
+            const device = controller.zigbee.resolveEntity(devices.bulb_2)!;
+            // State cached before this fix, e.g. from state.json
+            // @ts-expect-error private
+            controller.state.state.set(device.ID, {color_mode: "hs", color_temp: 300});
+            await report({onOff: 1}, "genOnOff");
+            expect(published("zigbee2mqtt/bulb_2").at(-1)).toMatchObject({state: "ON", color_mode: "color_temp", color_temp: 300});
+            expect(controller.state.get(device)).toMatchObject({color_mode: "color_temp"});
+        });
+
+        it("Should publish color_temp when a color temperature only light reports hs without cache_state", async () => {
+            settings.set(["advanced", "cache_state"], false);
+            await report({colorMode: 0, colorTemperature: 300});
+            expect(published("zigbee2mqtt/bulb_2").at(-1)).toMatchObject({color_mode: "color_temp"});
+        });
+
+        it("Should keep a color_mode the light supports", async () => {
+            const device = devices.bulb_color;
+            await mockZHEvents.message({
+                data: {colorMode: 0, currentHue: 0, currentSaturation: 254},
+                cluster: "lightingColorCtrl",
+                device,
+                endpoint: device.getEndpoint(1),
+                type: "attributeReport",
+                linkquality: 10,
+            });
+            await flushPromises();
+            expect(published("zigbee2mqtt/bulb_color").at(-1)).toMatchObject({color_mode: "hs"});
+        });
+    });
+
     it("Should handle a zigbee message which uses ep (left)", async () => {
         const device = devices.WXKG02LM_rev1;
         const data = {onOff: 1};
