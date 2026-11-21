@@ -671,7 +671,7 @@ export class HomeAssistant extends Extension {
                     (!hasColorXY || preferHS) && hasColorHS ? "hs" : null,
                     hasColorTemp ? "color_temp" : null,
                 ].filter((c) => c);
-                
+
                 if (hasBrightness) {
                     discoveryEntry.discovery_payload.brightness_scale = 254;
                 }

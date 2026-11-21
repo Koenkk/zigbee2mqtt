@@ -510,14 +510,7 @@ describe("Extension: HomeAssistant", () => {
             state_topic: "zigbee2mqtt/0x0017880104e45123",
             supported_color_modes: ["onoff"],
             effect: true,
-            effect_list: [
-                "blink",
-                "breathe",
-                "okay",
-                "channel_change",
-                "finish_effect",
-                "stop_effect",
-            ],
+            effect_list: ["blink", "breathe", "okay", "channel_change", "finish_effect", "stop_effect"],
             unique_id: "0x0017880104e45123_light_zigbee2mqtt",
         };
 
