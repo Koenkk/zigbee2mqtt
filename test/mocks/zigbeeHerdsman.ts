@@ -677,7 +677,7 @@ export const devices = {
         "0x0017880104e45123",
         6536,
         0,
-        [new Endpoint(1, [0, 3, 4, 5 ,6], [], "0x0017880104e45123", [], {}, [], HA_PROFILE_ID, 0x0100)],
+        [new Endpoint(1, [0, 3, 4, 5, 6], [], "0x0017880104e45123", [], {}, [], HA_PROFILE_ID, 0x0100)],
         InterviewState.Successful,
         "Mains (single phase)",
         "notSupportedLight",
