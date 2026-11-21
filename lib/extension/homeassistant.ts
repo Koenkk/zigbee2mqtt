@@ -671,6 +671,10 @@ export class HomeAssistant extends Extension {
                     (!hasColorXY || preferHS) && hasColorHS ? "hs" : null,
                     hasColorTemp ? "color_temp" : null,
                 ].filter((c) => c);
+                
+                if (hasBrightness) {
+                    discoveryEntry.discovery_payload.brightness_scale = 254;
+                }
 
                 if (colorModes.length) {
                     discoveryEntry.discovery_payload.supported_color_modes = colorModes;
@@ -680,7 +684,6 @@ export class HomeAssistant extends Extension {
                      * with other color modes.
                      * https://github.com/Koenkk/zigbee2mqtt/issues/26520#issuecomment-2692432058
                      */
-                    discoveryEntry.discovery_payload.brightness_scale = 254;
                     discoveryEntry.discovery_payload.supported_color_modes = ["brightness"];
                 } else {
                     discoveryEntry.discovery_payload.supported_color_modes = ["onoff"];

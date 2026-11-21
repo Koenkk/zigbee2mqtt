@@ -491,6 +491,43 @@ describe("Extension: HomeAssistant", () => {
 
         payload = {
             availability: [{topic: "zigbee2mqtt/bridge/state", value_template: "{{ value_json.state }}"}],
+            brightness: false,
+            command_topic: "zigbee2mqtt/0x0017880104e45123/set",
+            device: {
+                identifiers: ["zigbee2mqtt_0x0017880104e45123"],
+                manufacturer: "",
+                model: "Automatically generated definition",
+                model_id: "notSupportedLight",
+                name: "0x0017880104e45123",
+                sw_version: version,
+                via_device: "zigbee2mqtt_bridge_0x00124b00120144ae",
+            },
+            name: null,
+            object_id: "0x0017880104e45123",
+            default_entity_id: "light.0x0017880104e45123",
+            origin: origin,
+            schema: "json",
+            state_topic: "zigbee2mqtt/0x0017880104e45123",
+            supported_color_modes: ["onoff"],
+            effect: true,
+            effect_list: [
+                "blink",
+                "breathe",
+                "okay",
+                "channel_change",
+                "finish_effect",
+                "stop_effect",
+            ],
+            unique_id: "0x0017880104e45123_light_zigbee2mqtt",
+        };
+
+        expect(mockMQTTPublishAsync).toHaveBeenCalledWith("homeassistant/light/0x0017880104e45123/light/config", stringify(payload), {
+            retain: true,
+            qos: 1,
+        });
+
+        payload = {
+            availability: [{topic: "zigbee2mqtt/bridge/state", value_template: "{{ value_json.state }}"}],
             command_topic: "zigbee2mqtt/ha_discovery_group/set",
             device: {
                 identifiers: ["zigbee2mqtt_1221051039810110150109113116116_9"],
