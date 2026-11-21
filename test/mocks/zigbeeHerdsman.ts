@@ -4,6 +4,7 @@ import type {AdapterTypes} from "zigbee-herdsman";
 import {Zcl} from "zigbee-herdsman";
 import {InterviewState} from "zigbee-herdsman/dist/controller/model/device";
 import type {OtaDataSettings, OtaExtraMetas, OtaSource, OtaUpdateAvailableResult} from "zigbee-herdsman/dist/controller/tstype";
+import {HA_PROFILE_ID} from "zigbee-herdsman/dist/zspec/consts";
 import type {TClusterCommandPayload} from "zigbee-herdsman/dist/zspec/zcl/definition/clusters-types";
 import type {BindingTableEntry, LQITableEntry, RoutingTableEntry} from "zigbee-herdsman/dist/zspec/zdo/definition/tstypes";
 import {DEFAULT_BIND_GROUP_ID} from "../../lib/util/utils";
@@ -670,6 +671,16 @@ export const devices = {
         InterviewState.Successful,
         "Battery",
         "notSupportedModelID",
+    ),
+    on_off_light: new Device(
+        "Router",
+        "0x0017880104e45123",
+        6536,
+        0,
+        [new Endpoint(1, [0, 3, 4, 5, 6], [], "0x0017880104e45123", [], {}, [], HA_PROFILE_ID, 0x0100)],
+        InterviewState.Successful,
+        "Mains (single phase)",
+        "notSupportedLight",
     ),
     interviewing: new Device(
         "EndDevice",
