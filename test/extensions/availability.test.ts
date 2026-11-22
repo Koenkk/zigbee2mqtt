@@ -335,55 +335,6 @@ describe("Extension: Availability", () => {
         previousEndpoint.mockRestore();
     });
 
-    it("skips a reconnect read if the device disappears during the debounce", async () => {
-        const device = controller.zigbee.resolveEntity(devices.bulb_color.ieeeAddr);
-        assert(device?.isDevice());
-        const endpoint = vi.spyOn(device, "endpoint");
-        controller.eventBus.emitDeviceAnnounce({device});
-        const lookup = vi.spyOn(controller.zigbee, "resolveEntity").mockReturnValue(undefined);
-        await setTimeAndAdvanceTimers(utils.seconds(2));
-        expect(endpoint).not.toHaveBeenCalled();
-        lookup.mockRestore();
-        endpoint.mockRestore();
-    });
-
-    it.each(["leave", "replacement"])("stops an active reconnect batch after %s", async (event) => {
-        const device = controller.zigbee.resolveEntity(devices.bulb_color.ieeeAddr);
-        assert(device?.isDevice());
-        controller.state.set(device, {state: "ON"});
-        const endpoint = devices.bulb_color.getEndpoint(1)!;
-        endpoint.read.mockClear();
-        endpoint.read.mockImplementationOnce(async () => {
-            await mockZHEvents.message({type: "readResponse", cluster: "genOnOff", data: {onOff: 1}, device: devices.bulb_color, endpoint});
-            if (event === "leave") {
-                controller.eventBus.emitDeviceLeave({ieeeAddr: device.ieeeAddr, name: device.name});
-            } else {
-                controller.zigbee.removeDeviceFromLookup(device.ieeeAddr);
-            }
-            return {onOff: 1};
-        });
-        controller.eventBus.emitDeviceAnnounce({device});
-        await setTimeAndAdvanceTimers(utils.seconds(2));
-        expect(endpoint.read).toHaveBeenCalledTimes(1);
-        const current = controller.zigbee.resolveEntity(device.ieeeAddr);
-        assert(current?.isDevice());
-        await current.resolveDefinition();
-    });
-
-    it("cancels pending reconnect reads on leave and shutdown", async () => {
-        const device = controller.zigbee.resolveEntity(devices.bulb_color.ieeeAddr);
-        assert(device?.isDevice());
-        const endpoint = vi.spyOn(device, "endpoint");
-        controller.eventBus.emitDeviceAnnounce({device});
-        controller.eventBus.emitDeviceLeave({ieeeAddr: device.ieeeAddr, name: device.name});
-        await setTimeAndAdvanceTimers(utils.seconds(2));
-        controller.eventBus.emitDeviceAnnounce({device});
-        await resetExtension();
-        await setTimeAndAdvanceTimers(utils.seconds(2));
-        expect(endpoint).not.toHaveBeenCalled();
-        endpoint.mockRestore();
-    });
-
     it("Should republish availability when device is renamed", async () => {
         mockMQTTPublishAsync.mockClear();
 

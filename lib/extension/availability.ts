@@ -128,9 +128,10 @@ export default class Availability extends Extension {
         }
     }
 
-    private clearTimer(ieeeAddress: string): void {
+    private clearDevice(ieeeAddress: string): void {
         clearTimeout(this.timers.get(ieeeAddress));
         this.timers.delete(ieeeAddress);
+        // The debouncer holds on to the device, cancel it so a re-paired device gets a new one.
         this.retrieveStateDebouncers.get(ieeeAddress)?.clear();
         this.retrieveStateDebouncers.delete(ieeeAddress);
     }
@@ -221,8 +222,8 @@ export default class Availability extends Extension {
                 await this.publishAvailability(data.entity, false, true);
             }
         });
-        this.eventBus.onEntityRemoved(this, (data) => data.entity.isDevice() && this.clearTimer(data.entity.ID));
-        this.eventBus.onDeviceLeave(this, (data) => this.clearTimer(data.ieeeAddr));
+        this.eventBus.onEntityRemoved(this, (data) => data.entity.isDevice() && this.clearDevice(data.entity.ID));
+        this.eventBus.onDeviceLeave(this, (data) => this.clearDevice(data.ieeeAddr));
         this.eventBus.onDeviceAnnounce(this, (data) => this.retrieveState(data.device));
         this.eventBus.onLastSeenChanged(this, this.onLastSeenChanged);
         this.eventBus.onGroupMembersChanged(this, (data) => this.publishAvailability(data.group, false));
@@ -306,38 +307,26 @@ export default class Availability extends Extension {
             clearTimeout(t);
         }
 
-        for (const retrieve of this.retrieveStateDebouncers.values()) {
-            retrieve.clear();
+        for (const [, debouncer] of this.retrieveStateDebouncers) {
+            debouncer.clear();
         }
-        this.retrieveStateDebouncers.clear();
 
         await super.stop();
     }
 
-    private retrieveState({ieeeAddr}: Device): void {
+    private retrieveState(device: Device): void {
         /**
          * Retrieve state of a device in a debounced manner, this function is called on a 'deviceAnnounce' which a
          * device can send multiple times after each other.
          */
-        if (!this.retrieveStateDebouncers.has(ieeeAddr)) {
+        if (device.definition && device.interviewed && !this.retrieveStateDebouncers.get(device.ieeeAddr)) {
             this.retrieveStateDebouncers.set(
-                ieeeAddr,
+                device.ieeeAddr,
                 debounce(async () => {
-                    const device = this.zigbee.resolveEntity(ieeeAddr);
-                    if (!device?.isDevice() || !device.definition || !device.interviewed) {
-                        return;
-                    }
-
-                    const retrieve = this.retrieveStateDebouncers.get(ieeeAddr);
                     logger.debug(`Retrieving state of '${device.name}' after reconnect`);
 
                     // Color and color temperature converters do both, only needs to be called once.
                     for (const item of RETRIEVE_ON_RECONNECT) {
-                        // Leave/removal or a replacement between reads invalidates the rest of this batch.
-                        if (this.retrieveStateDebouncers.get(ieeeAddr) !== retrieve || this.zigbee.resolveEntity(ieeeAddr) !== device) {
-                            return;
-                        }
-
                         if (item.condition && this.state.get(device) && !item.condition(this.state.get(device))) {
                             continue;
                         }
@@ -375,6 +364,6 @@ export default class Availability extends Extension {
             );
         }
 
-        this.retrieveStateDebouncers.get(ieeeAddr)?.();
+        this.retrieveStateDebouncers.get(device.ieeeAddr)?.();
     }
 }
