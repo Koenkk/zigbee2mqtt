@@ -661,7 +661,6 @@ export class HomeAssistant extends Extension {
                         brightness: !!hasBrightness,
                         schema: "json",
                         command_topic: true,
-                        brightness_scale: 254,
                         command_topic_prefix: endpointName,
                         state_topic_postfix: endpointName,
                     },
@@ -673,15 +672,21 @@ export class HomeAssistant extends Extension {
                     hasColorTemp ? "color_temp" : null,
                 ].filter((c) => c);
 
+                if (hasBrightness) {
+                    discoveryEntry.discovery_payload.brightness_scale = 254;
+                }
+
                 if (colorModes.length) {
                     discoveryEntry.discovery_payload.supported_color_modes = colorModes;
-                } else {
+                } else if (hasBrightness) {
                     /**
-                     * All bulbs support brightness, note that `brightness` cannot be combined
+                     * Note that `brightness` and 'onoff' cannot be combined
                      * with other color modes.
                      * https://github.com/Koenkk/zigbee2mqtt/issues/26520#issuecomment-2692432058
                      */
                     discoveryEntry.discovery_payload.supported_color_modes = ["brightness"];
+                } else {
+                    discoveryEntry.discovery_payload.supported_color_modes = ["onoff"];
                 }
 
                 if (hasColorTemp) {
