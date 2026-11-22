@@ -54,11 +54,11 @@ importers:
         specifier: ^8.23.0
         version: 8.23.0
       zigbee-herdsman:
-        specifier: 11.2.1
-        version: 11.2.1(supports-color@7.2.0)
+        specifier: 11.2.4
+        version: 11.2.4(supports-color@7.2.0)
       zigbee-herdsman-converters:
-        specifier: 26.135.0
-        version: 26.135.0(supports-color@7.2.0)
+        specifier: 26.136.0
+        version: 26.136.0(supports-color@7.2.0)
       zigbee2mqtt-frontend:
         specifier: 0.9.21
         version: 0.9.21
@@ -800,10 +800,6 @@ packages:
   convert-source-map@2.0.0:
     resolution: {integrity: sha512-Kvp459HrV2FEJ1CAsi1Ku+MY3kasH19TFykTz2xWmMeq6bk2NU3XXvfJ+Q61m0xktWwt+1HSYf3JZsTms3aRJg==}
 
-  debounce@3.0.0:
-    resolution: {integrity: sha512-64byRbF0/AirwbuHqB3/ZpMG9/nckDa6ZA0yd6UnaQNwbbemCOwvz2sL5sjXLHhZHADyiwLm0M5qMhltUUx+TA==}
-    engines: {node: '>=20'}
-
   debounce@4.0.0:
     resolution: {integrity: sha512-o6nMNFRtqLR6mRlyt0b21cgYPSKAEMZFpROIRS9ZRH6hhSJWvGErqeSCJnWyiwVQYMSw7f/DZLilF5YRDwFz7w==}
     engines: {node: '>=22.2'}
@@ -1291,12 +1287,12 @@ packages:
       utf-8-validate:
         optional: true
 
-  zigbee-herdsman-converters@26.135.0:
-    resolution: {integrity: sha512-GND3/eM+0USuipbEsF51Zr84Y077jT0Kh9K/8aRI8E6H7nenHk2CX81S/PTk7GMjFMR2QMIiw9KgWDh6Diov1Q==}
+  zigbee-herdsman-converters@26.136.0:
+    resolution: {integrity: sha512-dXm+ems1NqzTk7mFlaxFspi4opQRt5Stx96pSaOKJU2V/q+lmJ3YqDgy/pO1q38p7gHkwvm3Q4AKa1fJ3AMt4Q==}
     engines: {node: ^22.2.0 || ^24 || <=26.2}
 
-  zigbee-herdsman@11.2.1:
-    resolution: {integrity: sha512-fEBk4IwOR38BLJqx5XpGhW8Pyyk5Jak298/BlHRMRk9TUCm/swB6emyRwPYEGqcBMVSpOYvEY94qE+zAJDk2wg==}
+  zigbee-herdsman@11.2.4:
+    resolution: {integrity: sha512-L6+tiCdMMPov9yp4PFQlu+JdCs9u0gzU4oSAjDaIs/eUj0a1/IfWgbTvRwIWe7qb03UEyudRfU9sQKHsugDvUg==}
     engines: {node: ^22.2.0 || ^24 || <=26.2}
 
   zigbee-on-host@0.3.2:
@@ -1808,8 +1804,6 @@ snapshots:
 
   convert-source-map@2.0.0: {}
 
-  debounce@3.0.0: {}
-
   debounce@4.0.0: {}
 
   debug@4.4.0(supports-color@7.2.0):
@@ -2292,22 +2286,22 @@ snapshots:
 
   ws@8.23.0: {}
 
-  zigbee-herdsman-converters@26.135.0(supports-color@7.2.0):
+  zigbee-herdsman-converters@26.136.0(supports-color@7.2.0):
     dependencies:
       iconv-lite: 0.7.3
       semver: 7.8.6
-      zigbee-herdsman: 11.2.1(supports-color@7.2.0)
+      zigbee-herdsman: 11.2.4(supports-color@7.2.0)
     transitivePeerDependencies:
       - supports-color
 
-  zigbee-herdsman@11.2.1(supports-color@7.2.0):
+  zigbee-herdsman@11.2.4(supports-color@7.2.0):
     dependencies:
       '@date-fns/tz': 1.5.0
       '@serialport/bindings-cpp': 13.0.1(supports-color@7.2.0)
       '@serialport/parser-delimiter': 13.0.0
       '@serialport/stream': 13.0.0(supports-color@7.2.0)
       bonjour-service: 1.4.4
-      debounce: 3.0.0
+      debounce: 4.0.0
       fast-deep-equal: 3.1.3
       slip: 1.0.2
       zigbee-on-host: 0.3.2
