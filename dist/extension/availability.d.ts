@@ -20,7 +20,7 @@ export default class Availability extends Extension {
     private isActiveDevice;
     private isAvailable;
     private resetTimer;
-    private clearTimer;
+    private clearDevice;
     private addToPingQueue;
     private removeFromPingQueue;
     private pingQueueExecuteNext;
