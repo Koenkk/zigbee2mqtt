@@ -159,6 +159,12 @@ export default class Receive extends Extension {
             const options: KeyValue = data.device.options;
             zhc.postProcessConvertedFromZigbeeMessage(data.device.definition, payload, options, data.device.zh);
 
+            if (data.type.endsWith("Response")) {
+                const name = data.device.endpointName(data.endpoint);
+                const state = name ? (payload[`state_${name}`] ?? payload.state) : payload.state;
+                if (state === "ON" || state === "OFF") this.eventBus.emitDeviceReportedState(data.endpoint, state);
+            }
+
             if (settings.get().advanced.elapsed) {
                 const now = Date.now();
                 if (this.elapsed[data.device.ieeeAddr]) {
