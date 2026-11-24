@@ -1,6 +1,6 @@
 import assert from "node:assert";
 import bind from "bind-decorator";
-import debounce from "debounce";
+import debounce, {type DebouncedFunction} from "debounce";
 import type * as zhc from "zigbee-herdsman-converters";
 import type {Zigbee2MQTTAPI} from "../types/api";
 
@@ -31,7 +31,7 @@ export default class Availability extends Extension {
     /** IEEE addresses, waiting for last seen changes to take them out of "availability sleep" */
     private readonly backoffPausedDevices = new Set<string>();
     /** Mapped by IEEE address */
-    private readonly retrieveStateDebouncers = new Map<string, () => void>();
+    private readonly retrieveStateDebouncers = new Map<string, DebouncedFunction<() => Promise<void>>>();
     private pingQueue: Device[] = [];
     private pingQueueExecuting = false;
     private stopped = false;
@@ -128,9 +128,12 @@ export default class Availability extends Extension {
         }
     }
 
-    private clearTimer(ieeeAddress: string): void {
+    private clearDevice(ieeeAddress: string): void {
         clearTimeout(this.timers.get(ieeeAddress));
         this.timers.delete(ieeeAddress);
+        // The debouncer holds on to the device, cancel it so a re-paired device gets a new one.
+        this.retrieveStateDebouncers.get(ieeeAddress)?.clear();
+        this.retrieveStateDebouncers.delete(ieeeAddress);
     }
 
     private addToPingQueue(device: Device): void {
@@ -219,8 +222,8 @@ export default class Availability extends Extension {
                 await this.publishAvailability(data.entity, false, true);
             }
         });
-        this.eventBus.onEntityRemoved(this, (data) => data.entity.isDevice() && this.clearTimer(data.entity.ID));
-        this.eventBus.onDeviceLeave(this, (data) => this.clearTimer(data.ieeeAddr));
+        this.eventBus.onEntityRemoved(this, (data) => data.entity.isDevice() && this.clearDevice(data.entity.ID));
+        this.eventBus.onDeviceLeave(this, (data) => this.clearDevice(data.ieeeAddr));
         this.eventBus.onDeviceAnnounce(this, (data) => this.retrieveState(data.device));
         this.eventBus.onLastSeenChanged(this, this.onLastSeenChanged);
         this.eventBus.onGroupMembersChanged(this, (data) => this.publishAvailability(data.group, false));
@@ -302,6 +305,10 @@ export default class Availability extends Extension {
 
         for (const [, t] of this.timers) {
             clearTimeout(t);
+        }
+
+        for (const [, debouncer] of this.retrieveStateDebouncers) {
+            debouncer.clear();
         }
 
         await super.stop();

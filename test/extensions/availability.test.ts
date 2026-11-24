@@ -311,6 +311,30 @@ describe("Extension: Availability", () => {
         expect(endpoint.read).toHaveBeenCalledTimes(1);
     });
 
+    it("uses the current endpoint after replacing a device with the same IEEE address", async () => {
+        const {ieeeAddr} = devices.bulb_color;
+        const first = controller.zigbee.resolveEntity(ieeeAddr);
+        assert(first?.isDevice());
+        const previousEndpoint = vi.spyOn(first, "endpoint");
+        controller.eventBus.emitDeviceAnnounce({device: first});
+        await setTimeAndAdvanceTimers(utils.seconds(2));
+        expect(previousEndpoint).toHaveBeenCalled();
+        previousEndpoint.mockClear();
+
+        controller.eventBus.emitEntityRemoved({entity: first, name: first.name});
+        controller.zigbee.removeDeviceFromLookup(ieeeAddr);
+        const current = controller.zigbee.resolveEntity(ieeeAddr);
+        assert(current?.isDevice() && current !== first);
+        await current.resolveDefinition();
+        const currentEndpoint = vi.spyOn(current, "endpoint");
+        controller.eventBus.emitDeviceAnnounce({device: current});
+        await setTimeAndAdvanceTimers(utils.seconds(2));
+        expect(previousEndpoint).not.toHaveBeenCalled();
+        expect(currentEndpoint).toHaveBeenCalled();
+        currentEndpoint.mockRestore();
+        previousEndpoint.mockRestore();
+    });
+
     it("Should republish availability when device is renamed", async () => {
         mockMQTTPublishAsync.mockClear();
 
