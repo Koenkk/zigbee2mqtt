@@ -923,7 +923,9 @@ export class HomeAssistant extends Extension {
                 }
 
                 const localTemperature = (firstExpose as zhc.Climate).features.filter(isNumericExpose).find((f) => f.name === "local_temperature");
-                const temperatureSensor = allExposes?.filter(isNumericExpose).find((e) => e.name === "temperature" && e.access & ACCESS_STATE);
+                const temperatureSensor = allExposes
+                    ?.filter(isNumericExpose)
+                    .find((e) => e.name === "temperature" && e.access & ACCESS_STATE && (e.endpoint === undefined || e.endpoint === endpointName));
                 const localTemperatureSensor = allExposes
                     ?.filter(isNumericExpose)
                     .find((e) => e.name === "local_temperature" && e.access & ACCESS_STATE);
