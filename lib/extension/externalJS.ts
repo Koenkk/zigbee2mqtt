@@ -19,6 +19,7 @@ export default abstract class ExternalJSExtension<M> extends Extension {
     protected requestRegex: RegExp;
     protected basePath: string;
     protected nodeModulesSymlinked = false;
+    protected filesLoaded = false;
 
     constructor(
         zigbee: Zigbee,
@@ -74,7 +75,11 @@ export default abstract class ExternalJSExtension<M> extends Extension {
     override async start(): Promise<void> {
         await super.start();
         this.eventBus.onMQTTMessage(this, this.onMQTTMessage);
-        await this.loadFiles();
+        // Files may already have been loaded before the start of the extensions (see `loadFiles`).
+        if (!this.filesLoaded) {
+            await this.loadFiles();
+        }
+
         await this.publishExternalJS();
     }
 
@@ -200,7 +205,9 @@ export default abstract class ExternalJSExtension<M> extends Extension {
         }
     }
 
-    private async loadFiles(): Promise<void> {
+    public async loadFiles(): Promise<void> {
+        this.filesLoaded = true;
+
         for (const extension of this.getFiles()) {
             this.symlinkNodeModulesIfNecessary();
             const filePath = this.getFilePath(extension.name);

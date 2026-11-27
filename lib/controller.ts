@@ -112,6 +112,13 @@ export class Controller {
         const info = await utils.getZigbee2MQTTVersion();
         logger.info(`Starting Zigbee2MQTT version ${info.version} (commit #${info.commitHash})`);
 
+        // Load external converters before starting zigbee, as definitions are resolved (and generated for unknown devices) during start.
+        for (const extension of this.extensions) {
+            if (extension instanceof ExtensionExternalConverters) {
+                await extension.preload();
+            }
+        }
+
         // Start zigbee
         try {
             const started = await this.zigbee.start(abortSignal);

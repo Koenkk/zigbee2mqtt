@@ -33,6 +33,7 @@ describe("Extension: ExternalConverters", () => {
         mockMQTTPublishAsync,
         mockLogger.debug,
         mockLogger.error,
+        mockZHController.start,
         mockZHController.stop,
         devices.bulb.save,
         rmSyncSpy,
@@ -169,6 +170,20 @@ describe("Extension: ExternalConverters", () => {
                     }),
                 ]),
             );
+        });
+
+        it("loads converters before zigbee-herdsman is started", async () => {
+            // Definitions are resolved while starting zigbee-herdsman; devices without one get a generated definition,
+            // which may read attributes over the air (blocks startup for sleeping devices).
+            useAssets("mjs");
+
+            await controller.start();
+            await flushPromises();
+
+            expect(zhcAddExternalDefinitionSpy).toHaveBeenCalled();
+            expect(mockZHController.start).toHaveBeenCalledTimes(1);
+            expect(zhcAddExternalDefinitionSpy.mock.invocationCallOrder[0]).toBeLessThan(mockZHController.start.mock.invocationCallOrder[0]);
+            expect(getZ2MDevice(devices.external_converter_device).definition).toMatchObject({model: "external_converter_device"});
         });
 
         it("MJS: loads converters", async () => {

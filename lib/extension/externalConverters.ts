@@ -32,6 +32,24 @@ export default class ExternalConverters extends ExternalJSExtension<TModule> {
         );
     }
 
+    #preloading = false;
+
+    /**
+     * Load the external converters before Zigbee is started.
+     * `Zigbee.start()` resolves the definition of every device, for devices without a definition this generates one,
+     * which can read attributes from the device over the air (slow/blocking for sleeping devices).
+     * Loading the converters first ensures devices supported by an external converter never go through generation.
+     */
+    public async preload(): Promise<void> {
+        this.#preloading = true;
+
+        try {
+            await this.loadFiles();
+        } finally {
+            this.#preloading = false;
+        }
+    }
+
     protected async removeJS(name: string, _mod: TModule): Promise<void> {
         removeExternalDefinitions(name);
 
@@ -52,8 +70,11 @@ export default class ExternalConverters extends ExternalJSExtension<TModule> {
                 logger.info(`Loaded external converter '${newName ?? name}'.`);
             }
 
-            await this.zigbee.resolveDevicesDefinitions(true);
-            this.eventBus.emitDevicesChanged();
+            // Zigbee is not started yet when preloading, definitions are resolved as part of the Zigbee start.
+            if (!this.#preloading) {
+                await this.zigbee.resolveDevicesDefinitions(true);
+                this.eventBus.emitDevicesChanged();
+            }
         } catch (error) {
             logger.error(
                 /* v8 ignore next */
