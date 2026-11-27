@@ -373,7 +373,7 @@ const ENUM_DISCOVERY_LOOKUP: {[s: string]: KeyValue} = {
     temperature_unit: {entity_category: "config", icon: "mdi:temperature-celsius"},
     thermostat_unit: {entity_category: "config", icon: "mdi:thermometer"},
     update: {device_class: "update"},
-    volume: {entity_category: "config", icon: "mdi: volume-high"},
+    volume: {entity_category: "config", icon: "mdi:volume-high"},
     weather_condition: {icon: "mdi:weather-partly-cloudy"},
     week: {entity_category: "config", icon: "mdi:calendar-clock"},
 } as const;
