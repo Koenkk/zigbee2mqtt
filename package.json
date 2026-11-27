@@ -63,7 +63,7 @@
         "zigbee2mqtt-windfront": "2.15.3"
     },
     "devDependencies": {
-        "@biomejs/biome": "^2.6.8",
+        "@biomejs/biome": "^2.6.9",
         "@types/humanize-duration": "^3.27.4",
         "@types/node": "^26.6.6",
         "@types/readable-stream": "4.0.25",
