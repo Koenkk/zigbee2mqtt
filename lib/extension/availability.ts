@@ -366,44 +366,64 @@ export default class Availability extends Extension {
                 continue;
             }
 
-            if (
-                item.missingOnly &&
-                (!settings.get().advanced.read_missing_config_on_reconnect ||
-                    item.keys.every((key) => state[key] !== undefined && state[key] !== null && state[key] !== "unknown"))
-            ) {
+            if (item.missingOnly && !settings.get().advanced.read_missing_config_on_reconnect) {
                 continue;
             }
 
+            const targets = item.missingOnly ? this.#missingReadTargets(device, item.keys, state) : [{keys: item.keys, endpointName: undefined}];
             const definition = device.definition;
-            const converter = definition.toZigbee.find((c) => !c.key || c.key.find((key) => item.keys.includes(key)));
-            if (!converter?.convertGet) {
-                continue;
+
+            for (const {keys, endpointName} of targets) {
+                const converter = definition.toZigbee.find(
+                    (c) =>
+                        (!c.key || c.key.some((key) => keys.includes(key))) &&
+                        (!item.missingOnly || !c.endpoints || (endpointName !== undefined && c.endpoints.includes(endpointName))),
+                );
+                if (!converter?.convertGet) {
+                    continue;
+                }
+
+                const options: KeyValue = device.options;
+                const meta: zhc.Tz.Meta = {
+                    message: state,
+                    mapped: definition,
+                    endpoint_name: endpointName,
+                    options,
+                    state,
+                    device: device.zh,
+                    /* v8 ignore start */
+                    deviceExposesChanged: (): void => this.eventBus.emitExposesAndDevicesChanged(device),
+                    /* v8 ignore stop */
+                    /* v8 ignore next */
+                    publish: (payload: KeyValue) => this.publishEntityState(device, payload),
+                };
+
+                try {
+                    const endpoint = device.endpoint(endpointName);
+                    assert(endpoint);
+                    await converter.convertGet(endpoint, keys[0], meta);
+                } catch (error) {
+                    logger.error(`Failed to read state '${keys[0]}' of '${device.name}' after reconnect (${(error as Error).message})`);
+                }
+
+                await utils.sleep(500);
             }
-
-            const options: KeyValue = device.options;
-            const meta: zhc.Tz.Meta = {
-                message: state,
-                mapped: definition,
-                endpoint_name: undefined,
-                options,
-                state,
-                device: device.zh,
-                /* v8 ignore start */
-                deviceExposesChanged: (): void => this.eventBus.emitExposesAndDevicesChanged(device),
-                /* v8 ignore stop */
-                /* v8 ignore next */
-                publish: (payload: KeyValue) => this.publishEntityState(device, payload),
-            };
-
-            try {
-                const endpoint = device.endpoint();
-                assert(endpoint);
-                await converter.convertGet(endpoint, item.keys[0], meta);
-            } catch (error) {
-                logger.error(`Failed to read state '${item.keys[0]}' of '${device.name}' after reconnect (${(error as Error).message})`);
-            }
-
-            await utils.sleep(500);
         }
+    }
+
+    /**
+     * Endpoint-scoped exposes are cached as `<name>_<endpoint>` and must be read on that endpoint,
+     * so resolve the cache property and endpoint from the exposes, falling back to the plain key.
+     */
+    #missingReadTargets(device: Device, keys: string[], state: KeyValue): {keys: string[]; endpointName: string | undefined}[] {
+        const exposes = device.exposes().flatMap((e) => ("features" in e && e.features ? [e, ...e.features] : [e]));
+        const exposed = exposes.filter((e) => e.name !== undefined && keys.includes(e.name));
+        const candidates = exposed.length
+            ? exposed.map((e) => ({key: e.name, property: e.property ?? e.name, endpointName: e.endpoint}))
+            : keys.map((key) => ({key, property: key, endpointName: undefined}));
+
+        return candidates
+            .filter(({property}) => state[property] === undefined || state[property] === null || state[property] === "unknown")
+            .map(({key, endpointName}) => ({keys: [key], endpointName}));
     }
 }

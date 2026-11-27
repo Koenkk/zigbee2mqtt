@@ -581,6 +581,36 @@ describe("Extension: Availability", () => {
         }
     });
 
+    it("Should read missing endpoint-scoped config states on their own endpoint", async () => {
+        settings.set(["advanced", "read_missing_config_on_reconnect"], true);
+        const device = controller.zigbee.resolveEntity(devices.bulb_color.ieeeAddr);
+        const definition = device.definition!;
+        const originalToZigbee = definition.toZigbee;
+        const originalExposes = definition.exposes;
+        const convertGet = vi.fn();
+
+        definition.toZigbee = [{key: ["power_on_behavior", "child_lock"], convertGet} as zhc.Tz.Converter];
+        definition.exposes = [
+            {type: "enum", name: "power_on_behavior", property: "power_on_behavior_1", endpoint: "1"},
+            {type: "binary", name: "child_lock", property: "child_lock_1", endpoint: "1"},
+        ] as zhc.Expose[];
+
+        try {
+            controller.state.clear();
+            controller.state.set(device, {power_on_behavior_1: "previous"});
+
+            await mockZHEvents.deviceAnnounce({device: devices.bulb_color});
+            await flushPromises();
+            await setTimeAndAdvanceTimers(utils.seconds(3));
+
+            expect(convertGet).toHaveBeenCalledTimes(1);
+            expect(convertGet).toHaveBeenCalledWith(devices.bulb_color.getEndpoint(1), "child_lock", expect.objectContaining({endpoint_name: "1"}));
+        } finally {
+            definition.toZigbee = originalToZigbee;
+            definition.exposes = originalExposes;
+        }
+    });
+
     it("uses the current endpoint after replacing a device with the same IEEE address", async () => {
         const {ieeeAddr} = devices.bulb_color;
         const first = controller.zigbee.resolveEntity(ieeeAddr);
