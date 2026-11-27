@@ -57,8 +57,8 @@ importers:
         specifier: 11.2.5
         version: 11.2.5(supports-color@7.2.0)
       zigbee-herdsman-converters:
-        specifier: 26.137.0
-        version: 26.137.0(supports-color@7.2.0)
+        specifier: 26.138.0
+        version: 26.138.0(supports-color@7.2.0)
       zigbee2mqtt-frontend:
         specifier: 0.9.21
         version: 0.9.21
@@ -1287,8 +1287,8 @@ packages:
       utf-8-validate:
         optional: true
 
-  zigbee-herdsman-converters@26.137.0:
-    resolution: {integrity: sha512-IY+gJoXulB7oqiep3bJ9+mC/ZvXGlhutYNN0YyHRZc7CLB3OKOZSawYTzui+6Hb9Nn3SZQuul5l+4uMBWoVQ8g==}
+  zigbee-herdsman-converters@26.138.0:
+    resolution: {integrity: sha512-7ILhZLTz6Fw1Y87fvKCq0ZBj1CalI2TEtPC1scddRCdT+cZomBuW5Qxvw0uEDhtpPFItPGDxNj9Kmp7un++hTg==}
     engines: {node: ^22.2.0 || ^24 || <=26.2}
 
   zigbee-herdsman@11.2.5:
@@ -2286,7 +2286,7 @@ snapshots:
 
   ws@8.23.0: {}
 
-  zigbee-herdsman-converters@26.137.0(supports-color@7.2.0):
+  zigbee-herdsman-converters@26.138.0(supports-color@7.2.0):
     dependencies:
       iconv-lite: 0.7.3
       semver: 7.8.6
