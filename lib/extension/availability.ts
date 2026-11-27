@@ -15,10 +15,30 @@ import Extension from "./extension";
  */
 const MAX_TIMEOUT = 2147483647;
 
-const RETRIEVE_ON_RECONNECT: readonly {keys: string[]; condition?: (state: KeyValue) => boolean}[] = [
+type RetrieveStateItem = {
+    keys: string[];
+    condition?: (state: KeyValue) => boolean;
+    missingOnly?: boolean;
+};
+
+const RETRIEVE_ON_RECONNECT: readonly RetrieveStateItem[] = [
     {keys: ["state"]},
     {keys: ["brightness"], condition: (state: KeyValue): boolean => state.state === "ON"},
     {keys: ["color", "color_temp"], condition: (state: KeyValue): boolean => state.state === "ON"},
+    {keys: ["power_on_behavior"], missingOnly: true},
+    {keys: ["child_lock"], missingOnly: true},
+    {keys: ["led_enable"], missingOnly: true},
+    {keys: ["switch_type"], missingOnly: true},
+    {keys: ["switch_mode"], missingOnly: true},
+    {keys: ["valve_type"], missingOnly: true},
+    {keys: ["display_switch_on_duration"], missingOnly: true},
+    {keys: ["dimming_range_minimum"], missingOnly: true},
+    {keys: ["dimming_range_maximum"], missingOnly: true},
+    {keys: ["off_on_duration"], missingOnly: true},
+    {keys: ["on_off_duration"], missingOnly: true},
+    {keys: ["indicator_mode"], missingOnly: true},
+    {keys: ["power_outage_memory"], missingOnly: true},
+    {keys: ["switch_type_button"], missingOnly: true},
 ];
 
 export default class Availability extends Extension {
@@ -326,44 +346,84 @@ export default class Availability extends Extension {
                     logger.debug(`Retrieving state of '${device.name}' after reconnect`);
 
                     // Color and color temperature converters do both, only needs to be called once.
-                    for (const item of RETRIEVE_ON_RECONNECT) {
-                        if (item.condition && this.state.get(device) && !item.condition(this.state.get(device))) {
-                            continue;
-                        }
-
-                        // biome-ignore lint/style/noNonNullAssertion: doesn't change once valid
-                        const converter = device.definition!.toZigbee.find((c) => !c.key || c.key.find((k) => item.keys.includes(k)));
-                        const options: KeyValue = device.options;
-                        const state = this.state.get(device);
-                        const meta: zhc.Tz.Meta = {
-                            message: this.state.get(device),
-                            // biome-ignore lint/style/noNonNullAssertion: doesn't change once valid
-                            mapped: device.definition!,
-                            endpoint_name: undefined,
-                            options,
-                            state,
-                            device: device.zh,
-                            /* v8 ignore start */
-                            deviceExposesChanged: (): void => this.eventBus.emitExposesAndDevicesChanged(device),
-                            /* v8 ignore stop */
-                            /* v8 ignore next */
-                            publish: (payload: KeyValue) => this.publishEntityState(device, payload),
-                        };
-
-                        try {
-                            const endpoint = device.endpoint();
-                            assert(endpoint);
-                            await converter?.convertGet?.(endpoint, item.keys[0], meta);
-                        } catch (error) {
-                            logger.error(`Failed to read state of '${device.name}' after reconnect (${(error as Error).message})`);
-                        }
-
-                        await utils.sleep(500);
-                    }
+                    await this.#retrieveStateItems(device, RETRIEVE_ON_RECONNECT);
                 }, utils.seconds(2)),
             );
         }
 
         this.retrieveStateDebouncers.get(device.ieeeAddr)?.();
+    }
+
+    async #retrieveStateItems(device: Device, items: readonly RetrieveStateItem[]): Promise<void> {
+        if (!device.definition || !device.interviewed || device.options.disabled) {
+            return;
+        }
+
+        for (const item of items) {
+            const state = this.state.get(device);
+
+            if (item.condition && state && !item.condition(state)) {
+                continue;
+            }
+
+            if (item.missingOnly && !settings.get().advanced.read_missing_config_on_reconnect) {
+                continue;
+            }
+
+            const targets = item.missingOnly ? this.#missingReadTargets(device, item.keys, state) : [{keys: item.keys, endpointName: undefined}];
+            const definition = device.definition;
+
+            for (const {keys, endpointName} of targets) {
+                const converter = definition.toZigbee.find(
+                    (c) =>
+                        (!c.key || c.key.some((key) => keys.includes(key))) &&
+                        (!item.missingOnly || !c.endpoints || (endpointName !== undefined && c.endpoints.includes(endpointName))),
+                );
+                if (!converter?.convertGet) {
+                    continue;
+                }
+
+                const options: KeyValue = device.options;
+                const meta: zhc.Tz.Meta = {
+                    message: state,
+                    mapped: definition,
+                    endpoint_name: endpointName,
+                    options,
+                    state,
+                    device: device.zh,
+                    /* v8 ignore start */
+                    deviceExposesChanged: (): void => this.eventBus.emitExposesAndDevicesChanged(device),
+                    /* v8 ignore stop */
+                    /* v8 ignore next */
+                    publish: (payload: KeyValue) => this.publishEntityState(device, payload),
+                };
+
+                try {
+                    const endpoint = device.endpoint(endpointName);
+                    assert(endpoint);
+                    await converter.convertGet(endpoint, keys[0], meta);
+                } catch (error) {
+                    logger.error(`Failed to read state '${keys[0]}' of '${device.name}' after reconnect (${(error as Error).message})`);
+                }
+
+                await utils.sleep(500);
+            }
+        }
+    }
+
+    /**
+     * Endpoint-scoped exposes are cached as `<name>_<endpoint>` and must be read on that endpoint,
+     * so resolve the cache property and endpoint from the exposes, falling back to the plain key.
+     */
+    #missingReadTargets(device: Device, keys: string[], state: KeyValue): {keys: string[]; endpointName: string | undefined}[] {
+        const exposes = device.exposes().flatMap((e) => ("features" in e && e.features ? [e, ...e.features] : [e]));
+        const exposed = exposes.filter((e) => e.name !== undefined && keys.includes(e.name));
+        const candidates = exposed.length
+            ? exposed.map((e) => ({key: e.name, property: e.property ?? e.name, endpointName: e.endpoint}))
+            : keys.map((key) => ({key, property: key, endpointName: undefined}));
+
+        return candidates
+            .filter(({property}) => state[property] === undefined || state[property] === null || state[property] === "unknown")
+            .map(({key, endpointName}) => ({keys: [key], endpointName}));
     }
 }

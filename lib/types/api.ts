@@ -219,6 +219,7 @@ export type Zigbee2MQTTSettings = {
         transmit_power?: number;
         /** 3.0: default to false (JSON schema & settings `defaults`) */
         enable_external_js: boolean;
+        read_missing_config_on_reconnect: boolean;
     };
     health: {
         /** in minutes */
